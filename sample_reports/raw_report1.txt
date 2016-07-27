@@ -1,0 +1,5 @@
+This is a simple test report with one IP and one URL indicators:
+
+IP 1.2.3.4
+URL www.evildomain.com
+
