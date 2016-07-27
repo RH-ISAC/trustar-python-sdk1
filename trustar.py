@@ -3,14 +3,14 @@
 # See https://github.com/trustar/public/wiki/TruSTAR-API for full API documentation
 ####################################################################################
 
-import requests
-import requests.auth
+import ConfigParser
 import json
 import os
+import requests
+import requests.auth
+import sys
 import time
-import sys, traceback
-import ConfigParser
-
+import traceback
 
 CONFIG_FILE = "trustar.conf"
 
@@ -74,24 +74,20 @@ class TruStar():
         resp = requests.get(self.base + "/indicators", payload, headers=headers)
         print resp.content
 
-    def submit_report(self, access_token, report_body_txt, report_name, enclave_id=None):
+    def submit_report(self, access_token, report_body_txt, report_name, enclave=False):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave, pass in your enclave_id
         """
 
-        distribution_type = 'COMMUNITY'
-
-        if enclave_id:
-            distribution_type = 'ENCLAVE'
-
+        distribution_type = 'ENCLAVE' if enclave else 'COMMUNITY'
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
 
         payload = {'incidentReport': {
             'title': report_name,
             'reportBody': report_body_txt,
             'distributionType': distribution_type},
-            'enclaveId': enclave_id}
+            'enclaveId': self.enclaveId}
 
         print "Submitting report %s to TruSTAR Station..." % report_name
         resp = requests.post(self.base + "/reports/submit", json.dumps(payload), headers=headers, timeout=1)
@@ -124,7 +120,7 @@ def main():
     # ts.submit_report(token, "hello world")
 
     # Submit one or more reports from local flat files
-    source_reports_dir = "./source_reports"
+    source_reports_dir = "./sample_reports"
 
     # process all files in directory
     print "Processing and submitting each source file in %s as a TruSTAR Incident Report" % source_reports_dir
@@ -135,13 +131,14 @@ def main():
                 path = os.path.join(source_reports_dir, file)
                 report_body_txt = ts.process_file(path)
                 # report_body_txt = "test report 1.2.3.4"
-                # response_json = ts.submit_report(token, report_body_txt, "COMMUNITY: " + file)
 
-                response_json = ts.submit_report(token, report_body_txt, "ENCLAVE: " + file, ENCLAVE_ID)
+                response_json = ts.submit_report(token, report_body_txt, "COMMUNITY: " + file)
+                response_json = ts.submit_report(token, report_body_txt, "ENCLAVE: " + file, enclave=True)
 
                 report_id = response_json['reportId']
 
                 print "SUCCESSFULLY SUBMITTED REPORT, TRUSTAR REPORT as Incident Report ID %s" % report_id
+
                 print "Extracted the following indicators: %s" % response_json["reportIndicators"]
                 print "Extracted the following correlated report indicators: %s" % response_json["correlatedIndicators"]
 
