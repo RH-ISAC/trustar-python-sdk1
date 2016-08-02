@@ -14,6 +14,7 @@ import traceback
 
 CONFIG_FILE = "trustar.conf"
 
+
 class TruStar():
     """ TruSTAR API module """
 
@@ -107,8 +108,7 @@ def main():
     ts = TruStar()
     token = ts.get_token()
 
-    # print token
-    # ts.get_latest_reports(token)
+    ts.get_latest_reports(token)
 
     # replace the indicator value
     # ts.get_correlated_reports(token, "149.202.234.190")
@@ -137,11 +137,19 @@ def main():
 
                 report_id = response_json['reportId']
 
-                print "SUCCESSFULLY SUBMITTED REPORT, TRUSTAR REPORT as Incident Report ID %s" % report_id
+                print("SUCCESSFULLY SUBMITTED REPORT, TRUSTAR REPORT as Incident Report ID {0}".format(report_id))
 
-                print "Extracted the following indicators: %s" % response_json["reportIndicators"]
-                print "Extracted the following correlated report indicators: %s" % response_json["correlatedIndicators"]
+                if 'reportIndicators' in response_json:
+                    print("Extracted the following indicators: {}".format(response_json['reportIndicators']))
+                else:
+                    print("No indicators returned from  report id {0}".format(report_id))
 
+                if 'correlatedIndicators' in response_json:
+                    print("Extracted the following correlated indicators: {}".format(response_json['correlatedIndicators']))
+                else:
+                    print("No correlatedIndicators indicators found in report id {0}".format(report_id))
+
+                print response_json
             except:
                 print "Problem with file %s, exception: " % file
                 traceback.print_exc(file=sys.stdout)
