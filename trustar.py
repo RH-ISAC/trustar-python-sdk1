@@ -14,6 +14,8 @@ import traceback
 
 CONFIG_FILE = "trustar.conf"
 
+# Submit one or more reports from local flat files
+SOURCE_REPORT_DIR = "./sample_reports"
 
 class TruStar():
     """ TruSTAR API module """
@@ -92,7 +94,6 @@ class TruStar():
 
         print "Submitting report %s to TruSTAR Station..." % report_name
         resp = requests.post(self.base + "/reports/submit", json.dumps(payload), headers=headers, timeout=1)
-        # resp = requests.post(self.base + "/reports/submit" , payload, headers = headers)
         return resp.json()
 
     def process_file(self, file):
@@ -119,16 +120,13 @@ def main():
     # Submit a simple test report
     # ts.submit_report(token, "hello world")
 
-    # Submit one or more reports from local flat files
-    source_reports_dir = "./sample_reports"
-
     # process all files in directory
-    print "Processing and submitting each source file in %s as a TruSTAR Incident Report" % source_reports_dir
-    for (dirpath, dirnames, filenames) in os.walk(source_reports_dir):
+    print "Processing and submitting each source file in %s as a TruSTAR Incident Report" % SOURCE_REPORT_DIR
+    for (dirpath, dirnames, filenames) in os.walk(SOURCE_REPORT_DIR):
         for file in filenames:
             print "Processing source file %s " % file
             try:
-                path = os.path.join(source_reports_dir, file)
+                path = os.path.join(SOURCE_REPORT_DIR, file)
                 report_body_txt = ts.process_file(path)
                 # report_body_txt = "test report 1.2.3.4"
 
@@ -147,9 +145,7 @@ def main():
                 if 'correlatedIndicators' in response_json:
                     print("Extracted the following correlated indicators: {}".format(response_json['correlatedIndicators']))
                 else:
-                    print("No correlatedIndicators indicators found in report id {0}".format(report_id))
-
-                print response_json
+                    print("No correlatedIndicators found in report id {0}".format(report_id))
             except:
                 print "Problem with file %s, exception: " % file
                 traceback.print_exc(file=sys.stdout)
