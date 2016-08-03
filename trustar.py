@@ -53,18 +53,18 @@ class TruStar():
 
         headers = {"Authorization": "Bearer " + access_token}
         resp = requests.get(self.base + "/reports/latest", headers=headers)
-        print resp.content
+        return json.loads(resp.content)
 
     def get_correlated_reports(self, access_token, indicator):
         """
-        Retrieves all TruSTAR reports that contain the searched indicator. You can specificy multiple indicators
+        Retrieves all TruSTAR reports that contain the searched indicator. You can specify multiple indicators
         separated by commas
         """
 
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'q': indicator}
         resp = requests.get(self.base + "/reports/correlate", payload, headers=headers)
-        print resp.content
+        return json.loads(resp.content)
 
     def query_indicator(self, access_token, indicator, limit):
         """
@@ -75,7 +75,7 @@ class TruStar():
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'q': indicator, 'limit': limit}
         resp = requests.get(self.base + "/indicators", payload, headers=headers)
-        print resp.content
+        return json.loads(resp.content)
 
     def submit_report(self, access_token, report_body_txt, report_name, enclave=False):
         """
@@ -109,7 +109,7 @@ def main():
     ts = TruStar()
     token = ts.get_token()
 
-    ts.get_latest_reports(token)
+    # ts.get_latest_reports(token)
 
     # replace the indicator value
     # ts.get_correlated_reports(token, "149.202.234.190")
