@@ -1,3 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
 /trustar.conf
-/.idea/
+.idea/
+*.py[cod]
+
+target/
+build/
