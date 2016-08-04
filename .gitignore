@@ -5,3 +5,5 @@
 
 target/
 build/
+/dist/
+/trustar/trustar.egg-info/
