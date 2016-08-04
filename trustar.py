@@ -16,6 +16,8 @@ CONFIG_FILE = "trustar.conf"
 
 # Submit one or more reports from local flat files
 SOURCE_REPORT_DIR = "./sample_reports"
+CONFIG_ROLE = "trustar"
+
 
 class TruStar():
     """ TruSTAR API module """
@@ -26,11 +28,11 @@ class TruStar():
         config_parser.read(CONFIG_FILE)
 
         try:
-            self.auth = config_parser.get('trustar', 'auth_endpoint')
-            self.base = config_parser.get('trustar', 'api_endpoint')
-            self.apikey = config_parser.get('trustar', 'user_api_key')
-            self.apisecret = config_parser.get('trustar', 'user_api_secret')
-            self.enclaveId = config_parser.get('trustar', 'enclave_id')
+            self.auth = config_parser.get(CONFIG_ROLE, 'auth_endpoint')
+            self.base = config_parser.get(CONFIG_ROLE, 'api_endpoint')
+            self.apikey = config_parser.get(CONFIG_ROLE, 'user_api_key')
+            self.apisecret = config_parser.get(CONFIG_ROLE, 'user_api_secret')
+            self.enclaveId = config_parser.get(CONFIG_ROLE, 'enclave_id')
         except:
             print "Problem reading config file"
             sys.exit(1)
@@ -93,7 +95,7 @@ class TruStar():
             'enclaveId': self.enclaveId}
 
         print "Submitting report %s to TruSTAR Station..." % report_name
-        resp = requests.post(self.base + "/reports/submit", json.dumps(payload), headers=headers, timeout=1)
+        resp = requests.post(self.base + "/reports/submit", json.dumps(payload), headers=headers, timeout=60)
         return resp.json()
 
     def process_file(self, file):
@@ -143,7 +145,9 @@ def main():
                     print("No indicators returned from  report id {0}".format(report_id))
 
                 if 'correlatedIndicators' in response_json:
-                    print("Extracted the following correlated indicators: {}".format(response_json['correlatedIndicators']))
+                    print(
+                        "Extracted the following correlated indicators: {}".format(
+                                response_json['correlatedIndicators']))
                 else:
                     print("No correlatedIndicators found in report id {0}".format(report_id))
             except:
