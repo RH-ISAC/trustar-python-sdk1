@@ -1,19 +1,27 @@
-# TruSTAR Python SDK and sample codes for the TruSTAR API 
-
+# Python SDK for the TruSTAR API 
+*Beta version*
 
 ## Requirements
-* json
-* pandas
- 
-```shell
-    pip install pandas
-```
+Here's how to get started most quickly
 
-## Installation
-```shell
-$ python setup.py install --force
-```
-## Uninstallation
+### Python
+The SDK requires:
+* Python 2.7+. 
+* [pandas](http://pandas.pydata.org/pandas-docs/stable/install.html) python module
+
+  ```shell
+  $ pip install pandas
+  ``` 
+  
+### TruSTAR SDK
+Get the latest SDK by downloading as a [ZIP](https://github.com/trustar/trustar-python/archive/master.zip) and extract locally.  You can also clone the repository directly from [GitHub](https://github.com/trustar/trustar-python)
+
+Use **setup.py** on the downloaded source files:
+
+    $ python setup.py install --force
+    
+    
+### Uninstallation
 ```shell
 $ pip uninstall trustar
 ```
