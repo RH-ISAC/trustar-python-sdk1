@@ -6,7 +6,7 @@ Python SDK and sample codes for the TruSTAR API
 * json
 * pandas
  
-```
+```shell
     pip install pandas
 ```
 
@@ -15,7 +15,10 @@ Python SDK and sample codes for the TruSTAR API
 python setup.py install --force
 ```
 
-## Run a simple example
+## Running examples and tests
+- Retrieve or generate API credentials from the TruSTAR Station: https://station.trustar.co/settings/api
+- Inside the `examples` directory, create your own `trustar.conf` file from `trustar.conf.example` and Copy in your credentials and enclave ID 
+
 ```shell
     cd examples
     python basic_usage.py
