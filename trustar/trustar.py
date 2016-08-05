@@ -5,7 +5,7 @@ import requests.auth
 import sys
 
 
-class TruStar:
+class TruStar():
     """
     Main class you to instantiate the TruStar API
     """
