@@ -1,5 +1,4 @@
-# trustar-python
-Python SDK and sample codes for the TruSTAR API 
+# TruSTAR Python SDK and sample codes for the TruSTAR API 
 
 
 ## Requirements
@@ -12,7 +11,11 @@ Python SDK and sample codes for the TruSTAR API
 
 ## Installation
 ```shell
-python setup.py install --force
+$ python setup.py install --force
+```
+## Uninstallation
+```shell
+$ pip uninstall trustar
 ```
 
 ## Running examples and tests
@@ -20,8 +23,8 @@ python setup.py install --force
 - Inside the `examples` directory, create your own `trustar.conf` file from `trustar.conf.example` and Copy in your credentials and enclave ID 
 
 ```shell
-    cd examples
-    python basic_usage.py
+    $ cd examples
+    $ python basic_usage.py
 ```
 ## API Documentation
 
