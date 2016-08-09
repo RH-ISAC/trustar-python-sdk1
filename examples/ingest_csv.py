@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 """
-Process a CSV file and convert each row to an incident report and submitting to TruSTAR:
+Converts each row in a CSV file into an incident report and submits to TruSTAR.
 
-EXAMPLE
+EXAMPLE:
 python ingest_csv.py -c "TargetIP,SourceIP,Info,Analysis,Indicators" -t "TrackingNumber" -f  august_incident_report.csv
 """
 
@@ -48,31 +48,44 @@ def main():
         current_title = ''
         current_report = {}
         for key in df:
-            # content = key + ':' + '\n ' + str(df[key][report_num]) + '\n '
             content = "{}:\n {}\n ".format(key, str(df[key][report_num]))
 
             if not allowed_keys_content or key in allowed_keys_content:
                 current_content += content
             if key == args.title_col:
                 current_title = str(df[key][report_num])
+
         current_report['reportTitle'] = current_title
         current_report['reportContent'] = current_content
         all_reports.append(current_report)
 
     if do_enclave_submissions:
+        num_submitted = 0
         for staged_report in all_reports:
-            response = ts.submit_report(token, staged_report['reportContent'], staged_report['reportTitle'],
-                                        enclave=True)
-            if not 'reportId' in response:
-                print "Error: {}, {}".format(response['error'], response['message'])
-                break
-            else:
-                print    "Submitted report title {} as TruSTAR IR {}".format(staged_report['reportTitle'],
-                                                                          response['reportId'])
-            if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
-                print("Extracted the following indicators: {}".format(json.dumps(response['reportIndicators'])))
-            print
-            time.sleep(3)
+            successful = False
+            attempts = 0
+            while not successful and attempts < 5:
+                attempts += 1
+                response = ts.submit_report(token, staged_report['reportContent'], staged_report['reportTitle'],
+                                            enclave=True)
+                if 'error' in response:
+                    print "Submission failed with error: {}, {}".format(response['error'], response['message'])
+                    if response['error'] == "Internal Server Error":
+                        print "Auth token expired, requesting new one"
+                        token = ts.get_token()
+                    time.sleep(5)
+                else:
+                    num_submitted += 1
+                    successful = True
+                    print "Submitted report #{}-{} title {} as TruSTAR IR {}".format(num_submitted, attempts,
+                                                                                     staged_report['reportTitle'],
+                                                                                     response['reportId'])
+
+                if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
+                    print "Extracted the following indicators: {}".format(json.dumps(response['reportIndicators']))
+                print
+
+                time.sleep(0.1)
 
 
 if __name__ == '__main__':
