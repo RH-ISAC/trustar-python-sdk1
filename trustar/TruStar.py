@@ -5,7 +5,7 @@ import requests.auth
 import sys
 
 
-class TruStar():
+class TruStar:
     """
     Main class you to instantiate the TruStar API
     """
@@ -39,6 +39,7 @@ class TruStar():
     def get_latest_reports(self, access_token):
         """
         Retrieves the latest 10 reports submitted to the TruSTAR community
+        :param access_token: OAuth API token
         """
 
         headers = {"Authorization": "Bearer " + access_token}
@@ -49,6 +50,8 @@ class TruStar():
         """
         Retrieves all TruSTAR reports that contain the searched indicator. You can specify multiple indicators
         separated by commas
+        :param indicator:
+        :param access_token:
         """
 
         headers = {"Authorization": "Bearer " + access_token}
@@ -60,6 +63,9 @@ class TruStar():
         """
         Finds all reports that contain the indicators and returns correlated indicators from those reports.
         you can specify the limit of indicators returned.
+        :param limit:
+        :param indicator:
+        :param access_token:
         """
 
         headers = {"Authorization": "Bearer " + access_token}
@@ -71,6 +77,10 @@ class TruStar():
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave, pass in your enclave_id
+        :param enclave:
+        :param report_name:
+        :param report_body_txt:
+        :param access_token:
         """
 
         distribution_type = 'ENCLAVE' if enclave else 'COMMUNITY'
@@ -86,7 +96,7 @@ class TruStar():
         resp = requests.post(self.base + "/reports/submit", json.dumps(payload), headers=headers, timeout=60)
         return resp.json()
 
-    def process_file(self, file):
+    def process_file(file):
         print "Extracting text from file %s" % file
         try:
             txt = open(file, 'r')
