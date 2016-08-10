@@ -1,8 +1,13 @@
 import ConfigParser
+import datetime
+import dateutil.parser
+import dateutil.tz
 import json
+import pytz
 import requests
 import requests.auth
 import sys
+from datetime import datetime
 
 
 class TruStar:
@@ -24,6 +29,23 @@ class TruStar:
         except:
             print "Problem reading config file"
             sys.exit(1)
+
+    @staticmethod
+    def normalize_timestamp(datetime_str):
+        """
+        Attempt to convert a string timestamp in to a TruSTAR compatible format for submission.
+        Will return current time with UTC time zone if None
+        :param datetime_str: raw timestamp containing date, time and ideally timezone
+        """
+        try:
+            datetime_dt = dateutil.parser.parse(datetime_str)
+        except:
+            datetime_dt = datetime.now()
+
+        if not datetime_dt.tzinfo:
+            datetime_dt = datetime_dt.replace(tzinfo=pytz.utc)
+
+        return datetime_dt.isoformat()
 
     def get_token(self):
         """
@@ -73,21 +95,26 @@ class TruStar:
         resp = requests.get(self.base + "/indicators", payload, headers=headers)
         return json.loads(resp.content)
 
-    def submit_report(self, access_token, report_body_txt, report_name, enclave=False):
+    def submit_report(self, access_token, report_body_txt, report_name, discovered_time_str=None,
+                      enclave=False):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave, pass in your enclave_id
+        :param discovered_time_str:
         :param enclave:
         :param report_name:
         :param report_body_txt:
         :param access_token:
         """
 
+        # Convert timestamps
         distribution_type = 'ENCLAVE' if enclave else 'COMMUNITY'
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
 
         payload = {'incidentReport': {
             'title': report_name,
+            'timeDiscovered': self.normalize_timestamp(discovered_time_str),
+            'timeBegan': self.normalize_timestamp(discovered_time_str),
             'reportBody': report_body_txt,
             'distributionType': distribution_type},
             'enclaveId': self.enclaveId}
@@ -96,6 +123,7 @@ class TruStar:
         resp = requests.post(self.base + "/reports/submit", json.dumps(payload), headers=headers, timeout=60)
         return resp.json()
 
+    @staticmethod
     def process_file(file):
         print "Extracting text from file %s" % file
         try:
