@@ -11,11 +11,10 @@ from trustar import TruStar
 
 SOURCE_REPORT_DIR = "./sample_reports"
 
-ts = TruStar(config_role="trustar-integration")
-token = ts.get_token()
-
 
 def main():
+    ts = TruStar(config_role="trustar")
+    token = ts.get_token()
     # process all files in directory
     print "Processing and submitting each source file in %s as a TruSTAR Incident Report" % SOURCE_REPORT_DIR
     for (dirpath, dirnames, filenames) in os.walk(SOURCE_REPORT_DIR):

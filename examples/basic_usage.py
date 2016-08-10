@@ -14,13 +14,13 @@ do_query_indicator = True
 do_comm_submissions = False
 do_enclave_submissions = False
 
-ts = TruStar()
-token = ts.get_token()
 query_indicators = "1.2.3.4,8.8.8.8,10.0.2.1"
 submit_indicators = "google.com,malware.exe"
 
 
 def main():
+    ts = TruStar(config_role="trustar")
+    token = ts.get_token()
     if do_latest:
         print "Get Latest Reports"
 
