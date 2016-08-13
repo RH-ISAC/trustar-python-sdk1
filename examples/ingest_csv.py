@@ -10,6 +10,7 @@ python ingest_csv.py -c "TargetIP,SourceIP,Info,Analysis,Indicators" -t "Trackin
 import argparse
 import json
 import pandas as pd
+import sys
 import time
 
 from trustar import TruStar
@@ -76,27 +77,34 @@ def main():
             attempts = 0
             while not successful and attempts < 5:
                 attempts += 1
-                response = ts.submit_report(token, staged_report['reportContent'], staged_report['reportTitle'],
-                                            discovered_time_str=staged_report['reportDateTime'],
-                                            enclave=True)
-                if 'error' in response:
-                    print "Submission failed with error: {}, {}".format(response['error'], response['message'])
-                    if response['error'] == "Internal Server Error":
-                        print "Auth token expired, requesting new one"
-                        token = ts.get_token()
+                try:
+                    response = ts.submit_report(token, staged_report['reportContent'], staged_report['reportTitle'],
+                                                discovered_time_str=staged_report['reportDateTime'],
+                                                enclave=True)
+                    if 'error' in response:
+                        print "Submission failed with error: {}, {}".format(response['error'], response['message'])
+                        if response['message'] == "Access token expired":
+                            print "Auth token expired, requesting new one"
+                            token = ts.get_token()
+                        else:
+                            raise Exception
+                    else:
+                        num_submitted += 1
+                        successful = True
+                        print "Submitted report #{}-{} title {} as TruSTAR IR {}".format(num_submitted, attempts,
+                                                                                         staged_report['reportTitle'],
+                                                                                         response['reportId'])
+
+                    if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
+                        print "Extracted the following indicators: {}".format(json.dumps(response['reportIndicators']))
+                    print
+                except:
+                    e = sys.exc_info()[0]
+                    print "Problem submitting report"
                     time.sleep(5)
-                else:
-                    num_submitted += 1
-                    successful = True
-                    print "Submitted report #{}-{} title {} as TruSTAR IR {}".format(num_submitted, attempts,
-                                                                                     staged_report['reportTitle'],
-                                                                                     response['reportId'])
 
-                if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
-                    print "Extracted the following indicators: {}".format(json.dumps(response['reportIndicators']))
-                print
-
-                time.sleep(0.1)
+            # Sleep between submissions
+            time.sleep(1)
 
 
 if __name__ == '__main__':
