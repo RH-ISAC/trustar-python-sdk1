@@ -27,7 +27,7 @@ def main():
     parser.add_argument('-f', '--file', required=True, dest='file_name', help='csv file to import')
     parser.add_argument('-t', '--title', required=True, dest='title_col', help='Name of column to use as title field')
     parser.add_argument('-d', '--datetime', required=False, dest='datetime_col',
-                        help='Name of column to use as datetime field')
+                        help='Name of column to use as report date/time')
     parser.add_argument('-c', '--columns', required=False, dest='cols',
                         help='List of comma-separated column names to include')
     parser.add_argument('-n', '--num-reports', required=False, dest='num_reports', type=int, default=1000,
@@ -104,7 +104,7 @@ def main():
                     time.sleep(5)
 
             # Sleep between submissions
-            time.sleep(1)
+            time.sleep(0.1)
 
 
 if __name__ == '__main__':
