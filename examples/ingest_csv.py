@@ -83,7 +83,8 @@ def main():
                                                 enclave=True)
                     if 'error' in response:
                         print "Submission failed with error: {}, {}".format(response['error'], response['message'])
-                        if response['message'] == "Access token expired":
+                       # if response['message'] == "Access token expired":
+                        if response['error'] in ("Internal Server Error", "Access token expired"):
                             print "Auth token expired, requesting new one"
                             token = ts.get_token()
                         else:
