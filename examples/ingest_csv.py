@@ -84,7 +84,7 @@ def main():
                     if 'error' in response:
                         print "Submission failed with error: {}, {}".format(response['error'], response['message'])
                        # if response['message'] == "Access token expired":
-                        if response['error'] in ("Internal Server Error", "Access token expired"):
+                        if response['error'] in ("Internal Server Error", "Access token expired","Authentication error"):
                             print "Auth token expired, requesting new one"
                             token = ts.get_token()
                         else:
@@ -105,7 +105,7 @@ def main():
                     time.sleep(5)
 
             # Sleep between submissions
-            time.sleep(0.1)
+            time.sleep(90)
 
 
 if __name__ == '__main__':

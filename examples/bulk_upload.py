@@ -3,6 +3,7 @@
 """
 Submit one or more reports from local flat files
 """
+from __future__ import print_function
 
 import os
 import time
@@ -16,10 +17,10 @@ def main():
     ts = TruStar(config_role="trustar")
     token = ts.get_token()
     # process all files in directory
-    print "Processing and submitting each source file in %s as a TruSTAR Incident Report" % SOURCE_REPORT_DIR
+    print("Processing and submitting each source file in %s as a TruSTAR Incident Report" % SOURCE_REPORT_DIR)
     for (dirpath, dirnames, filenames) in os.walk(SOURCE_REPORT_DIR):
         for file in filenames:
-            print "Processing source file %s " % file
+            print("Processing source file %s " % file)
             try:
                 path = os.path.join(SOURCE_REPORT_DIR, file)
                 report_body_txt = ts.process_file(path)
@@ -43,7 +44,7 @@ def main():
                 else:
                     print("No correlatedIndicators found in report id {0}".format(report_id))
             except:
-                print "Problem with file %s, exception: " % file
+                print("Problem with file %s, exception: " % file)
                 continue
 
             time.sleep(2)

@@ -1,23 +1,29 @@
-import ConfigParser
-import datetime
-import dateutil.parser
-import dateutil.tz
+from __future__ import print_function
+
+from future import standard_library
+
+standard_library.install_aliases()
+from builtins import object
+import configparser
 import json
-import pytz
-import requests
-import requests.auth
 import sys
 from datetime import datetime
 
+import dateutil.parser
+import dateutil.tz
+import pytz
+import requests
+import requests.auth
 
-class TruStar:
+
+class TruStar(object):
     """
     Main class you to instantiate the TruStar API
     """
 
     def __init__(self, config_file="trustar.conf", config_role="trustar"):
 
-        config_parser = ConfigParser.RawConfigParser()
+        config_parser = configparser.RawConfigParser()
         config_parser.read(config_file)
 
         try:
@@ -27,7 +33,7 @@ class TruStar:
             self.apisecret = config_parser.get(config_role, 'user_api_secret')
             self.enclaveId = config_parser.get(config_role, 'enclave_id')
         except:
-            print "Problem reading config file"
+            print("Problem reading config file")
             sys.exit(1)
 
     @staticmethod
@@ -66,7 +72,7 @@ class TruStar:
 
         headers = {"Authorization": "Bearer " + access_token}
         resp = requests.get(self.base + "/reports/latest", headers=headers)
-        return json.loads(resp.content)
+        return json.loads(resp.content.decode('utf8'))
 
     def get_correlated_reports(self, access_token, indicator):
         """
@@ -117,17 +123,17 @@ class TruStar:
             'timeBegan': self.normalize_timestamp(discovered_time_str),
             'reportBody': report_body_txt,
             'distributionType': distribution_type},
-            'enclaveId': self.enclaveId}
+            'enclaveIds': [self.enclaveId]}
 
-        print "Submitting report %s to TruSTAR Station..." % report_name
+        print("Submitting report %s to TruSTAR Station..." % report_name)
         resp = requests.post(self.base + "/reports/submit", json.dumps(payload), headers=headers, timeout=60)
         return resp.json()
 
     @staticmethod
     def process_file(file):
-        print "Extracting text from file %s" % file
+        print("Extracting text from file %s" % file)
         try:
             txt = open(file, 'r')
             return txt.read()
         except:
-            print "Failed to extract text from file %s " % file
+            print("Failed to extract text from file %s " % file)
