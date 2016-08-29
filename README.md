@@ -4,14 +4,19 @@
 ## Requirements
 Here's how to get started most quickly
 
-### Python
-The SDK requires:
-* Python 2.7+. 
+### Python 2.7+
 * [pandas](http://pandas.pydata.org/pandas-docs/stable/install.html) python module
-
+* dateutil
   ```shell
   $ pip install pandas
   ``` 
+### Python 3
+* [pandas](http://pandas.pydata.org/pandas-docs/stable/install.html) python module
+*  python-dateutil
+  ```shell
+  $ pip3 install pandas  python-dateutil
+  ``` 
+  
   
 ### TruSTAR SDK
 Get the latest SDK by downloading as a [ZIP](https://github.com/trustar/trustar-python/archive/master.zip) and extract locally.  You can also clone the repository directly from [GitHub](https://github.com/trustar/trustar-python)
