@@ -6,13 +6,16 @@ Here's how to get started most quickly
 
 ### Python 2.7+
 * [pandas](http://pandas.pydata.org/pandas-docs/stable/install.html) python module
-* dateutil
+ 
   ```shell
   $ pip install pandas
   ``` 
+  
 ### Python 3
 * [pandas](http://pandas.pydata.org/pandas-docs/stable/install.html) python module
-*  python-dateutil
+* python-dateutil
+
+
   ```shell
   $ pip3 install pandas  python-dateutil
   ``` 
