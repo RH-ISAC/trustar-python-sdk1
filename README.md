@@ -4,20 +4,20 @@
 ## Requirements
 Here's how to get started most quickly
 
-### Python 2.7+
+### Python modules
 * [pandas](http://pandas.pydata.org/pandas-docs/stable/install.html) python module
+* pytz
+* requests
+* python-dateutil
  
+Python 2.7+:
   ```shell
-  $ pip install pandas
+  $ pip install pandas python-dateutil pytz requests
   ``` 
   
-### Python 3
-* [pandas](http://pandas.pydata.org/pandas-docs/stable/install.html) python module
-* python-dateutil
-
-
+Python 3:
   ```shell
-  $ pip3 install pandas  python-dateutil
+  $ pip3 install pandas  python-dateutil pytz requests
   ``` 
   
   
