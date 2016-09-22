@@ -9,15 +9,16 @@ Here's how to get started most quickly
 * pytz
 * requests
 * python-dateutil
+* future
  
 Python 2.7+:
   ```shell
-  $ pip install pandas python-dateutil pytz requests
+  $ pip install future pandas python-dateutil pytz requests
   ``` 
   
 Python 3:
   ```shell
-  $ pip3 install pandas  python-dateutil pytz requests
+  $ pip3 install future pandas  python-dateutil pytz requests
   ``` 
   
   
