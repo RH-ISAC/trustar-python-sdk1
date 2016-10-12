@@ -9,3 +9,4 @@ build/
 /.idea/
 /trustar.egg-info/
 /examples/trustar.conf
+/report_big.csv
