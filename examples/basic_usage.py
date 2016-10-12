@@ -10,9 +10,9 @@ from trustar import TruStar
 
 do_latest = True
 do_correlated = True
-do_query_indicator = True
+do_query_indicator = False
 do_comm_submissions = False
-do_enclave_submissions = False
+do_enclave_submissions = True
 
 ts = TruStar()
 token = ts.get_token()

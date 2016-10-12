@@ -1,18 +1,29 @@
-import ConfigParser
+from __future__ import print_function
+
+from future import standard_library
+
+standard_library.install_aliases()
+from builtins import object
+import configparser
 import json
+import sys
+from datetime import datetime
+
+import dateutil.parser
+import dateutil.tz
+import pytz
 import requests
 import requests.auth
-import sys
 
 
-class TruStar():
+class TruStar(object):
     """
     Main class you to instantiate the TruStar API
     """
 
     def __init__(self, config_file="trustar.conf", config_role="trustar"):
 
-        config_parser = ConfigParser.RawConfigParser()
+        config_parser = configparser.RawConfigParser()
         config_parser.read(config_file)
 
         try:
@@ -22,8 +33,25 @@ class TruStar():
             self.apisecret = config_parser.get(config_role, 'user_api_secret')
             self.enclaveId = config_parser.get(config_role, 'enclave_id')
         except:
-            print "Problem reading config file"
+            print("Problem reading config file")
             sys.exit(1)
+
+    @staticmethod
+    def normalize_timestamp(datetime_str):
+        """
+        Attempt to convert a string timestamp in to a TruSTAR compatible format for submission.
+        Will return current time with UTC time zone if None
+        :param datetime_str: raw timestamp containing date, time and ideally timezone
+        """
+        try:
+            datetime_dt = dateutil.parser.parse(datetime_str)
+        except:
+            datetime_dt = datetime.now()
+
+        if not datetime_dt.tzinfo:
+            datetime_dt = datetime_dt.replace(tzinfo=pytz.utc)
+
+        return datetime_dt.isoformat()
 
     def get_token(self):
         """
@@ -39,16 +67,19 @@ class TruStar():
     def get_latest_reports(self, access_token):
         """
         Retrieves the latest 10 reports submitted to the TruSTAR community
+        :param access_token: OAuth API token
         """
 
         headers = {"Authorization": "Bearer " + access_token}
         resp = requests.get(self.base + "/reports/latest", headers=headers)
-        return json.loads(resp.content)
+        return json.loads(resp.content.decode('utf8'))
 
     def get_correlated_reports(self, access_token, indicator):
         """
         Retrieves all TruSTAR reports that contain the searched indicator. You can specify multiple indicators
         separated by commas
+        :param indicator:
+        :param access_token:
         """
 
         headers = {"Authorization": "Bearer " + access_token}
@@ -60,6 +91,9 @@ class TruStar():
         """
         Finds all reports that contain the indicators and returns correlated indicators from those reports.
         you can specify the limit of indicators returned.
+        :param limit:
+        :param indicator:
+        :param access_token:
         """
 
         headers = {"Authorization": "Bearer " + access_token}
@@ -67,29 +101,39 @@ class TruStar():
         resp = requests.get(self.base + "/indicators", payload, headers=headers)
         return json.loads(resp.content)
 
-    def submit_report(self, access_token, report_body_txt, report_name, enclave=False):
+    def submit_report(self, access_token, report_body_txt, report_name, discovered_time_str=None,
+                      enclave=False):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave, pass in your enclave_id
+        :param discovered_time_str:
+        :param enclave:
+        :param report_name:
+        :param report_body_txt:
+        :param access_token:
         """
 
+        # Convert timestamps
         distribution_type = 'ENCLAVE' if enclave else 'COMMUNITY'
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
 
         payload = {'incidentReport': {
             'title': report_name,
+            'timeDiscovered': self.normalize_timestamp(discovered_time_str),
+            'timeBegan': self.normalize_timestamp(discovered_time_str),
             'reportBody': report_body_txt,
             'distributionType': distribution_type},
-            'enclaveId': self.enclaveId}
+            'enclaveIds': [self.enclaveId]}
 
-        print "Submitting report %s to TruSTAR Station..." % report_name
+        print("Submitting report %s to TruSTAR Station..." % report_name)
         resp = requests.post(self.base + "/reports/submit", json.dumps(payload), headers=headers, timeout=60)
         return resp.json()
 
-    def process_file(self, file):
-        print "Extracting text from file %s" % file
+    @staticmethod
+    def process_file(file):
+        print("Extracting text from file %s" % file)
         try:
             txt = open(file, 'r')
             return txt.read()
         except:
-            print "Failed to extract text from file %s " % file
+            print("Failed to extract text from file %s " % file)
