@@ -98,6 +98,7 @@ class TruStar(object):
 
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'q': indicator, 'limit': limit}
+
         resp = requests.get(self.base + "/indicators", payload, headers=headers)
         return json.loads(resp.content)
 
