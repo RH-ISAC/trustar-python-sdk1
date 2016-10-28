@@ -10,15 +10,16 @@ Here's how to get started most quickly
 * requests
 * python-dateutil
 * future
+* configparser
  
 Python 2.7+:
   ```shell
-  $ pip install future pandas python-dateutil pytz requests
+  $ pip install future pandas python-dateutil pytz requests configparser
   ``` 
   
 Python 3:
   ```shell
-  $ pip3 install future pandas  python-dateutil pytz requests
+  $ pip3 install future pandas  python-dateutil pytz requests configparser
   ``` 
   
   
