@@ -1,14 +1,6 @@
 # Python SDK for the TruSTAR API 
 
-## Requirements 
-Python 2.7+:
-  ```shell
-  $ pip install future python-dateutil pytz requests configparser
-  ``` 
-Python 3:
-  ```shell
-  $ pip3 install future python-dateutil pytz requests configparser
-  ``` 
+
   
 ## Installation
 
@@ -17,10 +9,23 @@ Python 3:
   $ pip install trustar
   ``` 
 ### Manual
-Get the latest SDK by downloading as a [ZIP](https://github.com/trustar/trustar-python/archive/master.zip) and extract locally.  You can also clone the repository directly from [GitHub](https://github.com/trustar/trustar-python)
+1. Get the latest SDK by downloading as a [ZIP](https://github.com/trustar/trustar-python/archive/master.zip) and extract locally.  You can also clone the repository directly from [GitHub](https://github.com/trustar/trustar-python)
+
+2. Install requirements
+
+ Python 2.7+:
+  ```shell
+  $ pip install future python-dateutil pytz requests configparser
+  ``` 
+ Python 3:
+  ```shell
+   $ pip3 install future python-dateutil pytz requests configparser
+  ``` 
+3. Install SDK
+
   ```shell   
-   $ cd trustar-python
-   $ python setup.py install --force
+    $ cd trustar-python
+    $ python setup.py install --force
    ```
  
 ## Uninstallation
