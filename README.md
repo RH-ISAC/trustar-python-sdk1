@@ -3,11 +3,11 @@
 ## Requirements 
 Python 2.7+:
   ```shell
-  $ pip install future pandas python-dateutil pytz requests configparser
+  $ pip install future python-dateutil pytz requests configparser
   ``` 
 Python 3:
   ```shell
-  $ pip3 install future pandas  python-dateutil pytz requests configparser
+  $ pip3 install future python-dateutil pytz requests configparser
   ``` 
   
 ## Installation
