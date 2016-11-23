@@ -10,6 +10,9 @@ api_endpoint = https://api.trustar.co/api/v1/
 user_api_key = abcdef
 user_api_secret = abcdef
 
-# OPTIONAL: enter enclave ID to submit as - get from  API settings page on Station
-enclave_id = abcdef
+# OPTIONAL: enter enclave IDs to submit to - get these from  API settings page on Station
+enclave_ids = abcdef,1234f
 
+# Associate your user with your report submissions - necessary if you wish to modify or release your report
+# in the future.
+attribute_reports = false

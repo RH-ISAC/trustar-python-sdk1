@@ -31,9 +31,10 @@ class TruStar(object):
             self.base = config_parser.get(config_role, 'api_endpoint')
             self.apikey = config_parser.get(config_role, 'user_api_key')
             self.apisecret = config_parser.get(config_role, 'user_api_secret')
-            self.enclaveId = config_parser.get(config_role, 'enclave_id')
-        except:
-            print("Problem reading config file")
+            self.enclaveIds = config_parser.get(config_role, 'enclave_ids')
+            self.attributedToMe = config_parser.getboolean(config_role, 'attribute_reports')
+        except Exception, e:
+            print("Problem reading config file: %s", e)
             sys.exit(1)
 
     @staticmethod
@@ -124,10 +125,11 @@ class TruStar(object):
             'timeBegan': self.normalize_timestamp(discovered_time_str),
             'reportBody': report_body_txt,
             'distributionType': distribution_type},
-            'enclaveIds': [self.enclaveId]}
+            'enclaveIds': [self.enclaveIds],
+            'attributedToMe' : self.attributedToMe}
 
         print("Submitting report %s to TruSTAR Station..." % report_name)
-        resp = requests.post(self.base + "/reports/submit", json.dumps(payload), headers=headers, timeout=60)
+        resp = requests.post(self.base + "/reports/submit", json.dumps(payload,encoding="ISO-8859-1"), headers=headers, timeout=60)
         return resp.json()
 
     @staticmethod
