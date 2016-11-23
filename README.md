@@ -1,37 +1,29 @@
 # Python SDK for the TruSTAR API 
-*Beta version*
 
-## Requirements
-Here's how to get started most quickly
-
-### Python modules
-* [pandas](http://pandas.pydata.org/pandas-docs/stable/install.html) python module
-* pytz
-* requests
-* python-dateutil
-* future
-* configparser
- 
+## Requirements 
 Python 2.7+:
   ```shell
   $ pip install future pandas python-dateutil pytz requests configparser
   ``` 
-  
 Python 3:
   ```shell
   $ pip3 install future pandas  python-dateutil pytz requests configparser
   ``` 
   
-  
-### TruSTAR SDK
+## Installation
+
+### Using pip (recommended)
+  ```shell
+  $ pip install trustar
+  ``` 
+### Manual
 Get the latest SDK by downloading as a [ZIP](https://github.com/trustar/trustar-python/archive/master.zip) and extract locally.  You can also clone the repository directly from [GitHub](https://github.com/trustar/trustar-python)
-
-Use **setup.py** on the downloaded source files:
-
-    $ python setup.py install --force
-    
-    
-### Uninstallation
+  ```shell   
+   $ cd trustar-python
+   $ python setup.py install --force
+   ```
+ 
+## Uninstallation
 ```shell
 $ pip uninstall trustar
 ```
