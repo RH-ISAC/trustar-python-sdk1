@@ -1,3 +1,5 @@
+# python setup.py register -r pypitest
+# python setup.py sdist upload -r pypitest
 from setuptools import setup, find_packages
 
 setup(name='trustar',
@@ -7,7 +9,11 @@ setup(name='trustar',
       description='Python SDK for the TruSTAR REST API',
       author_email='support@trustar.co',
       license='MIT',
-
+      install_requires=['future',
+                        'python-dateutil',
+                        'pytz',
+                        'requests',
+                        'configparser'],
       # package source directory
       # package_dir={'': 'trustar'},
       # packages=find_packages('trustar'),
