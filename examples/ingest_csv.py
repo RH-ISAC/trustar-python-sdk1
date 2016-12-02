@@ -59,7 +59,7 @@ def main():
         current_datetime = None
         current_report = {}
         for key in df:
-            content = "{}:\n {}\n ".format(key, str(df[key][report_num]))
+            content = "{}:\n {}\n ".format(key, df[key][report_num])
 
             if not allowed_keys_content or key in allowed_keys_content:
                 current_content += content
@@ -109,7 +109,7 @@ def main():
                     time.sleep(5)
 
             # Sleep between submissions
-            time.sleep(90)
+            time.sleep(10)
 
 
 if __name__ == '__main__':
