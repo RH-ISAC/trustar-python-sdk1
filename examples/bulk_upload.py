@@ -14,7 +14,7 @@ SOURCE_REPORT_DIR = "./sample_reports"
 
 
 def main():
-    ts = TruStar(config_role="trustar")
+    ts = TruStar(config_file="trustar_research.conf", config_role="trustar")
     token = ts.get_token()
     # process all files in directory
     print("Processing and submitting each source file in %s as a TruSTAR Incident Report" % SOURCE_REPORT_DIR)
@@ -25,8 +25,8 @@ def main():
                 path = os.path.join(SOURCE_REPORT_DIR, file)
                 report_body_txt = ts.process_file(path)
 
-                response_json = ts.submit_report(token, report_body_txt, "COMMUNITY: " + file)
-                response_json = ts.submit_report(token, report_body_txt, "ENCLAVE: " + file, enclave=True)
+                # response_json = ts.submit_report(token, report_body_txt, "COMMUNITY: " + file)
+                response_json = ts.submit_report(token, report_body_txt, file, enclave=True)
 
                 report_id = response_json['reportId']
 
