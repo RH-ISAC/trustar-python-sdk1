@@ -12,8 +12,8 @@ from trustar import TruStar
 
 do_latest = True
 do_correlated = True
-do_query_indicator = False
-do_comm_submissions = False
+do_query_indicator = True
+do_comm_submissions = True
 do_enclave_submissions = True
 
 query_indicators = "1.2.3.4,8.8.8.8,10.0.2.1,185.19.85.172,art-archiv.ru"
