@@ -42,13 +42,13 @@ def query_latest_indicators(self,
 
     headers = {"Authorization": "Bearer " + access_token}
     payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
-    resp = requests.get(self.base + "indicators/latest", payload, headers=headers, verify=False)
+    resp = requests.get(self.base + "indicators/latest", payload, headers=headers)
     return json.loads(resp.content)
 
 
 def main():
 
-    ts = TruStar(config_file="trustar_int.conf", config_role="trustar")
+    ts = TruStar(config_file="trustar_user1.conf", config_role="trustar")
 
     source_type = 'INCIDENT_REPORT'
     indicator_types = ['IP', 'URL', 'EMAIL_ADDRESS']
