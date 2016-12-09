@@ -8,8 +8,16 @@ from trustar import TruStar
 
 FILE_NAME = 'indicators-api-test.csv'
 
+# Default string used to query all indicator types extracted by TruSTAR
 DEFAULT_TYPE_STRING = 'ALL'
 
+# Default number of indicators returned
+DEFAULT_LIMIT = 5000
+
+# Default interval size
+DEFAULT_INTERVAL_SIZE = 24
+
+# All the indicators types extracted by TruSTAR
 ALL_TYPES = ['REGISTRY_KEY',
              'SHA1',
              'MD5',
@@ -49,12 +57,14 @@ def query_latest_indicators(self,
                             interval_size):
     """
     Finds all latest indicators
-    :param interval_size:
-    :param source:
     :param self:
     :param access_token:
-    :param limit:
-    :param indicator_types:
+    :param source: source of the indicators which can either be INCIDENT_REPORT or OSINT
+    :param interval_size: time interval on returned indicators. Max is set to 24 hours
+    :param limit: limit on the number of indicators. Max is set to 5000
+    :param indicator_types: a list of indicators or a string equal to "ALL" to query all indicator types extracted
+    by TruSTAR
+    :return json response of the result
     """
 
     headers = {"Authorization": "Bearer " + access_token}
@@ -69,8 +79,8 @@ def main():
 
     source_type = 'OSINT'
     indicator_types = DEFAULT_TYPE_STRING
-    limit = 5000
-    interval_size = 24
+    limit = DEFAULT_LIMIT
+    interval_size = DEFAULT_INTERVAL_SIZE
 
     response = query_latest_indicators(ts, ts.get_token(), source_type, indicator_types, limit, interval_size)
     print(response)
