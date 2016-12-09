@@ -25,7 +25,7 @@ def main():
                 path = os.path.join(SOURCE_REPORT_DIR, file)
                 report_body_txt = ts.process_file(path)
 
-                response_json = ts.submit_report(token, report_body_txt, "COMMUNITY: " + file)
+                #response_json = ts.submit_report(token, report_body_txt, "COMMUNITY: " + file)
                 response_json = ts.submit_report(token, report_body_txt, "ENCLAVE: " + file, enclave=True)
 
                 report_id = response_json['reportId']
