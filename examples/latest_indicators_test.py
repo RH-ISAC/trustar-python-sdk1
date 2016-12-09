@@ -8,6 +8,20 @@ from trustar import TruStar
 
 FILE_NAME = 'indicators-api-test.csv'
 
+DEFAULT_TYPE_STRING = 'ALL'
+
+ALL_TYPES = ['REGISTRY_KEY',
+             'SHA1',
+             'MD5',
+             'URL',
+             'IP',
+             'EMAIL_ADDRESS',
+             'BITCOIN_ADDRESS',
+             'MALWARE',
+             'SHA256',
+             'CVE',
+             'SOFTWARE']
+
 
 def save_to_file(all_data, file_name, indicator_types):
     """
@@ -17,6 +31,9 @@ def save_to_file(all_data, file_name, indicator_types):
     :param indicator_types:
     :return:
     """
+    if indicator_types == DEFAULT_TYPE_STRING:
+        indicator_types = ALL_TYPES
+
     with open(file_name, 'wd') as csvfile:
         writer = unicodecsv.writer(csvfile, delimiter=",", quotechar="\"", quoting=csv.QUOTE_MINIMAL)
         for indicator_type in indicator_types:
@@ -48,12 +65,12 @@ def query_latest_indicators(self,
 
 def main():
 
-    ts = TruStar(config_file="trustar_user1.conf", config_role="trustar")
+    ts = TruStar(config_file="trustar_user2.conf", config_role="trustar")
 
-    source_type = 'INCIDENT_REPORT'
-    indicator_types = ['IP', 'URL', 'EMAIL_ADDRESS']
+    source_type = 'OSINT'
+    indicator_types = DEFAULT_TYPE_STRING
     limit = 5000
-    interval_size = 2
+    interval_size = 24
 
     response = query_latest_indicators(ts, ts.get_token(), source_type, indicator_types, limit, interval_size)
     print(response)
