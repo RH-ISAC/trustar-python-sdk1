@@ -103,6 +103,29 @@ class TruStar(object):
         resp = requests.get(self.base + "/indicators", payload, headers=headers)
         return json.loads(resp.content)
 
+    def query_latest_indicators(self,
+                                access_token,
+                                source,
+                                indicator_types,
+                                limit,
+                                interval_size):
+        """
+        Finds all latest indicators
+        :param self:
+        :param access_token:
+        :param source: source of the indicators which can either be INCIDENT_REPORT or OSINT
+        :param interval_size: time interval on returned indicators. Max is set to 24 hours
+        :param limit: limit on the number of indicators. Max is set to 5000
+        :param indicator_types: a list of indicators or a string equal to "ALL" to query all indicator types extracted
+        by TruSTAR
+        :return json response of the result
+        """
+
+        headers = {"Authorization": "Bearer " + access_token}
+        payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
+        resp = requests.get(self.base + "/indicators/latest", payload, headers=headers)
+        return json.loads(resp.content)
+
     def submit_report(self, access_token, report_body_txt, report_name, discovered_time_str=None,
                       enclave=False):
         """
