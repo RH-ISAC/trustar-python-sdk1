@@ -2,6 +2,7 @@ from __future__ import print_function
 import unicodecsv
 import csv
 import argparse
+import json
 
 from trustar import TruStar
 
@@ -91,7 +92,7 @@ def main():
         file_name = FILE_NAME
 
     response = ts.query_latest_indicators(ts.get_token(), source_type, indicator_types, limit, interval_size)
-    print(response)
+    print(json.dumps(response,indent=2))
     save_to_file(response['indicators'], file_name, source_type, indicator_types)
 
 
