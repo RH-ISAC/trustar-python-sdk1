@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='trustar',
-      version='0.0.2',
+      version='0.0.3',
       author='TruSTAR Technology Inc.',
       url='https://github.com/trustar/trustar-python',
       description='Python SDK for the TruSTAR REST API',
