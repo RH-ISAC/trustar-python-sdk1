@@ -1,8 +1,10 @@
 from __future__ import print_function
-import requests
-import json
-import unicodecsv
+
 import csv
+import json
+
+import requests
+import unicodecsv
 
 from trustar import TruStar
 
@@ -74,7 +76,6 @@ def query_latest_indicators(self,
 
 
 def main():
-
     ts = TruStar(config_file="trustar_user2.conf", config_role="trustar")
 
     source_type = 'OSINT'
