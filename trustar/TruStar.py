@@ -23,16 +23,25 @@ class TruStar(object):
 
     def __init__(self, config_file="trustar.conf", config_role="trustar"):
 
+        self.enclaveIds = []
+        self.attributedToMe = False
+
         config_parser = configparser.RawConfigParser()
         config_parser.read(config_file)
 
         try:
+            # parse required properties
             self.auth = config_parser.get(config_role, 'auth_endpoint')
             self.base = config_parser.get(config_role, 'api_endpoint')
             self.apikey = config_parser.get(config_role, 'user_api_key')
             self.apisecret = config_parser.get(config_role, 'user_api_secret')
-            self.enclaveIds = config_parser.get(config_role, 'enclave_ids')
-            self.attributedToMe = config_parser.getboolean(config_role, 'attribute_reports')
+
+            # parse enclave an attribution properties
+            if config_parser.has_option(config_role, 'enclave_ids'):
+                self.enclaveIds = filter(None, config_parser.get(config_role, 'enclave_ids').split(','))
+
+            if config_parser.has_option(config_role, 'attribute_reports'):
+                self.attributedToMe = config_parser.getboolean(config_role, 'attribute_reports')
         except Exception, e:
             print("Problem reading config file: %s", e)
             sys.exit(1)
@@ -109,7 +118,7 @@ class TruStar(object):
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave, pass in your enclave_id
         :param discovered_time_str:
-        :param enclave:
+        :param enclave: boolean - whether or not to submit report to user's enclaves (see 'enclave_ids' config property)
         :param report_name:
         :param report_body_txt:
         :param access_token:
@@ -117,6 +126,9 @@ class TruStar(object):
 
         # Convert timestamps
         distribution_type = 'ENCLAVE' if enclave else 'COMMUNITY'
+        if distribution_type == 'ENCLAVE' and len(self.enclaveIds) < 1:
+            raise Exception("Must specify one or more enclave IDs to submit enclave reports into")
+
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
 
         payload = {'incidentReport': {
@@ -125,7 +137,7 @@ class TruStar(object):
             'timeBegan': self.normalize_timestamp(discovered_time_str),
             'reportBody': report_body_txt,
             'distributionType': distribution_type},
-            'enclaveIds': [self.enclaveIds],
+            'enclaveIds': self.enclaveIds,
             'attributedToMe' : self.attributedToMe}
 
         print("Submitting report %s to TruSTAR Station..." % report_name)
