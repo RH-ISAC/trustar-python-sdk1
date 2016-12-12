@@ -35,6 +35,7 @@ def save_to_file(all_data, file_name, source, indicator_types):
     Lists of indicators grouped by type
     :param all_data:
     :param file_name:
+    :param source:
     :param indicator_types:
     :return:
     """
@@ -59,9 +60,9 @@ def main():
     parser.add_argument('-s', '--source', required=True, dest='source', help='Source can be INCIDENT_REPORT or OSINT')
     parser.add_argument('-t', '--types', required=False, dest='types', help='Types of indicators')
     parser.add_argument('-l', '--limit', required=False, dest='limit',
-                    help='Limit on the returned number of indicators')
+                        help='Limit on the returned number of indicators')
     parser.add_argument('-i', '--intervalSize', required=False, dest='interval_size',
-                    help='Interval size in hours')
+                        help='Interval size in hours')
     parser.add_argument('-f', '--fileName', required=False, dest='file_name')
 
     ts = TruStar(config_role="trustar")
