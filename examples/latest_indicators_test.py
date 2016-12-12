@@ -1,3 +1,16 @@
+#!/usr/bin/env python
+
+"""
+Downloads latest indicators from past 24 hours
+
+INSTALL DEPENDENCIES:
+    pip install trustar requests unicodecsv
+
+EXAMPLE:
+    python latest_indicators_test.py
+
+"""
+
 from __future__ import print_function
 
 import csv
@@ -71,14 +84,14 @@ def query_latest_indicators(self,
 
     headers = {"Authorization": "Bearer " + access_token}
     payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
-    resp = requests.get(self.base + "indicators/latest", payload, headers=headers)
+    resp = requests.get(self.base + "/indicators/latest", payload, headers=headers)
     return json.loads(resp.content)
 
 
 def main():
-    ts = TruStar(config_file="trustar_user2.conf", config_role="trustar")
+    ts = TruStar(config_file="trustar.conf", config_role="trustar")
 
-    source_type = 'OSINT'
+    source_type = 'INCIDENT_REPORT'
     indicator_types = DEFAULT_TYPE_STRING
     limit = DEFAULT_LIMIT
     interval_size = DEFAULT_INTERVAL_SIZE
