@@ -51,17 +51,13 @@ def main():
 
         print("Correlated Open Source documents:")
         for os_url in list(results["openSourceCorrelations"]):
-            print("\t%s" % (os_url))
+            print("\t%s" % os_url)
         print()
 
         print("External Intelligence hits:")
         for exint_url in list(results["externalIntelligence"]):
-            print("\t%s" % (exint_url))
+            print("\t%s" % exint_url)
         print()
-
-
-
-
 
     # Submit simple test report to community
     if do_comm_submissions:
