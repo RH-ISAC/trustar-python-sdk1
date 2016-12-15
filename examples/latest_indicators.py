@@ -92,7 +92,7 @@ def main():
         file_name = FILE_NAME
 
     response = ts.query_latest_indicators(ts.get_token(), source_type, indicator_types, limit, interval_size)
-    print(json.dumps(response,indent=2))
+    print(json.dumps(response, indent=2))
     save_to_file(response['indicators'], file_name, source_type, indicator_types)
 
 
