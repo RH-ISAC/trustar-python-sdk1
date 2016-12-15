@@ -14,6 +14,7 @@ import dateutil.tz
 import pytz
 import requests
 import requests.auth
+import textract
 
 
 class TruStar(object):
@@ -42,7 +43,7 @@ class TruStar(object):
 
             if config_parser.has_option(config_role, 'attribute_reports'):
                 self.attributedToMe = config_parser.getboolean(config_role, 'attribute_reports')
-        except Exception, e:
+        except Exception as e:
             print("Problem reading config file: %s", e)
             sys.exit(1)
 
@@ -55,7 +56,7 @@ class TruStar(object):
         """
         try:
             datetime_dt = dateutil.parser.parse(datetime_str)
-        except:
+        except Exception as e:
             datetime_dt = datetime.now()
 
         if not datetime_dt.tzinfo:
@@ -161,17 +162,19 @@ class TruStar(object):
             'reportBody': report_body_txt,
             'distributionType': distribution_type},
             'enclaveIds': self.enclaveIds,
-            'attributedToMe' : self.attributedToMe}
+            'attributedToMe': self.attributedToMe}
 
         print("Submitting report %s to TruSTAR Station..." % report_name)
-        resp = requests.post(self.base + "/reports/submit", json.dumps(payload,encoding="ISO-8859-1"), headers=headers, timeout=60)
+        resp = requests.post(self.base + "/reports/submit", json.dumps(payload, encoding="ISO-8859-1"), headers=headers,
+                             timeout=60)
         return resp.json()
 
     @staticmethod
-    def process_file(file):
-        print("Extracting text from file %s" % file)
-        try:
-            txt = open(file, 'r')
-            return txt.read()
-        except:
-            print("Failed to extract text from file %s " % file)
+    def process_file(source_file):
+        if source_file.endswith(('.pdf', '.PDF')):
+            txt = textract.process(source_file, method='pdfminer')
+        elif source_file.endswith(('.doc', '.docx', '.txt', '.eml', '.xls', '.xlsx', '.csv', '.rtf', '.json')):
+            txt = textract.process(source_file)
+        else:
+            raise ValueError('UNSUPPORTED FILE EXTENSION')
+        return txt
