@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 """
-Submit one or more reports from local files (txt, pdf, docx, etc)
-
+Submit one or more reports from local files (txt, pdf)
 """
 from __future__ import print_function
 

@@ -7,15 +7,14 @@ EXAMPLE:
 python ingest_csv.py -c "TargetIP,SourceIP,Info,Analysis,Indicators" -t "TrackingNumber" -d "ReportTime" -f  august_incident_report.csv
 """
 from __future__ import print_function
-from builtins import str
-from builtins import range
-
 
 import argparse
 import json
-import pandas as pd
-import sys
 import time
+
+import pandas as pd
+from builtins import range
+from builtins import str
 
 from trustar import TruStar
 
@@ -87,8 +86,9 @@ def main():
                                                 enclave=True)
                     if 'error' in response:
                         print("Submission failed with error: {}, {}".format(response['error'], response['message']))
-                       # if response['message'] == "Access token expired":
-                        if response['error'] in ("Internal Server Error", "Access token expired","Authentication error"):
+                        # if response['message'] == "Access token expired":
+                        if response['error'] in (
+                        "Internal Server Error", "Access token expired", "Authentication error"):
                             print("Auth token expired, requesting new one")
                             token = ts.get_token()
                         else:
@@ -104,7 +104,7 @@ def main():
                         print("Extracted the following indicators: {}".format(json.dumps(response['reportIndicators'])))
                     print()
                 except Exception as e:
-                    print("Problem submitting report")
+                    print("Problem submitting report: %s" % e)
                     time.sleep(5)
 
             # Sleep between submissions

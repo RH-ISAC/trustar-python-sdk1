@@ -1,4 +1,4 @@
-# git tag 0.0.4 -m "Bump version to 0.0.5" && git push --tags
+# git tag 0.0.5 -m "Bump version to 0.0.5" && git push --tags
 # python setup.py register -r pypitest
 # python setup.py sdist upload -r pypitest
 # python setup.py register -r pypi
@@ -20,7 +20,7 @@ setup(
                       'python-dateutil',
                       'pytz',
                       'requests',
-                      'configparser', 'textract', 'unicodecsv'],
+                      'configparser', 'unicodecsv', 'pdfminer'],
     # package source directory
     # package_dir={'': 'trustar'},
     packages=find_packages(),

@@ -3,10 +3,10 @@ from __future__ import print_function
 from future import standard_library
 
 standard_library.install_aliases()
-from builtins import object
-import configparser
-import json
+
 import sys
+import configparser, json
+from builtins import object
 from datetime import datetime
 
 import dateutil.parser
@@ -14,7 +14,12 @@ import dateutil.tz
 import pytz
 import requests
 import requests.auth
-import textract
+
+import pdfminer.pdfinterp
+from pdfminer.pdfpage import PDFPage
+from pdfminer.converter import TextConverter
+from pdfminer.layout import LAParams
+from cStringIO import StringIO
 
 
 class TruStar(object):
@@ -57,6 +62,7 @@ class TruStar(object):
         try:
             datetime_dt = dateutil.parser.parse(datetime_str)
         except Exception as e:
+            # print(e)
             datetime_dt = datetime.now()
 
         if not datetime_dt.tzinfo:
@@ -170,11 +176,34 @@ class TruStar(object):
         return resp.json()
 
     @staticmethod
+    def extract_pdf(file_name):
+        rsrcmgr = pdfminer.pdfinterp.PDFResourceManager()
+        sio = StringIO()
+        laparams = LAParams()
+        device = TextConverter(rsrcmgr, sio, codec='utf-8', laparams=laparams)
+        interpreter = pdfminer.pdfinterp.PDFPageInterpreter(rsrcmgr, device)
+
+        # Extract text from pdf file
+        fp = file(file_name, 'rb')
+        for page in PDFPage.get_pages(fp, maxpages=20):
+            interpreter.process_page(page)
+        fp.close()
+
+        text = sio.getvalue()
+
+        # Cleanup
+        device.close()
+        sio.close()
+
+        return text
+
+    @staticmethod
     def process_file(source_file):
         if source_file.endswith(('.pdf', '.PDF')):
-            txt = textract.process(source_file, method='pdfminer')
-        elif source_file.endswith(('.doc', '.docx', '.txt', '.eml', '.xls', '.xlsx', '.csv', '.rtf', '.json')):
-            txt = textract.process(source_file)
+            txt = TruStar.extract_pdf(source_file)
+        elif source_file.endswith(('.txt', '.eml', '.csv', '.json')):
+            f = open(source_file, 'r')
+            txt = f.read()
         else:
             raise ValueError('UNSUPPORTED FILE EXTENSION')
         return txt
