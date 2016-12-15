@@ -103,8 +103,7 @@ def main():
                     if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
                         print("Extracted the following indicators: {}".format(json.dumps(response['reportIndicators'])))
                     print()
-                except:
-                    e = sys.exc_info()[0]
+                except Exception as e:
                     print("Problem submitting report")
                     time.sleep(5)
 
