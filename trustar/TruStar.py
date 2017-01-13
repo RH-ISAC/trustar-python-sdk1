@@ -127,8 +127,7 @@ class TruStar(object):
                                 interval_size):
         """
         Finds all latest indicators
-        :param self:
-        :param access_token:
+        :param access_token: OAUTH access token
         :param source: source of the indicators which can either be INCIDENT_REPORT or OSINT
         :param interval_size: time interval on returned indicators. Max is set to 24 hours
         :param limit: limit on the number of indicators. Max is set to 5000
