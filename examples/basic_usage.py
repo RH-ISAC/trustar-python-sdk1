@@ -10,20 +10,22 @@ import json
 
 from trustar import TruStar
 
-do_latest = True
+do_latest_reports = True
 do_correlated = True
 do_query_indicator = True
+do_latest_indicators = True
 do_comm_submissions = True
 do_enclave_submissions = True
 
-query_indicators = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
+# query_indicators = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
+query_indicators = "167.114.35.70"
 submit_indicators = "google.com malware.exe"
 
 
 def main():
     ts = TruStar(config_role="trustar")
     token = ts.get_token()
-    if do_latest:
+    if do_latest_reports:
         print("Get Latest Reports")
 
         results = ts.get_latest_reports(token)
@@ -39,6 +41,17 @@ def main():
         for result in results:
             print("\t%s" % result)
         print()
+
+    if do_latest_indicators:
+        print("Get Latest Indicators (first 100)")
+
+        results = ts.query_latest_indicators(token, source='INCIDENT_REPORT', indicator_types='ALL', interval_size=24,
+                                             limit=100)
+        if 'indicators' in results:
+            for ioc_type, value in results['indicators'].iteritems():
+                if len(value) > 0:
+                    print("\t{}:  {}".format(ioc_type, ','.join(value)))
+            print()
 
     if do_query_indicator:
         print("Querying correlated indicators with '{}' (first 100)".format(query_indicators))
