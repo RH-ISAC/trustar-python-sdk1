@@ -33,7 +33,6 @@ def main():
 
         for result in results:
             print("\t{}, {}, {}".format(result['id'], result['distributionType'], result['title']))
-            print(json.dumps(result))
         print()
 
     if do_correlated:
