@@ -58,7 +58,7 @@ def main():
 
     if do_query_indicators:
         print("Querying correlated indicators with '{}' (first 100)".format(search_string))
-        results = ts.query_indicators(token, search_string, 'crowdstrike', '100')
+        results = ts.query_indicators(token, search_string, '100')
 
         print("Correlated Incident Report indicators:")
         for indicator_type, indicator_list in list(results["indicators"].items()):
