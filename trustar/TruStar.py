@@ -61,7 +61,6 @@ class TruStar(object):
         """
         try:
             datetime_dt = dateutil.parser.parse(datetime_str)
-            # datetime_dt = datetime.datetime.fromtimestamp(int(datetime_str)).strftime('%Y-%m-%d %H:%M %z')
         except Exception as e:
             # print(e)
             datetime_dt = datetime.now()
@@ -78,7 +77,7 @@ class TruStar(object):
         """
         client_auth = requests.auth.HTTPBasicAuth(self.apikey, self.apisecret)
         post_data = {"grant_type": "client_credentials"}
-        resp = requests.post(self.auth, auth=client_auth, data=post_data, verify)
+        resp = requests.post(self.auth, auth=client_auth, data=post_data, verify=verify)
         token_json = resp.json()
         return token_json["access_token"]
 
@@ -143,7 +142,7 @@ class TruStar(object):
         return json.loads(resp.content)
 
     def submit_report(self, access_token, report_body_txt, report_name, began_time_str=None,
-                      enclave=False):
+                      enclave=False, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave, pass in your enclave_id
@@ -170,7 +169,7 @@ class TruStar(object):
             'attributedToMe': self.attributedToMe}
         print("Submitting report %s to TruSTAR Station..." % report_name)
         resp = requests.post(self.base + "/reports/submit", json.dumps(payload, encoding="ISO-8859-1"), headers=headers,
-                             timeout=60, verify=False)
+                             timeout=60, verify=verify)
         return resp.json()
 
     @staticmethod
