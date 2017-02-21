@@ -105,17 +105,17 @@ class TruStar(object):
         resp = requests.get(self.base + "/reports/correlate", payload, headers=headers)
         return json.loads(resp.content)
 
-    def query_indicator(self, access_token, indicator, limit):
+    def query_indicators(self, access_token, indicators, limit):
         """
         Finds all reports that contain the indicators and returns correlated indicators from those reports.
         you can specify the limit of indicators returned.
-        :param limit:
-        :param indicator:
+        :param limit: max number of results to return
+        :param indicators: list of space-separated indicators to search for
         :param access_token:
         """
 
         headers = {"Authorization": "Bearer " + access_token}
-        payload = {'q': indicator, 'limit': limit}
+        payload = {'q': indicators, 'limit': limit}
 
         resp = requests.get(self.base + "/indicators", payload, headers=headers)
         return json.loads(resp.content)

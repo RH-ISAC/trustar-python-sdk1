@@ -58,8 +58,22 @@ def main():
         current_datetime = None
         current_report = {}
         for key in df:
-            content = "{}:\n {}\n ".format(key, df[key][report_num])
+            #  print(cell_value.isnull())
+            # ignore empty cells, which are float64 NaNs
+            # if(cell_value.is_null)
 
+            cell_value = df[key][report_num]
+            # print(cell_value)
+            # if(str(cell_value) == "nan"):
+            #     continue
+
+            content = "{}:\n {}\n \n".format(key, cell_value)
+            # print(str(df[key][report_num]))
+            # if (df[key][report_num]):
+            #     # print("key: " + key)
+            #     # print("df[key]:" + df[key])
+            #     print(str(df[key][report_num]))
+            #     print(type(df[key][report_num]))
             if not allowed_keys_content or key in allowed_keys_content:
                 current_content += content
             if key == args.title_col:
@@ -88,7 +102,7 @@ def main():
                         print("Submission failed with error: {}, {}".format(response['error'], response['message']))
                         # if response['message'] == "Access token expired":
                         if response['error'] in (
-                        "Internal Server Error", "Access token expired", "Authentication error"):
+                                "Internal Server Error", "Access token expired", "Authentication error"):
                             print("Auth token expired, requesting new one")
                             token = ts.get_token()
                         else:
