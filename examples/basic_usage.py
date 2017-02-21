@@ -12,13 +12,13 @@ from trustar import TruStar
 
 do_latest_reports = True
 do_correlated = True
-do_query_indicator = True
+do_query_indicators = True
 do_latest_indicators = True
 do_comm_submissions = True
 do_enclave_submissions = True
 
-# query_indicators = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
-query_indicators = "167.114.35.70"
+# search_string = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
+search_string = "167.114.35.70,103.255.61.39,miel-maroc.com"
 submit_indicators = "google.com malware.exe"
 
 
@@ -30,14 +30,17 @@ def main():
 
         results = ts.get_latest_reports(token)
 
+
         for result in results:
             print("\t{}, {}, {}".format(result['id'], result['distributionType'], result['title']))
+            print(json.dumps(result))
         print()
 
     if do_correlated:
         print("Querying Correlated Reports")
-        results = ts.get_correlated_reports(token, query_indicators)
-        print("{} report(s) correlated with indicators '{}': ".format(len(results), query_indicators))
+        results = ts.get_correlated_reports(token, search_string)
+        print(results)
+        print("{} report(s) correlated with indicators '{}': ".format(len(results), search_string))
         for result in results:
             print("\t%s" % result)
         print()
@@ -53,9 +56,9 @@ def main():
                     print("\t{}:  {}".format(ioc_type, ','.join(value)))
             print()
 
-    if do_query_indicator:
-        print("Querying correlated indicators with '{}' (first 100)".format(query_indicators))
-        results = ts.query_indicator(token, query_indicators, "100")
+    if do_query_indicators:
+        print("Querying correlated indicators with '{}' (first 100)".format(search_string))
+        results = ts.query_indicators(token, search_string, 'crowdstrike', '100')
 
         print("Correlated Incident Report indicators:")
         for indicator_type, indicator_list in list(results["indicators"].items()):
