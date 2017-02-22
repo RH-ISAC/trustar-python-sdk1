@@ -1,4 +1,4 @@
-# git tag 0.0.8 -m "Bump version to 0.0.8" && git push --tags
+# git tag 0.0.10 -m "Bump version to 0.0.10" && git push --tags
 # python setup.py register -r pypitest
 # python setup.py sdist upload -r pypitest
 # python setup.py register -r pypi
@@ -9,11 +9,11 @@ from setuptools import setup, find_packages
 setup(
     name='trustar',
     # packages= ['trustar'],
-    version='0.0.8',
+    version='0.0.10',
     author='TruSTAR Technology Inc.',
     author_email='support@trustar.co',
     url='https://github.com/trustar/trustar-python',
-    download_url='https://github.com/trustar/trustar-python/tarball/0.0.8',
+    download_url='https://github.com/trustar/trustar-python/tarball/0.0.10',
     description='Python SDK for the TruSTAR REST API',
     license='MIT',
     install_requires=['future',
