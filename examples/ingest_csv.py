@@ -113,7 +113,8 @@ def main():
                         print("Submitted report #{}-{} title {} as TruSTAR IR {}".format(num_submitted, attempts,
                                                                                          staged_report['reportTitle'],
                                                                                          response['reportId']))
-                        print("URL: %s", ts.get_report_url(response['reportId']))
+                        print("\nURL: %s\n" % ts.get_report_url(response['reportId']))
+
                     if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
                         print("Extracted the following indicators: {}".format(json.dumps(response['reportIndicators'])))
                     print()

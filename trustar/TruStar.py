@@ -4,7 +4,6 @@ from future import standard_library
 
 standard_library.install_aliases()
 
-import sys
 import configparser, json
 from builtins import object
 from datetime import datetime
@@ -12,6 +11,7 @@ from datetime import datetime
 import dateutil.parser
 import dateutil.tz
 import pytz
+import sys
 import requests
 import requests.auth
 
@@ -206,3 +206,11 @@ class TruStar(object):
         else:
             raise ValueError('UNSUPPORTED FILE EXTENSION')
         return txt
+
+    def get_report_url(self, report_id):
+        """
+        Build direct URL to report from its ID
+        :param report_id: Incident Report (IR) ID, e.g., as returned from `submit_report`
+        :return URL
+        """
+        return "%s/constellation/reports/%s" % (self.base.split('/api')[0], report_id)
