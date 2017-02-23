@@ -29,6 +29,7 @@ def main():
     ts = TruStar(config_role="trustar")
     token = ts.get_token()
 
+
     # process all files in directory
     print("Processing and submitting each source file in %s as a TruSTAR Incident Report" % source_report_dir)
 

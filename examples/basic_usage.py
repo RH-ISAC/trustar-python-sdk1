@@ -30,7 +30,6 @@ def main():
 
         results = ts.get_latest_reports(token)
 
-
         for result in results:
             print("\t{}, {}, {}".format(result['id'], result['distributionType'], result['title']))
         print()
@@ -77,14 +76,18 @@ def main():
     # Submit simple test report to community
     if do_comm_submissions:
         community_response = ts.submit_report(token, submit_indicators, "COMMUNITY API SUBMISSION TEST ")
-        print("Community submission response: {0}".format(json.dumps(community_response)))
+
+        print("\n\nCommunity submission response: %s " % json.dumps(community_response))
+        print("URL: %s\n" % ts.get_report_url(community_response['reportId']))
+
         if 'reportIndicators' in community_response:
             print("Extracted the following community indicators: {}".format(community_response['reportIndicators']))
 
     # Submit simple test report to your enclave
     if do_enclave_submissions:
         enclave_response = ts.submit_report(token, submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True)
-        print("Enclave submission response: {0}".format(json.dumps(enclave_response)))
+        print("\n\nEnclave submission response: %s\n" % json.dumps(enclave_response))
+        print("URL: %s\n" % ts.get_report_url(enclave_response['reportId']))
 
         if 'reportIndicators' in enclave_response:
             print("Extracted the following enclave indicators: {}".format(enclave_response['reportIndicators']))
