@@ -96,7 +96,7 @@ def main():
                 attempts += 1
                 try:
                     response = ts.submit_report(token, staged_report['reportContent'], staged_report['reportTitle'],
-                                                discovered_time_str=staged_report['reportDateTime'],
+                                                began_time_str=staged_report['reportDateTime'],
                                                 enclave=True)
                     if 'error' in response:
                         print("Submission failed with error: {}, {}".format(response['error'], response['message']))
