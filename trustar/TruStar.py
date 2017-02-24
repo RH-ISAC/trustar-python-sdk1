@@ -213,4 +213,9 @@ class TruStar(object):
         :param report_id: Incident Report (IR) ID, e.g., as returned from `submit_report`
         :return URL
         """
-        return "%s/constellation/reports/%s" % (self.base.split('/api')[0], report_id)
+
+        # Check environment for URL
+        base_url = 'https://station.trustar.co' if ('https://api.trustar.co' in self.base) else \
+            self.base.split('/api/')[0]
+
+        return "%s/constellation/reports/%s" % (base_url, report_id)
