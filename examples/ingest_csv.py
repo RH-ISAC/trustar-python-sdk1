@@ -8,9 +8,20 @@ python ingest_csv.py -c "TargetIP,SourceIP,Info,Analysis,Indicators" -t "Trackin
 """
 from __future__ import print_function
 
+"""Comment out import os if you need to use the static CEF format"""
+import os 
 import argparse
 import json
 import time
+
+
+import cef
+cef._CEF_FORMAT = ('%(date)s %(host)s CEF:%(version)s|%(vendor)s|%(product)s|'
+               '%(device_version)s|%(signature)s|%(name)s|%(severity)s|'
+               'cs1=%(user_agent)s ')
+
+from cef import log_cef 
+
 
 import pandas as pd
 from builtins import range
@@ -114,6 +125,27 @@ def main():
                                                                                          staged_report['reportTitle'],
                                                                                          response['reportId']))
                         print("\nURL: %s\n" % ts.get_report_url(response['reportId']))
+                        
+                        #change example.cef to desired filename
+                        #HTTP_USER_AGENT is the cs1 field
+                        config = {'cef.version': '0.5', 'cef.vendor': 'TruSTAR',
+                                               'cef.device_version': '2.0', 'cef.product': 'API',
+                                               'cef': True, 'cef.file':"example.cef"}
+                        environ={'REMOTE_ADDR': '127.0.0.1', 'HTTP_HOST': '127.0.0.1',
+                                                'HTTP_USER_AGENT': num_submitted}
+
+                        log_cef('SUBMISSION', 1, environ, config, signature="INFO", cs2=ts.get_report_url(response['reportId']))
+                       
+                        
+                        """Static CEF message - alternative solution"""
+                        #CEFMessage ="CEF:0.5|TruSTAR|API|2.0|INFO|SUBMISSION|1|cs1=%s cs2=%s" %(num_submitted,report_url)
+                        #print(CEFMessage + "\n")
+                    
+                        #you can change the file output location 
+                        #cef_file = open('CEFoutput.cef','a')
+                        #cef_file.write("\n" + CEFMessage + "\n")
+                        #cef_file.close()
+                        
 
                     if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
                         print("Extracted the following indicators: {}".format(json.dumps(response['reportIndicators'])))
