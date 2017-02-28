@@ -17,6 +17,7 @@ from trustar import TruStar
 
 do_latest_reports = True
 do_correlated = True
+do_report_details = True
 do_query_indicators = True
 do_latest_indicators = True
 do_comm_submissions = True
@@ -56,6 +57,12 @@ def main():
                 if len(value) > 0:
                     print("\t{}:  {}".format(ioc_type, ','.join(value)))
             print()
+
+    if do_report_details:
+        print("Get Report Details")
+
+        guid = ''
+        results = ts.get_report_details(token, guid)
 
     if do_query_indicators:
         print("Querying correlated indicators with search string '%s' (first 100)" % search_string)
@@ -114,7 +121,7 @@ def main():
         i = 1
 
         # sample timestamp used for testing: 1487890914000
-        timestamps = {1487890914000, "2017-02-23T23:01:54", "2017-02-23T23:01:54+0000", dateutil.parser.parse("2017-02-23T23:01:54"), dateutil.parser.parse("2017-02-23T23:01:54+0000")}
+        timestamps = [1487890914000, "2017-02-23T23:01:54", "2017-02-23T23:01:54+0000", dateutil.parser.parse("2017-02-23T23:01:54"), dateutil.parser.parse("2017-02-23T23:01:54+0000")]
         for timestamp in timestamps:
             print("~~~Submission " + str(i) + "~~~")
             print("Timestamp (original): " + str(timestamp))
