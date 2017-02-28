@@ -128,6 +128,8 @@ def main():
                         
                         #change example.cef to desired filename
                         #HTTP_USER_AGENT is the cs1 field
+                        #example CEF output: CEF:version|vendor|product|device_version|signature|name|severity|cs1=(num_submitted) cs2=(report_url)
+
                         config = {'cef.version': '0.5', 'cef.vendor': 'TruSTAR',
                                                'cef.device_version': '2.0', 'cef.product': 'API',
                                                'cef': True, 'cef.file':"example.cef"}
@@ -138,13 +140,20 @@ def main():
                        
                         
                         """Static CEF message - alternative solution"""
-                        #CEFMessage ="CEF:0.5|TruSTAR|API|2.0|INFO|SUBMISSION|1|cs1=%s cs2=%s" %(num_submitted,report_url)
-                        #print(CEFMessage + "\n")
-                    
-                        #you can change the file output location 
+                        #CEFMessage ="CEF:0.5|TruSTAR|API|2.0|INFO|SUBMISSION|1|cs1=%s cs2=%s" %(num_submitted,ts.get_report_url(response['reportId']))
+            
+                        """you can change the file output location """
                         #cef_file = open('CEFoutput.cef','a')
                         #cef_file.write("\n" + CEFMessage + "\n")
                         #cef_file.close()
+                        
+                        
+                        
+                        """
+                        
+                        Bill you can add you code block here 
+                        
+                        """
                         
 
                     if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
