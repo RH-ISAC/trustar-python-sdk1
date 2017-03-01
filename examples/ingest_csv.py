@@ -3,8 +3,8 @@
 """
 Converts each row in a CSV file into an incident report and submits to TruSTAR.
 
-EXAMPLE:
-python ingest_csv.py -c "TargetIP,SourceIP,Info,Analysis,Indicators" -t "TrackingNumber" -d "ReportTime" -f  august_incident_report.csv
+Requirements:
+    pip install cef
 """
 from __future__ import print_function
 
@@ -35,7 +35,7 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description=('Submit TruSTAR reports from a CSV file\n'
                                                   'Example:\n\n'
-                                                  'python ingest_csv.py -c "TargetIP,SourceIP,Info,Analysis,Indicators" -t "TrackingNumber" -f  august_incident_report.csv'))
+                                                  'python ingest_csv.py -c "TargetIP,SourceIP,Info,Analysis,Indicators" -t "TrackingNumber" -d "ReportTime"  -f  august_incident_report.csv'))
     parser.add_argument('-f', '--file', required=True, dest='file_name', help='csv file to import')
     parser.add_argument('-t', '--title', required=True, dest='title_col', help='Name of column to use as title field')
     parser.add_argument('-d', '--datetime', required=False, dest='datetime_col',
@@ -52,7 +52,6 @@ def main():
     if args.cols:
         allowed_keys_content = args.cols.split(",")
 
-    # noinspection PyCallingNonCallable
     ts = TruStar(config_role="trustar")
     token = ts.get_token()
 
@@ -149,12 +148,12 @@ def main():
 
                         """
                         
-                        Bill you can add you code block here 
+                        ADD CUSTOM POST-PROCESSING CODE HERE
                         
                         """
 
                     if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
-                        print("Extracted the following indicators: {}".format(json.dumps(response['reportIndicators'])))
+                        print("Extracted the following indicators: %s" % (json.dumps(response['reportIndicators'])))
                     print()
                 except Exception as e:
                     print("Problem submitting report: %s" % e)
