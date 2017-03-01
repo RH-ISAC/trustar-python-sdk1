@@ -4,11 +4,10 @@
 Converts each row in a CSV file into an incident report and submits to TruSTAR.
 
 Requirements:
-    pip install cef
+    pip install trustar cef
 """
 from __future__ import print_function
 
-"""Comment out import os if you need to use the static CEF format"""
 import argparse
 import json
 import time
@@ -44,6 +43,8 @@ def main():
                         help='List of comma-separated column names to include')
     parser.add_argument('-n', '--num-reports', required=False, dest='num_reports', type=int, default=1000,
                         help='Max number of reports to submit (top-down order)')
+    parser.add_argument('-o', '--output', required=False, dest='cef_output_file', default='trustar.cef',
+                        help='Common Event Format (CEF) output log file, one event is generated per successful submission')
 
     args = parser.parse_args()
 
@@ -55,7 +56,7 @@ def main():
     ts = TruStar(config_role="trustar")
     token = ts.get_token()
 
-    df = pd.read_csv(args.file_name, nrows=args.num_reports)
+    df = pd.read_csv(args.file_name, nrows=args.num_reports, encoding="latin1")
 
     # Create title and report content from the provided column names (if any)
     all_reports = []
@@ -66,22 +67,21 @@ def main():
         current_datetime = None
         current_report = {}
         for key in df:
-            #  print(cell_value.isnull())
             # ignore empty cells, which are float64 NaNs
-            # if(cell_value.is_null)
-
             cell_value = df[key][report_num]
-            # print(cell_value)
-            # if(str(cell_value) == "nan"):
-            #     continue
 
-            content = "{}:\n {}\n \n".format(key, cell_value)
-            # print(str(df[key][report_num]))
-            # if (df[key][report_num]):
-            #     # print("key: " + key)
-            #     # print("df[key]:" + df[key])
-            #     print(str(df[key][report_num]))
-            #     print(type(df[key][report_num]))
+            if pd.isnull(cell_value):
+                continue
+
+            # encode any unicode chars
+            string_value = cell_value.encode('utf-8').strip()
+
+            if string_value == "nan":
+                print("%s -> %s" % (key, string_value))
+                continue
+
+            content = "{}:\n {}\n \n".format(key, string_value)
+
             if not allowed_keys_content or key in allowed_keys_content:
                 current_content += content
             if key == args.title_col:
@@ -106,9 +106,9 @@ def main():
                     response = ts.submit_report(token, staged_report['reportContent'], staged_report['reportTitle'],
                                                 began_time_str=staged_report['reportDateTime'],
                                                 enclave=True)
+                    # noinspection PyPep8
                     if 'error' in response:
-                        print("Submission failed with error: {}, {}".format(response['error'], response['message']))
-                        # if response['message'] == "Access token expired":
+                        print("Submission failed with error: %s, %s" % (response['error'], response['message']))
                         if response['error'] in (
                                 "Internal Server Error", "Access token expired", "Authentication error"):
                             print("Auth token expired, requesting new one")
@@ -118,49 +118,44 @@ def main():
                     else:
                         num_submitted += 1
                         successful = True
-                        print("Submitted report #{}-{} title {} as TruSTAR IR {}".format(num_submitted, attempts,
-                                                                                         staged_report['reportTitle'],
-                                                                                         response['reportId']))
-                        print("\nURL: %s\n" % ts.get_report_url(response['reportId']))
+                        print("Submitted report #%s-%s title %s as TruSTAR IR %s" % (num_submitted, attempts,
+                                                                                     staged_report['reportTitle'],
+                                                                                     response['reportId']))
+                        print("URL: %s" % ts.get_report_url(response['reportId']))
 
-                        # change example.cef to desired filename
                         # HTTP_USER_AGENT is the cs1 field
                         # example CEF output: CEF:version|vendor|product|device_version|signature|name|severity|cs1=(num_submitted) cs2=(report_url)
 
                         config = {'cef.version': '0.5', 'cef.vendor': 'TruSTAR',
                                   'cef.device_version': '2.0', 'cef.product': 'API',
-                                  'cef': True, 'cef.file': "example.cef"}
+                                  'cef': True, 'cef.file': args.cef_output_file}
                         environ = {'REMOTE_ADDR': '127.0.0.1', 'HTTP_HOST': '127.0.0.1',
                                    'HTTP_USER_AGENT': num_submitted}
 
                         log_cef('SUBMISSION', 1, environ, config, signature="INFO",
                                 cs2=ts.get_report_url(response['reportId']))
 
-                        """Static CEF message - alternative solution"""
+                        # Static CEF message - alternative solution
                         # CEFMessage ="CEF:0.5|TruSTAR|API|2.0|INFO|SUBMISSION|1|cs1=%s cs2=%s" %(num_submitted,ts.get_report_url(response['reportId']))
 
-                        """you can change the file output location """
+                        # CHANGE CEF OUTPUT FILE LOCATION HERE:
                         # cef_file = open('CEFoutput.cef','a')
                         # cef_file.write("\n" + CEFMessage + "\n")
                         # cef_file.close()
 
-
-
-                        """
-                        
-                        ADD CUSTOM POST-PROCESSING CODE HERE
-                        
-                        """
+                        ####
+                        # TODO: ADD YOUR CUSTOM POST-PROCESSING CODE FOR THIS SUBMISSION HERE
+                        ####
 
                     if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
-                        print("Extracted the following indicators: %s" % (json.dumps(response['reportIndicators'])))
+                        print("Indicators:\n %s" % (json.dumps(response['reportIndicators'])))
                     print()
                 except Exception as e:
                     print("Problem submitting report: %s" % e)
                     time.sleep(5)
 
             # Sleep between submissions
-            time.sleep(10)
+            time.sleep(5)
 
 
 if __name__ == '__main__':
