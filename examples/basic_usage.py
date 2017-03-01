@@ -18,29 +18,26 @@ do_comm_submissions = True
 do_enclave_submissions = True
 
 # search_string = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
-search_string = "167.114.35.70,103.255.61.39,miel-maroc.com"
-submit_indicators = "google.com malware.exe"
+search_string = "167.114.35.70,103.255.61.39,miel-maroc.com,malware.exe"
+submit_indicators = "google.com malware.exe 103.255.61.39"
 
 
 def main():
     ts = TruStar(config_role="trustar")
     token = ts.get_token()
     if do_latest_reports:
-        print("Get Latest Reports")
+        print("Getting Latest Accessible Reports...")
 
         results = ts.get_latest_reports(token)
-
         for result in results:
             print("\t{}, {}, {}".format(result['id'], result['distributionType'], result['title']))
         print()
 
     if do_correlated:
-        print("Querying Correlated Reports")
+        print("Querying Accessible Correlated Reports...")
         results = ts.get_correlated_reports(token, search_string)
-        print(results)
-        print("{} report(s) correlated with indicators '{}': ".format(len(results), search_string))
-        for result in results:
-            print("\t%s" % result)
+        print("\t%s report(s) correlated with indicators %s\t': " % (len(results), search_string))
+        print("\n\t".join(results))
         print()
 
     if do_latest_indicators:
@@ -55,42 +52,46 @@ def main():
             print()
 
     if do_query_indicators:
-        print("Querying correlated indicators with '{}' (first 100)".format(search_string))
+        print("Querying correlated indicators with search string '%s' (first 100)" % search_string)
         results = ts.query_indicators(token, search_string, '100')
 
-        print("Correlated Incident Report indicators:")
-        for indicator_type, indicator_list in list(results["indicators"].items()):
-            print("\n%s:\n\t%s" % (indicator_type, "\n\t".join(['{}'.format(value) for value in indicator_list])))
-        print()
+        indicator_hits = list(results["indicators"])
+        if len(indicator_hits) > 0:
+            print("Correlated Incident Report Indicators:")
+            for indicator_type, indicator_list in list(results["indicators"].items()):
+                print("\n%s:\n\t%s" % (indicator_type, "\n\t".join(['{}'.format(value) for value in indicator_list])))
+            print()
 
-        print("Correlated Open Source documents:")
-        for os_url in list(results["openSourceCorrelations"]):
-            print("\t%s" % os_url)
-        print()
+        os_hits = list(results["openSourceCorrelations"])
+        if len(os_hits) > 0:
+            print("Correlated Open Source Documents:")
+            for os_url in os_hits:
+                print("\t%s" % os_url)
+            print()
 
-        print("External Intelligence hits:")
-        for exint_url in list(results["externalIntelligence"]):
-            print("\t%s" % exint_url)
-        print()
+        exint_hits = list(results["externalIntelligence"])
+        if len(exint_hits) > 0:
+            print("External Intelligence hits:")
+            print('\t'.join(exint_hits))
+            print()
 
     # Submit simple test report to community
     if do_comm_submissions:
         community_response = ts.submit_report(token, submit_indicators, "COMMUNITY API SUBMISSION TEST ")
-
-        print("\n\nCommunity submission response: %s " % json.dumps(community_response))
-        print("URL: %s\n" % ts.get_report_url(community_response['reportId']))
+        print("\tURL: %s\n" % ts.get_report_url(community_response['reportId']))
 
         if 'reportIndicators' in community_response:
-            print("Extracted the following community indicators: {}".format(community_response['reportIndicators']))
+            print("Extracted the following community indicators: \n\t%s\n" % json.dumps(
+                community_response['reportIndicators']))
 
     # Submit simple test report to your enclave
     if do_enclave_submissions:
         enclave_response = ts.submit_report(token, submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True)
-        print("\n\nEnclave submission response: %s\n" % json.dumps(enclave_response))
-        print("URL: %s\n" % ts.get_report_url(enclave_response['reportId']))
+        print("\tURL: %s\n" % ts.get_report_url(enclave_response['reportId']))
 
         if 'reportIndicators' in enclave_response:
-            print("Extracted the following enclave indicators: {}".format(enclave_response['reportIndicators']))
+            print("Extracted the following enclave indicators: \n\t%s\n" %
+                  json.dumps(enclave_response['reportIndicators']))
 
 
 if __name__ == '__main__':
