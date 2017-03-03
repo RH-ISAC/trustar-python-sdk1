@@ -94,13 +94,25 @@ class TruStar(object):
 
     def get_latest_reports(self, access_token):
         """
-        Retrieves the latest 10 reports submitted to the TruSTAR community
+        Retrieves the latest 5 reports submitted to the TruSTAR community
         :param access_token: OAuth API token
         """
 
         headers = {"Authorization": "Bearer " + access_token}
         resp = requests.get(self.base + "/reports/latest", headers=headers)
         return json.loads(resp.content.decode('utf8'))
+
+    def get_report_details(self, access_token, report_id):
+        """
+        Retrieves the report details
+        :param access_token: OAuth API token
+        :param report_id: Incident Report ID
+        """
+
+        headers = {"Authorization": "Bearer " + access_token}
+        payload = {'id': report_id}
+        resp = requests.get(self.base + "/reports/details", payload, headers=headers)
+        return json.loads(resp.content)
 
     def get_correlated_reports(self, access_token, indicator):
         """
