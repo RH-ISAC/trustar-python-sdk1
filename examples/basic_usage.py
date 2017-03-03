@@ -8,10 +8,16 @@ from __future__ import print_function
 
 import json
 
+from datetime import datetime
+import dateutil.parser
+import dateutil.tz
+import pytz
+
 from trustar import TruStar
 
 do_latest_reports = True
 do_correlated = True
+do_report_details = True
 do_query_indicators = True
 do_latest_indicators = True
 do_comm_submissions = True
@@ -50,6 +56,19 @@ def main():
                 if len(value) > 0:
                     print("\t%s:  %s" % (ioc_type, ','.join(value)))
             print()
+
+    if do_report_details:
+        print("Get Report Details")
+
+        reports = ts.get_latest_reports(token)
+
+        for report in reports:
+            if len(report['indicators']) <= 150:
+                break;
+
+        result = ts.get_report_details(token, report['id'])
+        print("Getting Report Details using '{0}': \n\t{1}".format(report['id'], json.dumps(result, indent=4)))
+        print()
 
     if do_query_indicators:
         print("Querying correlated indicators with search string '%s' (first 100)" % search_string)
