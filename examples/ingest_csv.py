@@ -25,6 +25,7 @@ from builtins import range
 from builtins import str
 
 from trustar import TruStar
+import numpy as np
 
 # Set to false to submit to community
 do_enclave_submissions = True
@@ -72,6 +73,8 @@ def main():
 
             if pd.isnull(cell_value):
                 continue
+
+            cell_value = "%s" % cell_value
 
             # encode any unicode chars
             string_value = cell_value.encode('utf-8').strip()
