@@ -4,7 +4,7 @@
 auth_endpoint = https://api.trustar.co/oauth/token
 
 # base API URL access endpoint
-api_endpoint = https://api.trustar.co/api/v1
+api_endpoint = https://api.trustar.co/api/1.1
 
 # Generate and copy your API key and secret on user API settings page on Station
 user_api_key = abcdef
@@ -12,24 +12,6 @@ user_api_secret = abcdef
 
 # OPTIONAL: enter one or more comma-separate enclave IDs to submit to - get these from  API settings page on Station
 enclave_ids = abcdef,1234f
-
-# OPTIONAL: Associate your user with your report submissions - necessary if you wish to modify or release your report in the future.
-attribute_reports = False
-
-[production]
-
-# endpoint that provides oauth token
-auth_endpoint = https://station.trustar.co/oauth/token
-
-# base API URL access endpoint
-api_endpoint = https://station.trustar.co/api/v1
-
-# Generate and copy your API key and secret on user API settings page on Station
-user_api_key = abcdef
-user_api_secret = abcdef
-
-# OPTIONAL: enter one or more comma-separate enclave IDs to submit to - get these from  API settings page on Station
-enclave_ids = abcdef
 
 # OPTIONAL: Associate your user with your report submissions - necessary if you wish to modify or release your report in the future.
 attribute_reports = False

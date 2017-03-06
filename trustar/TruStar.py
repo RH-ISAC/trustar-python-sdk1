@@ -7,9 +7,9 @@ standard_library.install_aliases()
 import configparser, json
 from builtins import object
 from datetime import datetime
+from tzlocal import get_localzone
 
 import dateutil.parser
-import dateutil.tz
 import pytz
 import sys
 import requests
@@ -57,12 +57,12 @@ class TruStar(object):
         """
         Attempt to convert a string timestamp in to a TruSTAR compatible format for submission.
         Will return current time with UTC time zone if None
-        :param date_time: string containing date, time and ideally timezone or int which is epoch time
+        :param date_time: int that is epoch time, or string/datetime object containing date, time, and ideally timezone
         """
         try:
             if isinstance(date_time, int):
                 # converts epoch int ms to datetime object in s
-                datetime_dt = datetime.fromtimestamp(date_time/1000)
+                datetime_dt = datetime.fromtimestamp(date_time)
             elif isinstance(date_time, str):
                 datetime_dt = dateutil.parser.parse(date_time)
             elif isinstance(date_time, datetime):
@@ -72,10 +72,11 @@ class TruStar(object):
             datetime_dt = datetime.now()
 
         if not datetime_dt.tzinfo:
-            # create timezone
-            pacific = pytz.timezone('US/Pacific')
-            # appends PST timezone to naive datetime object then convert to UTC
-            datetime_dt = pacific.localize(datetime_dt).astimezone(pytz.utc)
+            timezone = get_localzone()
+            # add system timezone
+            datetime_dt = timezone.localize(datetime_dt)
+            # convert to UTC
+            datetime_dt = datetime_dt.astimezone(pytz.utc)
 
         # converts datetime to iso8601
         return datetime_dt.isoformat()
@@ -172,11 +173,15 @@ class TruStar(object):
 
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
 
-        # try:
-        #     self.normalize_timestamp(began_time)
-        # except Exception as e:
-        #     print(e)
-        #     began_time = timestamp.now()
+        current_time = int(datetime.now().strftime("%s"))
+        if isinstance(began_time, int) and began_time > current_time:
+            # if timestamp has more than 10 digits, it is in ms
+            if began_time > 9999999999:
+                began_time = began_time/1000
+            # else it is incorrectly forward dated past current time
+            else:
+                began_time = current_time
+
 
         payload = {'incidentReport': {
             'title': report_name,
