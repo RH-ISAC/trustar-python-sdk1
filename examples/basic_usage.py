@@ -67,7 +67,7 @@ def main():
                 break;
 
         result = ts.get_report_details(token, report['id'])
-        print("Getting Report Details using '{0}': \n\t{1}".format(report['id'], json.dumps(result, indent=4)))
+        print("Getting Report Details using '%s': \n\t%s" % (report['id'], json.dumps(result, indent=4)))
         print()
 
     if do_query_indicators:
