@@ -30,7 +30,7 @@ def main():
 
         results = ts.get_latest_reports(token)
         for result in results:
-            print("\t{}, {}, {}".format(result['id'], result['distributionType'], result['title']))
+            print("\t%s, %s, %s" % (result['id'], result['distributionType'], result['title']))
         print()
 
     if do_correlated:
@@ -48,7 +48,7 @@ def main():
         if 'indicators' in results:
             for ioc_type, value in results['indicators'].iteritems():
                 if len(value) > 0:
-                    print("\t{}:  {}".format(ioc_type, ','.join(value)))
+                    print("\t%s:  %s" % (ioc_type, ','.join(value)))
             print()
 
     if do_query_indicators:
