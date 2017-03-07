@@ -8,11 +8,6 @@ from __future__ import print_function
 
 import json
 
-from datetime import datetime
-import dateutil.parser
-import dateutil.tz
-import pytz
-
 from trustar import TruStar
 
 do_latest_reports = True
