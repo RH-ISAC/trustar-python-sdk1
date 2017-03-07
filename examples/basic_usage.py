@@ -58,8 +58,7 @@ def main():
         reports = ts.get_latest_reports(token)
 
         for report in reports:
-            if len(report['indicators']) <= 150:
-                break;
+            break;
 
         result = ts.get_report_details(token, report['id'])
         print("Getting Report Details using '%s': \n\t%s" % (report['id'], json.dumps(result, indent=4)))
