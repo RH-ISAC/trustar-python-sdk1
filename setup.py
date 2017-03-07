@@ -20,7 +20,7 @@ setup(
                       'python-dateutil',
                       'pytz',
                       'requests',
-                      'configparser', 'unicodecsv', 'pdfminer'],
+                      'configparser', 'unicodecsv', 'pdfminer', 'tzlocal'],
     # package source directory
     # package_dir={'': 'trustar'},
     packages=find_packages(),
