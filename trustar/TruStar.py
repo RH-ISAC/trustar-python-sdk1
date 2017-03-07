@@ -58,23 +58,29 @@ class TruStar(object):
         Attempt to convert a string timestamp in to a TruSTAR compatible format for submission.
         Will return current time with UTC time zone if None
         :param date_time: int that is epoch time, or string/datetime object containing date, time, and ideally timezone
+        examples of supported timestamp formats: 1487890914, 1487890914000, "2017-02-23T23:01:54", "2017-02-23T23:01:54+0000"
         """
         try:
+            # identify type of timestamp and convert to datetime object
             if isinstance(date_time, int):
-                # converts epoch int ms to datetime object in s
                 datetime_dt = datetime.fromtimestamp(date_time)
             elif isinstance(date_time, str):
                 datetime_dt = dateutil.parser.parse(date_time)
             elif isinstance(date_time, datetime):
                 datetime_dt = date_time
+
+        # if timestamp is none of the formats above, error message is printed and timestamp is set to current time by default
         except Exception as e:
             print(e)
             datetime_dt = datetime.now()
 
+        # if timestamp is timezone naive, add timezone
         if not datetime_dt.tzinfo:
             timezone = get_localzone()
+
             # add system timezone
             datetime_dt = timezone.localize(datetime_dt)
+
             # convert to UTC
             datetime_dt = datetime_dt.astimezone(pytz.utc)
 
