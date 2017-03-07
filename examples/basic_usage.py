@@ -30,14 +30,14 @@ def main():
 
         results = ts.get_latest_reports(token)
         for result in results:
-            print("\t{}, {}, {}".format(result['id'], result['distributionType'], result['title']))
+            print("\t%s, %s, %s" % (result['id'], result['distributionType'], result['title']))
         print()
 
     if do_correlated:
         print("Querying Accessible Correlated Reports...")
         results = ts.get_correlated_reports(token, search_string)
-        print("\t%s report(s) correlated with indicators %s\t': " % (len(results), search_string))
-        print("\n\t".join(results))
+        print("%d report(s) correlated with indicators '%s':\n" % (len(results), search_string))
+        print("\n".join(results))
         print()
 
     if do_latest_indicators:
@@ -48,7 +48,7 @@ def main():
         if 'indicators' in results:
             for ioc_type, value in results['indicators'].iteritems():
                 if len(value) > 0:
-                    print("\t{}:  {}".format(ioc_type, ','.join(value)))
+                    print("\t%s:  %s" % (ioc_type, ','.join(value)))
             print()
 
     if do_query_indicators:
@@ -77,12 +77,13 @@ def main():
 
     # Submit simple test report to community
     if do_comm_submissions:
-        community_response = ts.submit_report(token, submit_indicators, "COMMUNITY API SUBMISSION TEST ")
+        community_response = ts.submit_report(token, submit_indicators, "COMMUNITY API SUBMISSION TEST",
+                                              began_time="2017-02-01T01:23:45")
         print("\tURL: %s\n" % ts.get_report_url(community_response['reportId']))
 
         if 'reportIndicators' in community_response:
-            print("Extracted the following community indicators: \n\t%s\n" % json.dumps(
-                community_response['reportIndicators']))
+            print("Extracted the following community indicators: \n%s\n" % json.dumps(
+                community_response['reportIndicators'], indent=2))
 
     # Submit simple test report to your enclave
     if do_enclave_submissions:
@@ -90,8 +91,8 @@ def main():
         print("\tURL: %s\n" % ts.get_report_url(enclave_response['reportId']))
 
         if 'reportIndicators' in enclave_response:
-            print("Extracted the following enclave indicators: \n\t%s\n" %
-                  json.dumps(enclave_response['reportIndicators']))
+            print("Extracted the following enclave indicators: \n%s\n" %
+                  json.dumps(enclave_response['reportIndicators'], indent=2))
 
 
 if __name__ == '__main__':

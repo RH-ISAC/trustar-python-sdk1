@@ -7,9 +7,9 @@ standard_library.install_aliases()
 import configparser, json
 from builtins import object
 from datetime import datetime
+from tzlocal import get_localzone
 
 import dateutil.parser
-import dateutil.tz
 import pytz
 import sys
 import requests
@@ -53,21 +53,32 @@ class TruStar(object):
             sys.exit(1)
 
     @staticmethod
-    def normalize_timestamp(datetime_str):
+    def normalize_timestamp(date_time):
         """
         Attempt to convert a string timestamp in to a TruSTAR compatible format for submission.
         Will return current time with UTC time zone if None
-        :param datetime_str: raw timestamp containing date, time and ideally timezone
+        :param date_time: int that is epoch time, or string/datetime object containing date, time, and ideally timezone
         """
         try:
-            datetime_dt = dateutil.parser.parse(datetime_str)
+            if isinstance(date_time, int):
+                # converts epoch int ms to datetime object in s
+                datetime_dt = datetime.fromtimestamp(date_time)
+            elif isinstance(date_time, str):
+                datetime_dt = dateutil.parser.parse(date_time)
+            elif isinstance(date_time, datetime):
+                datetime_dt = date_time
         except Exception as e:
-            # print(e)
+            print(e)
             datetime_dt = datetime.now()
 
         if not datetime_dt.tzinfo:
-            datetime_dt = datetime_dt.replace(tzinfo=pytz.utc)
+            timezone = get_localzone()
+            # add system timezone
+            datetime_dt = timezone.localize(datetime_dt)
+            # convert to UTC
+            datetime_dt = datetime_dt.astimezone(pytz.utc)
 
+        # converts datetime to iso8601
         return datetime_dt.isoformat()
 
     def get_token(self, verify=True):
@@ -142,12 +153,12 @@ class TruStar(object):
         resp = requests.get(self.base + "/indicators/latest", payload, headers=headers)
         return json.loads(resp.content)
 
-    def submit_report(self, access_token, report_body_txt, report_name, began_time_str=None,
+    def submit_report(self, access_token, report_body_txt, report_name, began_time=datetime.now(),
                       enclave=False, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave, pass in your enclave_id
-        :param began_time_str:
+        :param began_time:
         :param enclave: boolean - whether or not to submit report to user's enclaves (see 'enclave_ids' config property)
         :param report_name:
         :param report_body_txt:
@@ -162,9 +173,19 @@ class TruStar(object):
 
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
 
+        current_time = int(datetime.now().strftime("%s"))
+        if isinstance(began_time, int) and began_time > current_time:
+            # if timestamp has more than 10 digits, it is in ms
+            if began_time > 9999999999:
+                began_time = began_time/1000
+            # else it is incorrectly forward dated past current time
+            else:
+                began_time = current_time
+
+
         payload = {'incidentReport': {
             'title': report_name,
-            'timeBegan': self.normalize_timestamp(began_time_str),
+            'timeBegan': self.normalize_timestamp(began_time),
             'reportBody': report_body_txt,
             'distributionType': distribution_type},
             'enclaveIds': self.enclaveIds,
