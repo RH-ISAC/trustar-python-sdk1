@@ -1,8 +1,10 @@
 from __future__ import print_function
-import unicodecsv
-import csv
+
 import argparse
+import csv
 import json
+
+import unicodecsv
 
 from trustar import TruStar
 
