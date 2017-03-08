@@ -58,11 +58,9 @@ def main():
         reports = ts.get_latest_reports(token)
 
         for report in reports:
-            break;
-
-        result = ts.get_report_details(token, report['id'])
-        print("Getting Report Details using '%s': \n\t%s" % (report['id'], json.dumps(result, indent=4)))
-        print()
+            result = ts.get_report_details(token, report['id'])
+            print("Getting Report Details using '%s': \n%s" % (report['id'], json.dumps(result, indent=4)))
+            print()
 
     if do_query_indicators:
         print("Querying correlated indicators with search string '%s' (first 100)" % search_string)
