@@ -12,6 +12,7 @@ from trustar import TruStar
 
 do_latest_reports = True
 do_correlated = True
+do_report_details = True
 do_query_indicators = True
 do_latest_indicators = True
 do_comm_submissions = True
@@ -49,6 +50,16 @@ def main():
             for ioc_type, value in results['indicators'].iteritems():
                 if len(value) > 0:
                     print("\t%s:  %s" % (ioc_type, ','.join(value)))
+            print()
+
+    if do_report_details:
+        print("Get Report Details")
+
+        reports = ts.get_latest_reports(token)
+
+        for report in reports:
+            result = ts.get_report_details(token, report['id'])
+            print("Getting Report Details using '%s': \n%s" % (report['id'], json.dumps(result, indent=4)))
             print()
 
     if do_query_indicators:
