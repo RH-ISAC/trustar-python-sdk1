@@ -60,9 +60,18 @@ class TruStar(object):
         :param date_time: int that is epoch time, or string/datetime object containing date, time, and ideally timezone
         examples of supported timestamp formats: 1487890914, 1487890914000, "2017-02-23T23:01:54", "2017-02-23T23:01:54+0000"
         """
+        current_time = int(datetime.now().strftime("%s"))
         try:
             # identify type of timestamp and convert to datetime object
             if isinstance(date_time, int):
+
+                # if timestamp has more than 10 digits, it is in ms
+                if date_time > 9999999999:
+                    date_time = date_time/1000
+
+                # if timestamp is incorrectly forward dated, set to current time
+                if date_time > current_time:
+                    date_time = current_time
                 datetime_dt = datetime.fromtimestamp(date_time)
             elif isinstance(date_time, str):
                 datetime_dt = dateutil.parser.parse(date_time)
@@ -190,16 +199,6 @@ class TruStar(object):
             raise Exception("Must specify one or more enclave IDs to submit enclave reports into")
 
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
-
-        current_time = int(datetime.now().strftime("%s"))
-        if isinstance(began_time, int) and began_time > current_time:
-            # if timestamp has more than 10 digits, it is in ms
-            if began_time > 9999999999:
-                began_time = began_time/1000
-            # else it is incorrectly forward dated past current time
-            else:
-                began_time = current_time
-
 
         payload = {'incidentReport': {
             'title': report_name,
