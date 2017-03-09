@@ -14,4 +14,4 @@ user_api_secret = abcdef
 enclave_ids = abcdef,1234f
 
 # OPTIONAL: Associate your user with your report submissions - necessary if you wish to modify or release your report in the future.
-attribute_reports = False
+attribute_reports = True
