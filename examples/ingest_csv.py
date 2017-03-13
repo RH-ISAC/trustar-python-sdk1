@@ -2,7 +2,6 @@
 
 """
 Converts each row in a CSV file into an incident report and submits to TruSTAR.
-
 Requirements:
     pip install trustar cef
 """
@@ -23,6 +22,7 @@ from cef import log_cef
 import pandas as pd
 from builtins import range
 from builtins import str
+from builtins import bytes
 
 from trustar import TruStar
 import numpy as np
@@ -35,7 +35,7 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description=('Submit TruSTAR reports from a CSV file\n'
                                                   'Example:\n\n'
-                                                  'python ingest_csv.py -c "TargetIP,SourceIP,Info,Analysis,Indicators" -t "TrackingNumber" -d "ReportTime"  -f  august_incident_report.csv'))
+                                                  'python ingest_csv.py -c "TargetIP,SourceIP,Info,Analysis,Indicators" -t "TrackingNumber" -d "ReportTime" -cn "CaseName" -f reportname.csv'))
     parser.add_argument('-f', '--file', required=True, dest='file_name', help='csv file to import')
     parser.add_argument('-t', '--title', required=True, dest='title_col', help='Name of column to use as title field')
     parser.add_argument('-d', '--datetime', required=False, dest='datetime_col',
@@ -46,6 +46,8 @@ def main():
                         help='Max number of reports to submit (top-down order)')
     parser.add_argument('-o', '--output', required=False, dest='cef_output_file', default='trustar.cef',
                         help='Common Event Format (CEF) output log file, one event is generated per successful submission')
+    parser.add_argument('-cn', '--casenum', required=True, dest='casenum_col', 
+                        help='Name of column to use as report case number')
 
     args = parser.parse_args()
 
@@ -66,6 +68,7 @@ def main():
         current_content = ''
         current_title = ''
         current_datetime = None
+        current_case = {}
         current_report = {}
         for key in df:
             # ignore empty cells, which are float64 NaNs
@@ -91,10 +94,13 @@ def main():
                 current_title = str(df[key][report_num])
             if key == args.datetime_col:
                 current_datetime = str(df[key][report_num])
+            if key == args.casenum_col:
+                current_case = str(df[key][report_num])
 
         current_report['reportTitle'] = current_title
         current_report['reportDateTime'] = current_datetime
         current_report['reportContent'] = current_content
+        current_report['reportCase'] = current_case
         all_reports.append(current_report)
 
     if do_enclave_submissions:
@@ -121,25 +127,33 @@ def main():
                     else:
                         num_submitted += 1
                         successful = True
-                        print("Submitted report #%s-%s title %s as TruSTAR IR %s" % (num_submitted, attempts,
-                                                                                     staged_report['reportTitle'],
-                                                                                     response['reportId']))
+                      
+                        print("Submitted report #%s-%s title %s as TruSTAR IR %s with case#: %s" % (num_submitted, attempts,
+                                                                                         staged_report['reportTitle'],
+                                                                                         response['reportId'],
+                                                                                         staged_report['reportCase']))
+                        
+                        
                         print("URL: %s" % ts.get_report_url(response['reportId']))
 
                         # HTTP_USER_AGENT is the cs1 field
                         # example CEF output: CEF:version|vendor|product|device_version|signature|name|severity|cs1=(num_submitted) cs2=(report_url)
-
+                        
                         config = {'cef.version': '0.5', 'cef.vendor': 'TruSTAR',
                                   'cef.device_version': '2.0', 'cef.product': 'API',
                                   'cef': True, 'cef.file': args.cef_output_file}
                         environ = {'REMOTE_ADDR': '127.0.0.1', 'HTTP_HOST': '127.0.0.1',
-                                   'HTTP_USER_AGENT': num_submitted}
+                                    'HTTP_USER_AGENT': staged_report['reportCase']}
+                                   #'HTTP_USER_AGENT': staged_report['reportCase'].decode(encoding='UTF-8')}
+                                   
 
                         log_cef('SUBMISSION', 1, environ, config, signature="INFO",
-                                cs2=ts.get_report_url(response['reportId']))
+                                cs2=num_submitted,
+                                cs3=ts.get_report_url(response['reportId']))
 
-                        # Static CEF message - alternative solution
-                        # CEFMessage ="CEF:0.5|TruSTAR|API|2.0|INFO|SUBMISSION|1|cs1=%s cs2=%s" %(num_submitted,ts.get_report_url(response['reportId']))
+                        #Static CEF message - alternative solution
+                        # CEFMessage ="CEF:0.5|TruSTAR|API|2.0|INFO|SUBMISSION|1|cs1=%s cs2=%s cs3=%s" 
+                        #%(staged_report['reportCase'],num_submitted,ts.get_report_url(response['reportId']))
 
                         # CHANGE CEF OUTPUT FILE LOCATION HERE:
                         # cef_file = open('CEFoutput.cef','a')
@@ -147,7 +161,7 @@ def main():
                         # cef_file.close()
 
                         ####
-                        # TODO: ADD YOUR CUSTOM POST-PROCESSING CODE FOR THIS SUBMISSION HERE
+                        #TODO: ADD YOUR CUSTOM POST-PROCESSING CODE FOR THIS SUBMISSION HERE
                         ####
 
                     if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
