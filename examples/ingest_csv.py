@@ -46,8 +46,8 @@ def main():
                         help='Max number of reports to submit (top-down order)')
     parser.add_argument('-o', '--output', required=False, dest='cef_output_file', default='trustar.cef',
                         help='Common Event Format (CEF) output log file, one event is generated per successful submission')
-    parser.add_argument('-cn', '--casenum', required=True, dest='casenum_col', 
-                        help='Name of column to use as report case number')
+    parser.add_argument('-cn', '--CaseName', required=True, dest='casename_col',
+                        help='Name of column to use as report case name')
 
     args = parser.parse_args()
 
@@ -94,7 +94,7 @@ def main():
                 current_title = str(df[key][report_num])
             if key == args.datetime_col:
                 current_datetime = str(df[key][report_num])
-            if key == args.casenum_col:
+            if key == args.casename_col:
                 current_case = str(df[key][report_num])
 
         current_report['reportTitle'] = current_title
@@ -127,32 +127,31 @@ def main():
                     else:
                         num_submitted += 1
                         successful = True
-                      
-                        print("Submitted report #%s-%s title %s as TruSTAR IR %s with case#: %s" % (num_submitted, attempts,
+
+                        print("Submitted report #%s-%s title %s as TruSTAR IR %s with case name: %s" % (num_submitted, attempts,
                                                                                          staged_report['reportTitle'],
                                                                                          response['reportId'],
                                                                                          staged_report['reportCase']))
-                        
-                        
+
+
                         print("URL: %s" % ts.get_report_url(response['reportId']))
 
                         # HTTP_USER_AGENT is the cs1 field
                         # example CEF output: CEF:version|vendor|product|device_version|signature|name|severity|cs1=(num_submitted) cs2=(report_url)
-                        
+
                         config = {'cef.version': '0.5', 'cef.vendor': 'TruSTAR',
                                   'cef.device_version': '2.0', 'cef.product': 'API',
                                   'cef': True, 'cef.file': args.cef_output_file}
                         environ = {'REMOTE_ADDR': '127.0.0.1', 'HTTP_HOST': '127.0.0.1',
-                                    'HTTP_USER_AGENT': staged_report['reportCase']}
-                                   #'HTTP_USER_AGENT': staged_report['reportCase'].decode(encoding='UTF-8')}
-                                   
+                                   #'HTTP_USER_AGENT': staged_report['reportCase'].decode(encoding='UTF-8')} --gives me the decode error
+                                   'HTTP_USER_AGENT': staged_report['reportCase']}
 
                         log_cef('SUBMISSION', 1, environ, config, signature="INFO",
                                 cs2=num_submitted,
                                 cs3=ts.get_report_url(response['reportId']))
 
                         #Static CEF message - alternative solution
-                        # CEFMessage ="CEF:0.5|TruSTAR|API|2.0|INFO|SUBMISSION|1|cs1=%s cs2=%s cs3=%s" 
+                        # CEFMessage ="CEF:0.5|TruSTAR|API|2.0|INFO|SUBMISSION|1|cs1=%s cs2=%s cs3=%s"
                         #%(staged_report['reportCase'],num_submitted,ts.get_report_url(response['reportId']))
 
                         # CHANGE CEF OUTPUT FILE LOCATION HERE:
