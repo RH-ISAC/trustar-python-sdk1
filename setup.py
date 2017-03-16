@@ -1,4 +1,4 @@
-# git tag 0.0.14 -m "Bump version to 0.0.15" && git push --tags
+# git tag 0.0.15 -m "Bump version to 0.0.15" && git push --tags
 # python setup.py register -r pypitest
 # python setup.py sdist upload -r pypitest
 # python setup.py register -r pypi
