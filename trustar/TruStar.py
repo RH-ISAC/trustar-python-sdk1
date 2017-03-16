@@ -9,11 +9,11 @@ from builtins import object
 from datetime import datetime
 from tzlocal import get_localzone
 
-import dateutil.parser
 import pytz
 import sys
 import requests
 import requests.auth
+import dateutil
 
 import pdfminer.pdfinterp
 from pdfminer.pdfpage import PDFPage
@@ -60,6 +60,7 @@ class TruStar(object):
         :param date_time: int that is epoch time, or string/datetime object containing date, time, and ideally timezone
         examples of supported timestamp formats: 1487890914, 1487890914000, "2017-02-23T23:01:54", "2017-02-23T23:01:54+0000"
         """
+        datetime_dt = datetime.now()
         current_time = int(datetime.now().strftime("%s"))
         try:
             # identify type of timestamp and convert to datetime object
@@ -67,7 +68,7 @@ class TruStar(object):
 
                 # if timestamp has more than 10 digits, it is in ms
                 if date_time > 9999999999:
-                    date_time = date_time/1000
+                    date_time /= 1000
 
                 # if timestamp is incorrectly forward dated, set to current time
                 if date_time > current_time:
