@@ -14,6 +14,7 @@ import sys
 import requests
 import requests.auth
 import dateutil
+import time
 
 import pdfminer.pdfinterp
 from pdfminer.pdfpage import PDFPage
@@ -61,7 +62,10 @@ class TruStar(object):
         examples of supported timestamp formats: 1487890914, 1487890914000, "2017-02-23T23:01:54", "2017-02-23T23:01:54+0000"
         """
         datetime_dt = datetime.now()
-        current_time = int(datetime.now().strftime("%s"))
+
+        # get current time in seconds-since-epoch
+        current_time = int(time.time())
+
         try:
             # identify type of timestamp and convert to datetime object
             if isinstance(date_time, int):
@@ -211,6 +215,7 @@ class TruStar(object):
         print("Submitting report %s to TruSTAR Station..." % report_name)
         resp = requests.post(self.base + "/reports/submit", json.dumps(payload, encoding="ISO-8859-1"), headers=headers,
                              timeout=60, verify=verify)
+
         return resp.json()
 
     @staticmethod
