@@ -99,10 +99,14 @@ def main():
     # Update a test report and test with get report
     if do_update_report:
         print("Update Report")
-        update_response = ts.update_report(token, "", "API UPDATE REPORT TEST", enclave=True)
+        body = {'incidentReport': {
+            'title': "API UPDATE REPORT TEST",
+            'reportBody': "updated report body"}}
+        update_response = ts.update_report(token, "d7535fad-a606-4e72-88a4-e55301d49f40", "internal", body)
+        print (update_response)
         # print("\tReport updated: guid: %s externalTrackingId: %s\n" % update_response['reportId'], update_response['externalTrackingId'])
-        print("Get Updated Report")
-        result = ts.get_report_details(token, report['id'], report['id_type'])
+        # print("Get Updated Report")
+        # result = ts.get_report_details(token, report['id'], report['id_type'])
 
     # Delete test report previously submitted
     if do_delete_report:
