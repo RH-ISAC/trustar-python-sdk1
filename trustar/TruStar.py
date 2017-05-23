@@ -144,7 +144,7 @@ class TruStar(object):
 
         headers = {"Authorization": "Bearer " + access_token}
         params = {'id': report_id, 'id_type': id_type}
-        payload = {body}
+        payload = body
         resp = requests.post(self.base + "/report", payload, params=params, headers=headers)
         return json.loads(resp.content)
 
