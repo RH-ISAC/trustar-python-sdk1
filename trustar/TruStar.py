@@ -148,6 +148,18 @@ class TruStar(object):
         resp = requests.put(self.base + "/report", json.dumps(payload, encoding="ISO-8859-1"), params=params, headers=headers)
         return json.loads(resp.content)
 
+    def delete_report(self, access_token, report_id, id_type="internal"):
+        """
+        Retrieves the report details
+        :param access_token: OAuth API token
+        :param report_id: Incident Report ID
+        """
+
+        headers = {"Authorization": "Bearer " + access_token}
+        payload = {'id': report_id, 'id_type': id_type}
+        resp = requests.delete(self.base + "/report", payload, headers=headers)
+        return json.loads(resp.content)
+
     def get_correlated_reports(self, access_token, indicator):
         """
         Retrieves all TruSTAR reports that contain the searched indicator. You can specify multiple indicators
