@@ -28,7 +28,7 @@ class TruStar(object):
     Main class you to instantiate the TruStar API
     """
 
-    def __init__(self, config_file="trustar.conf", config_role="integration"):
+    def __init__(self, config_file="trustar.conf", config_role="localhost"):
 
         self.enclaveIds = []
         self.attributedToMe = False
@@ -123,7 +123,7 @@ class TruStar(object):
         resp = requests.get(self.base + "/reports/latest", headers=headers)
         return json.loads(resp.content.decode('utf8'))
 
-    def get_report_details(self, access_token, report_id, id_type="internal"):
+    def get_report_details(self, access_token, report_id, id_type="internal", verify=True):
         """
         Retrieves the report details
         :param access_token: OAuth API token
@@ -132,10 +132,10 @@ class TruStar(object):
 
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'id': report_id, 'id_type': id_type}
-        resp = requests.get(self.base + "/report", payload, headers=headers)
+        resp = requests.get(self.base + "/report", payload, headers=headers, verify=verify)
         return json.loads(resp.content)
 
-    def update_report(self, access_token, report_id, id_type, body):
+    def update_report(self, access_token, body, report_id, id_type="internal", verify=True):
         """
         Retrieves the report details
         :param access_token: OAuth API token
@@ -145,7 +145,7 @@ class TruStar(object):
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
         params = {'id': report_id, 'id_type': id_type}
         payload = body
-        resp = requests.put(self.base + "/report", json.dumps(payload, encoding="ISO-8859-1"), params=params, headers=headers)
+        resp = requests.put(self.base + "/report", json.dumps(payload, encoding="ISO-8859-1"), params=params, headers=headers, verify=verify)
         return json.loads(resp.content)
 
     def delete_report(self, access_token, report_id, id_type="internal"):
@@ -210,7 +210,7 @@ class TruStar(object):
         resp = requests.get(self.base + "/indicators/latest", payload, headers=headers)
         return json.loads(resp.content)
 
-    def submit_report(self, access_token, external_id, report_body_txt, report_name, began_time=datetime.now(),
+    def submit_report(self, access_token, report_body_txt, report_name, external_id=None, began_time=datetime.now(),
                       enclave=False, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
@@ -223,7 +223,6 @@ class TruStar(object):
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
-        # Convert timestamps
         distribution_type = 'ENCLAVE' if enclave else 'COMMUNITY'
         if distribution_type == 'ENCLAVE' and len(self.enclaveIds) < 1:
             raise Exception("Must specify one or more enclave IDs to submit enclave reports into")
