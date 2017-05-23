@@ -28,7 +28,7 @@ class TruStar(object):
     Main class you to instantiate the TruStar API
     """
 
-    def __init__(self, config_file="trustar.conf", config_role="localhost"):
+    def __init__(self, config_file="trustar.conf", config_role="integration"):
 
         self.enclaveIds = []
         self.attributedToMe = False
@@ -123,7 +123,7 @@ class TruStar(object):
         resp = requests.get(self.base + "/reports/latest", headers=headers)
         return json.loads(resp.content.decode('utf8'))
 
-    def get_report_details(self, access_token, report_id, id_type="internal", verify=True):
+    def get_report_details(self, access_token, report_id, id_type=None, verify=True):
         """
         Retrieves the report details
         :param access_token: OAuth API token
@@ -135,7 +135,7 @@ class TruStar(object):
         resp = requests.get(self.base + "/report", payload, headers=headers, verify=verify)
         return json.loads(resp.content)
 
-    def update_report(self, access_token, body, report_id, id_type="internal", verify=True):
+    def update_report(self, access_token, body, report_id, id_type=None, verify=True):
         """
         Retrieves the report details
         :param access_token: OAuth API token
@@ -148,7 +148,7 @@ class TruStar(object):
         resp = requests.put(self.base + "/report", json.dumps(payload, encoding="ISO-8859-1"), params=params, headers=headers, verify=verify)
         return json.loads(resp.content)
 
-    def delete_report(self, access_token, report_id, id_type="internal"):
+    def delete_report(self, access_token, report_id, id_type=None, verify=True):
         """
         Retrieves the report details
         :param access_token: OAuth API token
@@ -156,9 +156,9 @@ class TruStar(object):
         """
 
         headers = {"Authorization": "Bearer " + access_token}
-        payload = {'id': report_id, 'id_type': id_type}
-        resp = requests.delete(self.base + "/report", payload, headers=headers)
-        return json.loads(resp.content)
+        params = {'id': report_id, 'id_type': id_type}
+        resp = requests.delete(self.base + "/report", params=params, headers=headers, verify=verify)
+        return resp
 
     def get_correlated_reports(self, access_token, indicator):
         """
