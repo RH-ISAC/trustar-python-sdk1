@@ -17,6 +17,7 @@ import dateutil
 import time
 
 import pdfminer.pdfinterp
+from dateutil import parser
 from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
@@ -28,7 +29,7 @@ class TruStar(object):
     Main class you to instantiate the TruStar API
     """
 
-    def __init__(self, config_file="trustar.conf", config_role="integration"):
+    def __init__(self, config_file="trustar.conf", config_role="trustar"):
 
         self.enclaveIds = []
         self.attributedToMe = False
@@ -135,7 +136,7 @@ class TruStar(object):
         resp = requests.get(self.base + "/report", payload, headers=headers, verify=verify)
         return json.loads(resp.content)
 
-    def update_report(self, access_token, body, report_id, id_type=None, verify=True):
+    def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_discovered=None, distribution=None, attribution=None, enclave_ids=None, verify=True):
         """
         Retrieves the report details
         :param access_token: OAuth API token
@@ -144,7 +145,10 @@ class TruStar(object):
 
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
         params = {'id': report_id, 'id_type': id_type}
-        payload = body
+        # if enclave_ids field is not null, parse into array of strings
+        if enclave_ids:
+            enclave_ids = filter(None, enclave_ids.split(','))
+        payload = {'incidentReport': {'title': title, 'reportBody': report_body, 'timeDiscovered': time_discovered, 'distributionType': distribution}, 'enclaveIds': enclave_ids, 'attributedToMe': attribution}
         resp = requests.put(self.base + "/report", json.dumps(payload, encoding="ISO-8859-1"), params=params, headers=headers, verify=verify)
         return json.loads(resp.content)
 

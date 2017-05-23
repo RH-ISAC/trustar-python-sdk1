@@ -10,21 +10,19 @@ import json
 from random import randint
 
 do_submit_report = True
-do_report_details = True
+do_report_details = False
 do_update_report = True
 do_release_report = True
 do_delete_report = True
 
-# search_string = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
 search_string = "167.114.35.70,103.255.61.39,miel-maroc.com,malware.exe"
 submit_indicators = "google.com malware.exe 103.255.61.39"
 
 
 def main():
-    ts = TruStar(config_role="integration")
+    ts = TruStar(config_role="demo")
     token = ts.get_token(verify=True)
     external_id = str(randint(1, 100))
-    # external_id = "27"
 
     # Submit a test report and retrieve it
     if do_submit_report:
@@ -50,10 +48,9 @@ def main():
     # Update a test report and test with get report
     if do_update_report:
         print("Update Report")
-        body = {'incidentReport': {
-            'title': "NEW CC REPORT",
-            'reportBody': "updated report body - yahoo.com"}}
-        update_response = ts.update_report(token, body, external_id, id_type="external", verify=True)
+        title = "NEW CC REPORT"
+        body = "updated report body - yahoo.com"
+        update_response = ts.update_report(token, external_id, id_type="external", title=title, report_body=body, verify=True)
 
         print("Updated Report")
         print("\texternalTrackingId: %s" % update_response['externalTrackingId'])
@@ -74,9 +71,7 @@ def main():
     # Release report to community
     if do_release_report:
         print("Release Report")
-        body = {'incidentReport': {
-            'distributionType': "COMMUNITY"}}
-        update_response = ts.update_report(token, body, external_id, id_type="external", verify=True)
+        update_response = ts.update_report(token, external_id, id_type='external', distribution="COMMUNITY", verify=True)
 
         print("Report Released")
         print("\texternalTrackingId: %s" % update_response['externalTrackingId'])
