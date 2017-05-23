@@ -5,95 +5,105 @@ Comprehensive script with various TruSTAR API usage examples
 """
 
 from __future__ import print_function
-from trustar import TruStar
+
 import json
-from random import randint
 
-do_submit_report = True
-do_report_details = False
-do_update_report = True
-do_release_report = True
-do_delete_report = True
+from trustar import TruStar
 
+do_latest_reports = True
+do_correlated = True
+do_report_details = True
+do_query_indicators = True
+do_latest_indicators = True
+do_comm_submissions = True
+do_enclave_submissions = True
+
+# search_string = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
 search_string = "167.114.35.70,103.255.61.39,miel-maroc.com,malware.exe"
 submit_indicators = "google.com malware.exe 103.255.61.39"
 
 
 def main():
-    ts = TruStar(config_role="demo")
-    token = ts.get_token(verify=True)
-    external_id = str(randint(1, 100))
+    ts = TruStar(config_role="trustar")
+    token = ts.get_token()
+    if do_latest_reports:
+        print("Getting Latest Accessible Reports...")
 
-    # Submit a test report and retrieve it
-    if do_submit_report:
-        print("Submit Report")
-        submission_response = ts.submit_report(token, submit_indicators, "CC REPORT A", external_id=external_id, began_time="2017-02-01T01:23:45",
-                                              enclave=True, verify=True)
-        print("Report Submitted")
-        print("\texternalTrackingId: %s" % submission_response['externalTrackingId'])
-        print("\tindicators: %s" % submission_response['reportIndicators'])
-        print("\tURL: %s\n" % ts.get_report_url(submission_response['reportId']))
+        results = ts.get_latest_reports(token)
+        for result in results:
+            print("\t%s, %s, %s" % (result['id'], result['distributionType'], result['title']))
+        print()
 
-    # Get test report previously submitted
+    if do_correlated:
+        print("Querying Accessible Correlated Reports...")
+        results = ts.get_correlated_reports(token, search_string)
+        print("%d report(s) correlated with indicators '%s':\n" % (len(results), search_string))
+        print("\n".join(results))
+        print()
+
+    if do_latest_indicators:
+        print("Get Latest Indicators (first 100)")
+
+        results = ts.query_latest_indicators(token, source='INCIDENT_REPORT', indicator_types='ALL', interval_size=24,
+                                             limit=100)
+        if 'indicators' in results:
+            for ioc_type, value in results['indicators'].iteritems():
+                if len(value) > 0:
+                    print("\t%s:  %s" % (ioc_type, ','.join(value)))
+            print()
+
     if do_report_details:
-        print("Get Report")
-        result = ts.get_report_details(token, external_id, id_type="external", verify=True)
+        print("Get Report Details")
 
-        print("Report Details")
-        print("\ttitle: %s" % result['title'])
-        print("\texternalTrackingId: %s" % result['externalTrackingId'])
-        print("\tindicators: %s" % result['indicators'])
-        print("\tURL: %s\n" % ts.get_report_url(result['id']))
+        reports = ts.get_latest_reports(token)
 
-    # Update a test report and test with get report
-    if do_update_report:
-        print("Update Report")
-        title = "NEW CC REPORT"
-        body = "updated report body - yahoo.com"
-        update_response = ts.update_report(token, external_id, id_type="external", title=title, report_body=body, verify=True)
+        for report in reports:
+            result = ts.get_report_details(token, report['id'])
+            print("Getting Report Details using '%s': \n%s" % (report['id'], json.dumps(result, indent=4)))
+            print()
 
-        print("Updated Report")
-        print("\texternalTrackingId: %s" % update_response['externalTrackingId'])
-        print("\tindicators: %s" % update_response['reportIndicators'])
-        print("\tURL: %s\n" % ts.get_report_url(update_response['reportId']))
+    if do_query_indicators:
+        print("Querying correlated indicators with search string '%s' (first 100)" % search_string)
+        results = ts.query_indicators(token, search_string, '100')
 
-    # Get test report previously submitted
-    if do_report_details:
-        print("Get Report")
-        result = ts.get_report_details(token, external_id, id_type="external", verify=True)
+        indicator_hits = list(results["indicators"])
+        if len(indicator_hits) > 0:
+            print("Correlated Incident Report Indicators:")
+            for indicator_type, indicator_list in list(results["indicators"].items()):
+                print("\n%s:\n\t%s" % (indicator_type, "\n\t".join(['{}'.format(value) for value in indicator_list])))
+            print()
 
-        print("Report Details")
-        print("\ttitle: %s" % result['title'])
-        print("\texternalTrackingId: %s" % result['externalTrackingId'])
-        print("\tindicators: %s" % result['indicators'])
-        print("\tURL: %s\n" % ts.get_report_url(result['id']))
+        os_hits = list(results["openSourceCorrelations"])
+        if len(os_hits) > 0:
+            print("Correlated Open Source Documents:")
+            for os_url in os_hits:
+                print("\t%s" % os_url)
+            print()
 
-    # Release report to community
-    if do_release_report:
-        print("Release Report")
-        update_response = ts.update_report(token, external_id, id_type='external', distribution="COMMUNITY", verify=True)
+        exint_hits = list(results["externalIntelligence"])
+        if len(exint_hits) > 0:
+            print("External Intelligence hits:")
+            print('\t'.join(exint_hits))
+            print()
 
-        print("Report Released")
-        print("\texternalTrackingId: %s" % update_response['externalTrackingId'])
-        print("\tindicators: %s" % update_response['reportIndicators'])
-        print("\tURL: %s\n" % ts.get_report_url(update_response['reportId']))
+    # Submit simple test report to community
+    if do_comm_submissions:
+        community_response = ts.submit_report(token, submit_indicators, "COMMUNITY API SUBMISSION TEST",
+                                              began_time="2017-02-01T01:23:45")
+        print("\tURL: %s\n" % ts.get_report_url(community_response['reportId']))
 
-    # Get test report previously submitted
-    if do_report_details:
-        print("Get Report")
-        result = ts.get_report_details(token, external_id, id_type="external", verify=True)
+        if 'reportIndicators' in community_response:
+            print("Extracted the following community indicators: \n%s\n" % json.dumps(
+                community_response['reportIndicators'], indent=2))
 
-        print("Report Details")
-        print("\ttitle: %s" % result['title'])
-        print("\texternalTrackingId: %s" % result['externalTrackingId'])
-        print("\tindicators: %s" % result['indicators'])
-        print("\tURL: %s\n" % ts.get_report_url(result['id']))
+    # Submit simple test report to your enclave
+    if do_enclave_submissions:
+        enclave_response = ts.submit_report(token, submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True)
+        print("\tURL: %s\n" % ts.get_report_url(enclave_response['reportId']))
 
-    # Delete test report previously submitted
-    if do_delete_report:
-        print("Delete Report")
-        response = ts.delete_report(token, external_id, id_type="external", verify=True)
-        print("Report Deleted")
+        if 'reportIndicators' in enclave_response:
+            print("Extracted the following enclave indicators: \n%s\n" %
+                  json.dumps(enclave_response['reportIndicators'], indent=2))
 
 
 if __name__ == '__main__':
