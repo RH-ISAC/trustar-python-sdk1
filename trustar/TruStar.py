@@ -28,7 +28,7 @@ class TruStar(object):
     Main class you to instantiate the TruStar API
     """
 
-    def __init__(self, config_file="trustar.conf", config_role="trustar"):
+    def __init__(self, config_file="trustar.conf", config_role="integration"):
 
         self.enclaveIds = []
         self.attributedToMe = False
@@ -123,7 +123,7 @@ class TruStar(object):
         resp = requests.get(self.base + "/reports/latest", headers=headers)
         return json.loads(resp.content.decode('utf8'))
 
-    def get_report_details(self, access_token, report_id):
+    def get_report_details(self, access_token, report_id, id_type="internal"):
         """
         Retrieves the report details
         :param access_token: OAuth API token
@@ -131,8 +131,21 @@ class TruStar(object):
         """
 
         headers = {"Authorization": "Bearer " + access_token}
-        payload = {'id': report_id}
-        resp = requests.get(self.base + "/reports/details", payload, headers=headers)
+        payload = {'id': report_id, 'id_type': id_type}
+        resp = requests.get(self.base + "/report", payload, headers=headers)
+        return json.loads(resp.content)
+
+    def update_report(self, access_token, report_id, id_type, body):
+        """
+        Retrieves the report details
+        :param access_token: OAuth API token
+        :param report_id: Incident Report ID
+        """
+
+        headers = {"Authorization": "Bearer " + access_token}
+        params = {'id': report_id, 'id_type': id_type}
+        payload = {body}
+        resp = requests.post(self.base + "/report", payload, params=params, headers=headers)
         return json.loads(resp.content)
 
     def get_correlated_reports(self, access_token, indicator):
@@ -185,7 +198,7 @@ class TruStar(object):
         resp = requests.get(self.base + "/indicators/latest", payload, headers=headers)
         return json.loads(resp.content)
 
-    def submit_report(self, access_token, report_body_txt, report_name, began_time=datetime.now(),
+    def submit_report(self, access_token, external_id, report_body_txt, report_name, began_time=datetime.now(),
                       enclave=False, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
@@ -207,13 +220,14 @@ class TruStar(object):
 
         payload = {'incidentReport': {
             'title': report_name,
+            'externalTrackingId': external_id,
             'timeBegan': self.normalize_timestamp(began_time),
             'reportBody': report_body_txt,
             'distributionType': distribution_type},
             'enclaveIds': self.enclaveIds,
             'attributedToMe': self.attributedToMe}
         print("Submitting report %s to TruSTAR Station..." % report_name)
-        resp = requests.post(self.base + "/reports/submit", json.dumps(payload, encoding="ISO-8859-1"), headers=headers,
+        resp = requests.post(self.base + "/report", json.dumps(payload, encoding="ISO-8859-1"), headers=headers,
                              timeout=60, verify=verify)
 
         return resp.json()
