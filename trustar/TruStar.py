@@ -142,10 +142,10 @@ class TruStar(object):
         :param report_id: Incident Report ID
         """
 
-        headers = {"Authorization": "Bearer " + access_token}
+        headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
         params = {'id': report_id, 'id_type': id_type}
         payload = body
-        resp = requests.post(self.base + "/report", payload, params=params, headers=headers)
+        resp = requests.put(self.base + "/report", json.dumps(payload, encoding="ISO-8859-1"), params=params, headers=headers)
         return json.loads(resp.content)
 
     def get_correlated_reports(self, access_token, indicator):
