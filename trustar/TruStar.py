@@ -124,7 +124,19 @@ class TruStar(object):
         resp = requests.get(self.base + "/reports/latest", headers=headers)
         return json.loads(resp.content.decode('utf8'))
 
-    def get_report_details(self, access_token, report_id, id_type=None, verify=True):
+    def get_report_details(self, access_token, report_id):
+        """
+        Retrieves the report details
+        :param access_token: OAuth API token
+        :param report_id: Incident Report ID
+        """
+
+        headers = {"Authorization": "Bearer " + access_token}
+        payload = {'id': report_id}
+        resp = requests.get(self.base + "/reports/details", payload, headers=headers)
+        return json.loads(resp.content)
+
+    def get_report_details_v12(self, access_token, report_id, id_type=None, verify=True):
         """
         Retrieves the report details
         :param access_token: OAuth API token
@@ -222,7 +234,40 @@ class TruStar(object):
         resp = requests.get(self.base + "/indicators", payload, headers=headers)
         return json.loads(resp.content)
 
-    def submit_report(self, access_token, report_body_txt, report_name, external_id=None, began_time=datetime.now(),
+    def submit_report(self, access_token, report_body_txt, report_name, began_time=datetime.now(),
+                      enclave=False, verify=True):
+        """
+        Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
+        By default, this submits to the TruSTAR community. To submit to your enclave, pass in your enclave_id
+        :param began_time:
+        :param enclave: boolean - whether or not to submit report to user's enclaves (see 'enclave_ids' config property)
+        :param report_name:
+        :param report_body_txt:
+        :param access_token:
+        :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
+        """
+
+        # Convert timestamps
+        distribution_type = 'ENCLAVE' if enclave else 'COMMUNITY'
+        if distribution_type == 'ENCLAVE' and len(self.enclaveIds) < 1:
+            raise Exception("Must specify one or more enclave IDs to submit enclave reports into")
+
+        headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
+
+        payload = {'incidentReport': {
+            'title': report_name,
+            'timeBegan': self.normalize_timestamp(began_time),
+            'reportBody': report_body_txt,
+            'distributionType': distribution_type},
+            'enclaveIds': self.enclaveIds,
+            'attributedToMe': self.attributedToMe}
+        print("Submitting report %s to TruSTAR Station..." % report_name)
+        resp = requests.post(self.base + "/reports/submit", json.dumps(payload, encoding="ISO-8859-1"), headers=headers,
+                             timeout=60, verify=verify)
+
+        return resp.json()
+
+    def submit_report_v12(self, access_token, report_body_txt, report_name, external_id=None, began_time=datetime.now(),
                       enclave=False, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station

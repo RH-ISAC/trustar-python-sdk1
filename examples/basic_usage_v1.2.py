@@ -27,7 +27,7 @@ def main():
     # Submit a test report and retrieve it
     if do_submit_report:
         print("Submit Report")
-        submission_response = ts.submit_report(token, submit_indicators, "CC REPORT A", external_id=external_id, began_time="2017-02-01T01:23:45",
+        submission_response = ts.submit_report_v12(token, submit_indicators, "CC REPORT A", external_id=external_id, began_time="2017-02-01T01:23:45",
                                               enclave=True, verify=True)
         print("Report Submitted")
         print("\texternalTrackingId: %s" % submission_response['externalTrackingId'])
@@ -37,7 +37,7 @@ def main():
     # Get test report previously submitted
     if do_report_details:
         print("Get Report")
-        result = ts.get_report_details(token, external_id, id_type="external", verify=True)
+        result = ts.get_report_details_v12(token, external_id, id_type="external", verify=True)
 
         print("Report Details")
         print("\ttitle: %s" % result['title'])
@@ -60,7 +60,7 @@ def main():
     # Get test report previously submitted
     if do_report_details:
         print("Get Report")
-        result = ts.get_report_details(token, external_id, id_type="external", verify=True)
+        result = ts.get_report_details_v12(token, external_id, id_type="external", verify=True)
 
         print("Report Details")
         print("\ttitle: %s" % result['title'])
@@ -81,7 +81,7 @@ def main():
     # Get test report previously submitted
     if do_report_details:
         print("Get Report")
-        result = ts.get_report_details(token, external_id, id_type="external", verify=True)
+        result = ts.get_report_details_v12(token, external_id, id_type="external", verify=True)
 
         print("Report Details")
         print("\ttitle: %s" % result['title'])
