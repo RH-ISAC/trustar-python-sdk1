@@ -10,7 +10,7 @@ import json
 from random import randint
 
 do_submit_report = True
-do_report_details = False
+do_report_details = True
 do_update_report = True
 do_release_report = True
 do_delete_report = True
