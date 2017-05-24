@@ -129,6 +129,8 @@ class TruStar(object):
         Retrieves the report details
         :param access_token: OAuth API token
         :param report_id: Incident Report ID
+        :param id_type: indicates if ID is internal or external
+        :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
         headers = {"Authorization": "Bearer " + access_token}
@@ -138,13 +140,22 @@ class TruStar(object):
 
     def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_discovered=None, distribution=None, attribution=None, enclave_ids=None, verify=True):
         """
-        Retrieves the report details
+        Updates the report for the given id with the fields that are indicated
         :param access_token: OAuth API token
         :param report_id: Incident Report ID
+        :param id_type: indicates if ID is internal or external
+        :param title: new title for report
+        :param report_body: new body for report
+        :param time_discovered: new time_discovered for report
+        :param distribution: new distribution type for report
+        :param attribution: new value indicating if attribution is enabled for report
+        :param enclave_ids: new time_discovered for report
+        :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
         params = {'id': report_id, 'id_type': id_type}
+
         # if enclave_ids field is not null, parse into array of strings
         if enclave_ids:
             enclave_ids = filter(None, enclave_ids.split(','))
@@ -154,9 +165,11 @@ class TruStar(object):
 
     def delete_report(self, access_token, report_id, id_type=None, verify=True):
         """
-        Retrieves the report details
+        Deletes the report for the given id
         :param access_token: OAuth API token
         :param report_id: Incident Report ID
+        :param id_type: indicates if ID is internal or external
+        :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
         headers = {"Authorization": "Bearer " + access_token}
@@ -164,12 +177,29 @@ class TruStar(object):
         resp = requests.delete(self.base + "/report", params=params, headers=headers, verify=verify)
         return resp
 
+    def query_latest_indicators(self, access_token, source, indicator_types, limit, interval_size):
+        """
+        Finds all latest indicators
+        :param access_token: OAUTH access token
+        :param source: source of the indicators which can either be INCIDENT_REPORT or OSINT
+        :param indicator_types: a list of indicators or a string equal to "ALL" to query all indicator types extracted
+        by TruSTAR
+        :param limit: limit on the number of indicators. Max is set to 5000
+        :param interval_size: time interval on returned indicators. Max is set to 24 hours
+        :return json response of the result
+        """
+
+        headers = {"Authorization": "Bearer " + access_token}
+        payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
+        resp = requests.get(self.base + "/indicators/latest", payload, headers=headers)
+        return json.loads(resp.content)
+
     def get_correlated_reports(self, access_token, indicator):
         """
         Retrieves all TruSTAR reports that contain the searched indicator. You can specify multiple indicators
         separated by commas
+        :param access_token:  OAuth API token
         :param indicator:
-        :param access_token:
         """
 
         headers = {"Authorization": "Bearer " + access_token}
@@ -181,9 +211,9 @@ class TruStar(object):
         """
         Finds all reports that contain the indicators and returns correlated indicators from those reports.
         you can specify the limit of indicators returned.
-        :param limit: max number of results to return
+        :param access_token: OAuth API token
         :param indicators: list of space-separated indicators to search for
-        :param access_token:
+        :param limit: max number of results to return
         """
 
         headers = {"Authorization": "Bearer " + access_token}
@@ -192,38 +222,17 @@ class TruStar(object):
         resp = requests.get(self.base + "/indicators", payload, headers=headers)
         return json.loads(resp.content)
 
-    def query_latest_indicators(self,
-                                access_token,
-                                source,
-                                indicator_types,
-                                limit,
-                                interval_size):
-        """
-        Finds all latest indicators
-        :param access_token: OAUTH access token
-        :param source: source of the indicators which can either be INCIDENT_REPORT or OSINT
-        :param interval_size: time interval on returned indicators. Max is set to 24 hours
-        :param limit: limit on the number of indicators. Max is set to 5000
-        :param indicator_types: a list of indicators or a string equal to "ALL" to query all indicator types extracted
-        by TruSTAR
-        :return json response of the result
-        """
-
-        headers = {"Authorization": "Bearer " + access_token}
-        payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
-        resp = requests.get(self.base + "/indicators/latest", payload, headers=headers)
-        return json.loads(resp.content)
-
     def submit_report(self, access_token, report_body_txt, report_name, external_id=None, began_time=datetime.now(),
                       enclave=False, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave, pass in your enclave_id
-        :param began_time:
+        :param access_token: OAuth API token
+        :param report_body_txt: body of report
+        :param report_name: title of report
+        :param external_id: external tracking id of report
+        :param began_time: time report began
         :param enclave: boolean - whether or not to submit report to user's enclaves (see 'enclave_ids' config property)
-        :param report_name:
-        :param report_body_txt:
-        :param access_token:
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
