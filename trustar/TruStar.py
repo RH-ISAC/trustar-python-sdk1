@@ -146,8 +146,8 @@ class TruStar(object):
         """
 
         headers = {"Authorization": "Bearer " + access_token}
-        payload = {'id': report_id, 'id_type': id_type}
-        resp = requests.get(self.base + "/report", payload, headers=headers, verify=verify)
+        params = {'id': report_id, 'idType': id_type}
+        resp = requests.get(self.base + "/report", params=params, headers=headers, verify=verify)
         return json.loads(resp.content)
 
     def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_discovered=None, distribution=None, attribution=None, enclave_ids=None, verify=True):
@@ -166,7 +166,7 @@ class TruStar(object):
         """
 
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
-        params = {'id': report_id, 'id_type': id_type}
+        params = {'id': report_id, 'idType': id_type}
 
         # if enclave_ids field is not null, parse into array of strings
         if enclave_ids:
@@ -185,7 +185,7 @@ class TruStar(object):
         """
 
         headers = {"Authorization": "Bearer " + access_token}
-        params = {'id': report_id, 'id_type': id_type}
+        params = {'id': report_id, 'idType': id_type}
         resp = requests.delete(self.base + "/report", params=params, headers=headers, verify=verify)
         return resp
 
