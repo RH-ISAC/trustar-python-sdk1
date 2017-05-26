@@ -10,12 +10,12 @@ import json
 
 from trustar import TruStar
 
-do_latest_reports = False
-do_correlated = False
-do_report_details = False
-do_query_indicators = False
-do_latest_indicators = False
-do_comm_submissions = False
+do_latest_reports = True
+do_correlated = True
+do_report_details = True
+do_query_indicators = True
+do_latest_indicators = True
+do_comm_submissions = True
 do_enclave_submissions = True
 
 # search_string = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
@@ -99,13 +99,13 @@ def main():
     # Submit simple test report to your enclave
     if do_enclave_submissions:
         enclave_response = ts.submit_report(token, submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True)
-        # print("\tURL: %s\n" % ts.get_report_url(enclave_response['reportId']))
+        print("\tURL: %s\n" % ts.get_report_url(enclave_response['reportId']))
 
         print(enclave_response)
 
-        # if 'reportIndicators' in enclave_response:
-        #     print("Extracted the following enclave indicators: \n%s\n" %
-        #           json.dumps(enclave_response['reportIndicators'], indent=2))
+        if 'reportIndicators' in enclave_response:
+            print("Extracted the following enclave indicators: \n%s\n" %
+                  json.dumps(enclave_response['reportIndicators'], indent=2))
 
 
 if __name__ == '__main__':
