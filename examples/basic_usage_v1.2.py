@@ -25,7 +25,10 @@ verify = True
 def main():
     ts = TruStar(config_role="demo")
     token = ts.get_token(verify=verify)
+
+    # generate random id to use as external_id
     external_id = str(randint(1, 100))
+    # or use a specific external_id
     # external_id = "320"
 
     # Submit a test report and retrieve it
