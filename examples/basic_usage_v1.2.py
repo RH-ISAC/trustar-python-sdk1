@@ -9,13 +9,13 @@ from trustar import TruStar
 import json
 from random import randint
 
-do_submit_report = False
-do_report_details1 = False
-do_update_report = False
-do_report_details2 = False
-do_release_report = False
-do_report_details3 = False
-do_delete_report = False
+do_submit_report = True
+do_report_details1 = True
+do_update_report = True
+do_report_details2 = True
+do_release_report = True
+do_report_details3 = True
+do_delete_report = True
 
 search_string = "167.114.35.70,103.255.61.39,miel-maroc.com,malware.exe"
 submit_indicators = "google.com malware.exe 103.255.61.39"
@@ -23,10 +23,10 @@ submit_indicators = "google.com malware.exe 103.255.61.39"
 verify = True
 
 def main():
-    ts = TruStar(config_role="localhost")
+    ts = TruStar(config_role="demo")
     token = ts.get_token(verify=verify)
     external_id = str(randint(1, 100))
-    # external_id = "110"
+    # external_id = "320"
 
     # Submit a test report and retrieve it
     if do_submit_report:
