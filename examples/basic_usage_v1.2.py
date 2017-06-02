@@ -9,13 +9,13 @@ from trustar import TruStar
 import json
 from random import randint
 
-do_submit_report = True
+do_submit_report = False
 do_report_details1 = True
-do_update_report = True
-do_report_details2 = True
-do_release_report = True
-do_report_details3 = True
-do_delete_report = True
+do_update_report = False
+do_report_details2 = False
+do_release_report = False
+do_report_details3 = False
+do_delete_report = False
 
 search_string = "167.114.35.70,103.255.61.39,miel-maroc.com,malware.exe"
 submit_indicators = "google.com malware.exe 103.255.61.39"
@@ -29,7 +29,7 @@ def main():
     # generate random id to use as external_id
     external_id = str(randint(1, 100))
     # or use a specific external_id
-    # external_id = "320"
+    # external_id = "321"
 
     # Submit a test report and retrieve it
     if do_submit_report:
@@ -45,7 +45,7 @@ def main():
     # Get test report previously submitted
     if do_report_details1:
         print("Get Report")
-        result = ts.get_report_details_v12(token, external_id, id_type="external", verify=verify)
+        result = ts.get_report_details_v12(token, "1234", id_type="external", verify=verify)
 
         print("Report Details")
         print("\ttitle: %s" % result['title'])

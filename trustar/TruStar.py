@@ -145,9 +145,10 @@ class TruStar(object):
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
+        url = "%s/report/%s" % (self.base, report_id)
         headers = {"Authorization": "Bearer " + access_token}
-        params = {'id': report_id, 'idType': id_type}
-        resp = requests.get(self.base + "/report", params=params, headers=headers, verify=verify)
+        params = {'idType': id_type}
+        resp = requests.get(url, params=params, headers=headers, verify=verify)
         return json.loads(resp.content)
 
     def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_discovered=None, distribution=None, attribution=None, enclave_ids=None, verify=True):
@@ -165,14 +166,15 @@ class TruStar(object):
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
+        url = "%s/report/%s" % (self.base, report_id)
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
-        params = {'id': report_id, 'idType': id_type}
+        params = {'idType': id_type}
 
         # if enclave_ids field is not null, parse into array of strings
         if enclave_ids:
             enclave_ids = filter(None, enclave_ids.split(','))
         payload = {'incidentReport': {'title': title, 'reportBody': report_body, 'timeDiscovered': time_discovered, 'distributionType': distribution}, 'enclaveIds': enclave_ids, 'attributedToMe': attribution}
-        resp = requests.put(self.base + "/report", json.dumps(payload, encoding="ISO-8859-1"), params=params, headers=headers, verify=verify)
+        resp = requests.put(url, json.dumps(payload, encoding="ISO-8859-1"), params=params, headers=headers, verify=verify)
         return json.loads(resp.content)
 
     def delete_report(self, access_token, report_id, id_type=None, verify=True):
@@ -184,9 +186,10 @@ class TruStar(object):
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
+        url = "%s/report/%s" % (self.base, report_id)
         headers = {"Authorization": "Bearer " + access_token}
-        params = {'id': report_id, 'idType': id_type}
-        resp = requests.delete(self.base + "/report", params=params, headers=headers, verify=verify)
+        params = {'idType': id_type}
+        resp = requests.delete(url, params=params, headers=headers, verify=verify)
         return resp
 
     def query_latest_indicators(self, access_token, source, indicator_types, limit, interval_size):
