@@ -141,7 +141,7 @@ class TruStar(object):
         Retrieves the report details
         :param access_token: OAuth API token
         :param report_id: Incident Report ID
-        :param id_type: indicates if ID is internal or external
+        :param id_type: indicates if ID is internal report guid or external ID provided by the user
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
@@ -153,16 +153,16 @@ class TruStar(object):
 
     def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_discovered=None, distribution=None, attribution=None, enclave_ids=None, verify=True):
         """
-        Updates the report for the given id with the fields that are indicated
+        Updates report with the given id, overwrites any fields that are provided
         :param access_token: OAuth API token
         :param report_id: Incident Report ID
-        :param id_type: indicates if ID is internal or external
+        :param id_type: indicates if ID is internal report guid or external ID provided by the user
         :param title: new title for report
         :param report_body: new body for report
         :param time_discovered: new time_discovered for report
         :param distribution: new distribution type for report
         :param attribution: new value indicating if attribution is enabled for report
-        :param enclave_ids: new time_discovered for report
+        :param enclave_ids: new list of enclave ids that the report will belong to
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
@@ -182,7 +182,7 @@ class TruStar(object):
         Deletes the report for the given id
         :param access_token: OAuth API token
         :param report_id: Incident Report ID
-        :param id_type: indicates if ID is internal or external
+        :param id_type: indicates if ID is internal report guid or external ID provided by the user
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
@@ -241,7 +241,8 @@ class TruStar(object):
                       enclave=False, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
-        By default, this submits to the TruSTAR community. To submit to your enclave, pass in your enclave_id
+        By default, this submits to the TruSTAR community. To submit to your enclave, set enclave parameter to True,
+        and ensure that the target enclaves' ids are specified in the config file field enclave_ids.
         :param began_time:
         :param enclave: boolean - whether or not to submit report to user's enclaves (see 'enclave_ids' config property)
         :param report_name:
@@ -274,11 +275,12 @@ class TruStar(object):
                       enclave=False, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
-        By default, this submits to the TruSTAR community. To submit to your enclave, pass in your enclave_id
+        By default, this submits to the TruSTAR community. To submit to your enclave(s), set enclave parameter to True,
+        and ensure that the target enclaves' ids are specified in the config file field enclave_ids.
         :param access_token: OAuth API token
         :param report_body_txt: body of report
         :param report_name: title of report
-        :param external_id: external tracking id of report
+        :param external_id: external tracking id of report, optional if user doesn't have their own tracking id that they want associated with this report
         :param began_time: time report began
         :param enclave: boolean - whether or not to submit report to user's enclaves (see 'enclave_ids' config property)
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
