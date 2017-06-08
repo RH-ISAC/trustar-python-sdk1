@@ -25,7 +25,7 @@ submit_indicators = "google.com malware.exe 103.255.61.39"
 
 
 def main():
-    ts = TruStar(config_role="integration1.1")
+    ts = TruStar(config_role="trustar")
     token = ts.get_token()
     if do_latest_reports:
         print("Getting Latest Accessible Reports...")
