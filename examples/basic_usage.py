@@ -101,6 +101,8 @@ def main():
         enclave_response = ts.submit_report(token, submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True)
         print("\tURL: %s\n" % ts.get_report_url(enclave_response['reportId']))
 
+        print(enclave_response)
+
         if 'reportIndicators' in enclave_response:
             print("Extracted the following enclave indicators: \n%s\n" %
                   json.dumps(enclave_response['reportIndicators'], indent=2))
