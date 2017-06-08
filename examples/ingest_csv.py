@@ -7,6 +7,13 @@ Requirements:
 """
 from __future__ import print_function
 
+from cef import log_cef
+
+import pandas as pd
+from builtins import range
+
+from trustar import TruStar
+
 import argparse
 import json
 import sys
@@ -19,12 +26,7 @@ cef._CEF_FORMAT = ('%(date)s %(host)s CEF:%(version)s|%(vendor)s|%(product)s|'
                    '%(device_version)s|%(signature)s|%(name)s|%(severity)s|'
                    'cs1=%(user_agent)s ')
 
-from cef import log_cef
 
-import pandas as pd
-from builtins import range
-
-from trustar import TruStar
 
 # Set to false to submit to community
 do_enclave_submissions = True

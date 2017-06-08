@@ -5,8 +5,9 @@ Comprehensive script with various TruSTAR API usage examples
 """
 
 from __future__ import print_function
-
+from trustar import TruStar
 import json
+
 
 from trustar import TruStar
 
@@ -24,7 +25,7 @@ submit_indicators = "google.com malware.exe 103.255.61.39"
 
 
 def main():
-    ts = TruStar(config_role="trustar")
+    ts = TruStar(config_role="integration1.1")
     token = ts.get_token()
     if do_latest_reports:
         print("Getting Latest Accessible Reports...")
@@ -47,7 +48,7 @@ def main():
         results = ts.query_latest_indicators(token, source='INCIDENT_REPORT', indicator_types='ALL', interval_size=24,
                                              limit=100)
         if 'indicators' in results:
-            for ioc_type, value in results['indicators'].iteritems():
+            for ioc_type, value in results['indicators'].items():
                 if len(value) > 0:
                     print("\t%s:  %s" % (ioc_type, ','.join(value)))
             print()

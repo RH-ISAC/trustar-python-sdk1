@@ -8,8 +8,57 @@ from __future__ import print_function
 import argparse
 import os
 import time
+import pdfminer.pdfinterp
+from pdfminer.pdfpage import PDFPage
+from pdfminer.converter import TextConverter
+from pdfminer.layout import LAParams
+from cStringIO import StringIO
 
 from trustar import TruStar
+
+
+def process_file(source_file):
+    """
+    Extract text from a file (pdf, txt, eml, csv, json)
+    :param source_file path to file to read
+    :return text from file
+    """
+    if source_file.endswith(('.pdf', '.PDF')):
+        txt = TruStar.extract_pdf(source_file)
+    elif source_file.endswith(('.txt', '.eml', '.csv', '.json')):
+        f = open(source_file, 'r')
+        txt = f.read()
+    else:
+        raise ValueError('UNSUPPORTED FILE EXTENSION')
+    return txt
+
+
+def extract_pdf(file_name):
+    """
+    Extract text from a pdf file
+    :param file_name path to pdf to read
+    :return text from pdf
+    """
+
+    rsrcmgr = pdfminer.pdfinterp.PDFResourceManager()
+    sio = StringIO()
+    laparams = LAParams()
+    device = TextConverter(rsrcmgr, sio, codec='utf-8', laparams=laparams)
+    interpreter = pdfminer.pdfinterp.PDFPageInterpreter(rsrcmgr, device)
+
+    # Extract text from pdf file
+    fp = file(file_name, 'rb')
+    for page in PDFPage.get_pages(fp, maxpages=20):
+        interpreter.process_page(page)
+    fp.close()
+
+    text = sio.getvalue()
+
+    # Cleanup
+    device.close()
+    sio.close()
+
+    return text
 
 
 def main():
@@ -47,7 +96,7 @@ def main():
                 print("Processing source file %s " % source_file)
                 try:
                     path = os.path.join(source_report_dir, source_file)
-                    report_body_txt = ts.process_file(path)
+                    report_body_txt = process_file(path)
 
                     # response_json = ts.submit_report(token, report_body_txt, "COMMUNITY: " + file)
                     response_json = ts.submit_report(token, report_body_txt, "ENCLAVE: " + source_file, enclave=True)
