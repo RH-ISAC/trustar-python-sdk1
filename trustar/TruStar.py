@@ -2,26 +2,20 @@ from __future__ import print_function
 
 from future import standard_library
 
-standard_library.install_aliases()
-
-import configparser, json
 from builtins import object
 from datetime import datetime
 from tzlocal import get_localzone
 
+import configparser
+import json
 import pytz
 import sys
 import requests
 import requests.auth
-import dateutil
+import dateutil.parser
 import time
 
-import pdfminer.pdfinterp
-from dateutil import parser
-from pdfminer.pdfpage import PDFPage
-from pdfminer.converter import TextConverter
-from pdfminer.layout import LAParams
-from cStringIO import StringIO
+standard_library.install_aliases()
 
 
 class TruStar(object):
@@ -46,7 +40,7 @@ class TruStar(object):
 
             # parse enclave an attribution properties
             if config_parser.has_option(config_role, 'enclave_ids'):
-                self.enclaveIds = filter(None, config_parser.get(config_role, 'enclave_ids').split(','))
+                self.enclaveIds = [i for i in config_parser.get(config_role, 'enclave_ids').split(',') if i is not None]
 
             if config_parser.has_option(config_role, 'attribute_reports'):
                 self.attributedToMe = config_parser.getboolean(config_role, 'attribute_reports')
@@ -151,7 +145,8 @@ class TruStar(object):
         resp = requests.get(url, params=params, headers=headers, verify=verify)
         return json.loads(resp.content)
 
-    def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_discovered=None, distribution=None, attribution=None, enclave_ids=None, verify=True):
+    def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_discovered=None,
+                      distribution=None, attribution=None, enclave_ids=None, verify=True):
         """
         Updates report with the given id, overwrites any fields that are provided
         :param access_token: OAuth API token
@@ -172,9 +167,12 @@ class TruStar(object):
 
         # if enclave_ids field is not null, parse into array of strings
         if enclave_ids:
-            enclave_ids = filter(None, enclave_ids.split(','))
-        payload = {'incidentReport': {'title': title, 'reportBody': report_body, 'timeDiscovered': time_discovered, 'distributionType': distribution}, 'enclaveIds': enclave_ids, 'attributedToMe': attribution}
-        resp = requests.put(url, json.dumps(payload, encoding="ISO-8859-1"), params=params, headers=headers, verify=verify)
+            enclave_ids = [i for i in enclave_ids.split(',') if i is not None]
+
+        payload = {'incidentReport': {'title': title, 'reportBody': report_body, 'timeDiscovered': time_discovered,
+                                      'distributionType': distribution}, 'enclaveIds': enclave_ids,
+                   'attributedToMe': attribution}
+        resp = requests.put(url, json.dumps(payload), params=params, headers=headers, verify=verify)
         return json.loads(resp.content)
 
     def delete_report(self, access_token, report_id, id_type=None, verify=True):
@@ -266,13 +264,13 @@ class TruStar(object):
             'enclaveIds': self.enclaveIds,
             'attributedToMe': self.attributedToMe}
         print("Submitting report %s to TruSTAR Station..." % report_name)
-        resp = requests.post(self.base + "/reports/submit", json.dumps(payload, encoding="ISO-8859-1"), headers=headers,
+        resp = requests.post(self.base + "/reports/submit", json.dumps(payload), headers=headers,
                              timeout=60, verify=verify)
 
         return resp.json()
 
     def submit_report_v12(self, access_token, report_body_txt, report_name, external_id=None, began_time=datetime.now(),
-                      enclave=False, verify=True):
+                          enclave=False, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave(s), set enclave parameter to True,
@@ -301,43 +299,10 @@ class TruStar(object):
             'enclaveIds': self.enclaveIds,
             'attributedToMe': self.attributedToMe}
         print("Submitting report %s to TruSTAR Station..." % report_name)
-        resp = requests.post(self.base + "/report", json.dumps(payload, encoding="ISO-8859-1"), headers=headers,
+        resp = requests.post(self.base + "/report", json.dumps(payload), headers=headers,
                              timeout=60, verify=verify)
 
         return resp.json()
-
-    @staticmethod
-    def extract_pdf(file_name):
-        rsrcmgr = pdfminer.pdfinterp.PDFResourceManager()
-        sio = StringIO()
-        laparams = LAParams()
-        device = TextConverter(rsrcmgr, sio, codec='utf-8', laparams=laparams)
-        interpreter = pdfminer.pdfinterp.PDFPageInterpreter(rsrcmgr, device)
-
-        # Extract text from pdf file
-        fp = file(file_name, 'rb')
-        for page in PDFPage.get_pages(fp, maxpages=20):
-            interpreter.process_page(page)
-        fp.close()
-
-        text = sio.getvalue()
-
-        # Cleanup
-        device.close()
-        sio.close()
-
-        return text
-
-    @staticmethod
-    def process_file(source_file):
-        if source_file.endswith(('.pdf', '.PDF')):
-            txt = TruStar.extract_pdf(source_file)
-        elif source_file.endswith(('.txt', '.eml', '.csv', '.json')):
-            f = open(source_file, 'r')
-            txt = f.read()
-        else:
-            raise ValueError('UNSUPPORTED FILE EXTENSION')
-        return txt
 
     def get_report_url(self, report_id):
         """
