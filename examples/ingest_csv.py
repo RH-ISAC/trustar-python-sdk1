@@ -26,8 +26,6 @@ cef._CEF_FORMAT = ('%(date)s %(host)s CEF:%(version)s|%(vendor)s|%(product)s|'
                    '%(device_version)s|%(signature)s|%(name)s|%(severity)s|'
                    'cs1=%(user_agent)s ')
 
-
-
 # Set to false to submit to community
 do_enclave_submissions = True
 
