@@ -7,7 +7,7 @@
 ### Pre-requisites
 Make sure you have the latest version of Requests package
 ```shell
-  $ sudo pip install requests upgrade
+  $ sudo pip install requests --upgrade
   ``` 
 
 ### Using pip (recommended)
