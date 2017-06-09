@@ -40,6 +40,7 @@ $ pip uninstall trustar
 ```shell
     $ cd examples
     $ python basic_usage.py
+    $ python basic_usage_v1.2.py
 ```
 ## API Documentation
 
