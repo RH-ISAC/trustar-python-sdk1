@@ -4,6 +4,12 @@
   
 ## Installation
 
+### Pre-requisites
+Make sure you have the latest version of Requests package
+```shell
+  $ sudo pip install requests upgrade
+  ``` 
+
 ### Using pip (recommended)
   ```shell
   $ pip install trustar
@@ -15,11 +21,11 @@
 
  Python 2.7+:
   ```shell
-  $ pip install future python-dateutil pytz requests configparser
+  $ sudo pip install future python-dateutil pytz requests configparser
   ``` 
  Python 3:
   ```shell
-   $ pip3 install future python-dateutil pytz requests configparser
+   $ sudo pip3 install future python-dateutil pytz requests configparser
   ``` 
 3. Install SDK
 
