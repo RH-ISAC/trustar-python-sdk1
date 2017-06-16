@@ -128,7 +128,7 @@ class TruStar(object):
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'id': report_id}
         resp = requests.get(self.base + "/reports/details", payload, headers=headers)
-        return json.loads(resp.content)
+        return json.loads(resp.content.decode('utf8'))
 
     def get_report_details_v12(self, access_token, report_id, id_type=None, verify=True):
         """
@@ -143,7 +143,7 @@ class TruStar(object):
         headers = {"Authorization": "Bearer " + access_token}
         params = {'idType': id_type}
         resp = requests.get(url, params=params, headers=headers, verify=verify)
-        return json.loads(resp.content)
+        return json.loads(resp.content.decode('utf8'))
 
     def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_discovered=None,
                       distribution=None, attribution=None, enclave_ids=None, verify=True):
@@ -173,7 +173,7 @@ class TruStar(object):
                                       'distributionType': distribution}, 'enclaveIds': enclave_ids,
                    'attributedToMe': attribution}
         resp = requests.put(url, json.dumps(payload), params=params, headers=headers, verify=verify)
-        return json.loads(resp.content)
+        return json.loads(resp.content.decode('utf8'))
 
     def delete_report(self, access_token, report_id, id_type=None, verify=True):
         """
@@ -205,7 +205,7 @@ class TruStar(object):
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
         resp = requests.get(self.base + "/indicators/latest", payload, headers=headers)
-        return json.loads(resp.content)
+        return json.loads(resp.content.decode('utf8'))
 
     def get_correlated_reports(self, access_token, indicator):
         """
@@ -218,7 +218,7 @@ class TruStar(object):
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'q': indicator}
         resp = requests.get(self.base + "/reports/correlate", payload, headers=headers)
-        return json.loads(resp.content)
+        return json.loads(resp.content.decode('utf8'))
 
     def query_indicators(self, access_token, indicators, limit):
         """
@@ -233,7 +233,7 @@ class TruStar(object):
         payload = {'q': indicators, 'limit': limit}
 
         resp = requests.get(self.base + "/indicators", payload, headers=headers)
-        return json.loads(resp.content)
+        return json.loads(resp.content.decode('utf8'))
 
     def submit_report(self, access_token, report_body_txt, report_name, began_time=datetime.now(),
                       enclave=False, verify=True):
