@@ -96,10 +96,10 @@ def main():
                 print("Processing source file %s " % source_file)
                 try:
                     path = os.path.join(source_report_dir, source_file)
-                    report_body_txt = process_file(path)
+                    report_body = process_file(path)
 
-                    # response_json = ts.submit_report(token, report_body_txt, "COMMUNITY: " + file)
-                    response_json = ts.submit_report(token, report_body_txt, "ENCLAVE: " + source_file, enclave=True)
+                    # response_json = ts.submit_report(token, report_body, "COMMUNITY: " + file)
+                    response_json = ts.submit_report(token, report_body, "ENCLAVE: " + source_file, enclave=True)
                     report_id = response_json['reportId']
 
                     print("SUCCESSFULLY SUBMITTED REPORT, TRUSTAR REPORT as Incident Report ID %s" % report_id)

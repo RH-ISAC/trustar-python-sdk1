@@ -111,7 +111,7 @@ def main():
             while not successful and attempts < 5:
                 attempts += 1
                 try:
-                    response = ts.submit_report(token, report_body_txt=staged_report['reportContent'],
+                    response = ts.submit_report(token, report_body=staged_report['reportContent'],
                                                 title=staged_report['reportTitle'],
                                                 time_began=staged_report['reportDateTime'], enclave=True)
                     if 'error' in response:
