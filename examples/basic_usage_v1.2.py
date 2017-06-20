@@ -38,8 +38,8 @@ def main():
     # Submit a test report and retrieve it
     if do_submit_report:
         print("Submit Report")
-        submission_response = ts.submit_report_v12(token, submit_indicators, "Sample SDK Test Report", external_id=external_id,
-                                                   time_began="2017-02-01T01:23:45", enclave=True, verify=verify)
+        submission_response = ts.submit_report(token, submit_indicators, "Sample SDK Test Report", external_id=external_id,
+                                               time_began="2017-02-01T01:23:45", enclave=True, verify=verify)
 
         print("Report Submitted")
         print("\texternalTrackingId: %s" % submission_response['externalTrackingId'])
@@ -49,7 +49,7 @@ def main():
     # Get test report previously submitted
     if do_report_details_by_ext_id:
         print("Get Report")
-        result = ts.get_report_details_v12(token, external_id, id_type="external", verify=verify)
+        result = ts.get_report_details(token, external_id, id_type="external", verify=verify)
 
         print("Report Details using External ID")
         print("\ttitle: %s" % result['title'])
@@ -73,7 +73,7 @@ def main():
     # Get test report previously submitted
     if do_report_details_by_guid:
         print("Get Report")
-        result = ts.get_report_details_v12(token, report_guid, id_type="internal", verify=verify)
+        result = ts.get_report_details(token, report_guid, id_type="internal", verify=verify)
 
         print("Report Details using GUID")
         print("\ttitle: %s" % result['title'])
@@ -96,7 +96,7 @@ def main():
     # Get test report previously submitted
     if do_report_details_by_guid:
         print("Get Report")
-        result = ts.get_report_details_v12(token, report_guid, id_type="internal", verify=verify)
+        result = ts.get_report_details(token, report_guid, id_type="internal", verify=verify)
 
         print("Report Details using GUID")
         print("\ttitle: %s" % result['title'])
@@ -117,7 +117,7 @@ def main():
     # Get test report previously submitted
     if do_report_details_by_ext_id_2:
         print("Get Report")
-        result = ts.get_report_details_v12(token, external_id, id_type="external", verify=verify)
+        result = ts.get_report_details(token, external_id, id_type="external", verify=verify)
 
         print("Report Details using External ID")
         print("\ttitle: %s" % result['title'])

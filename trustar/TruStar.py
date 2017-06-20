@@ -119,7 +119,7 @@ class TruStar(object):
         return json.loads(resp.content.decode('utf8'))
 
 
-    def get_report_details_v12(self, access_token, report_id, id_type=None, verify=True):
+    def get_report_details(self, access_token, report_id, id_type=None, verify=True):
         """
         Retrieves the report details
         :param access_token: OAuth API token
@@ -224,8 +224,8 @@ class TruStar(object):
         resp = requests.get(self.base + "/indicators", payload, headers=headers)
         return json.loads(resp.content.decode('utf8'))
 
-    def submit_report_v12(self, access_token, report_body_txt, title, external_id=None, time_began=datetime.now(),
-                          enclave=False, verify=True):
+    def submit_report(self, access_token, report_body_txt, title, external_id=None, time_began=datetime.now(),
+                      enclave=False, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave(s), set enclave parameter to True,
