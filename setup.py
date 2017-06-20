@@ -4,7 +4,8 @@
 # python setup.py register -r pypi
 # python setup.py sdist upload -r pypi
 
-from setuptools import setup, find_packages
+#from setuptools import setup, find_packages
+from distutils.core import setup
 
 setup(
     name='trustar',
@@ -26,8 +27,5 @@ setup(
                       'python-dateutil'
                       ],
 
-    # package source directory
-    # package_dir={'': 'trustar'},
-    packages=find_packages(),
     use_2to3=True
 )
