@@ -39,7 +39,7 @@ def main():
     if do_submit_report:
         print("Submit Report")
         submission_response = ts.submit_report_v12(token, submit_indicators, "Sample SDK Test Report", external_id=external_id,
-                                                   began_time="2017-02-01T01:23:45", enclave=True, verify=verify)
+                                                   time_began="2017-02-01T01:23:45", enclave=True, verify=verify)
 
         print("Report Submitted")
         print("\texternalTrackingId: %s" % submission_response['externalTrackingId'])
@@ -61,7 +61,7 @@ def main():
     # Update a test report and test with get report
     if do_update_report_by_ext_id:
         print("Update Report")
-        title = "NEW CC REPORT"
+        title = "Updated Sample Title"
         body = "updated report body: 21.22.23.24"
         update_response = ts.update_report(token, external_id, id_type="external", title=title, report_body=body, verify=verify)
 
@@ -75,7 +75,7 @@ def main():
         print("Get Report")
         result = ts.get_report_details_v12(token, report_guid, id_type="internal", verify=verify)
 
-        print("Report Details using Guid")
+        print("Report Details using GUID")
         print("\ttitle: %s" % result['title'])
         print("\texternalTrackingId: %s" % result['externalTrackingId'])
         print("\tindicators: %s" % result['indicators'])

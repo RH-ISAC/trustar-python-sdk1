@@ -90,7 +90,7 @@ def main():
     # Submit simple test report to community
     if do_comm_submissions:
         community_response = ts.submit_report(token, submit_indicators, "COMMUNITY API SUBMISSION TEST",
-                                              began_time="2017-02-01T01:23:45")
+                                              time_began="2017-02-01T01:23:45")
         print("\tURL: %s\n" % ts.get_report_url(community_response['reportId']))
 
         if 'reportIndicators' in community_response:
