@@ -2,6 +2,10 @@
 /trustar.conf
 *.py[cod]
 
+# Packages
+*.egg
+*.egg-info
+
 target/
 build/
 /dist/
@@ -10,3 +14,8 @@ build/
 /trustar.egg-info/
 /examples/trustar.conf
 /report_big.csv
+
+# Installer logs
+pip-log.txt
+MANIFEST
+trustar-python.iml
