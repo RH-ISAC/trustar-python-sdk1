@@ -34,7 +34,7 @@ verify = True
 
 
 def main():
-    ts = TruStar(config_role="trustar")
+    ts = TruStar(config_role="integration")
 
     # generate random id to use as external_id
     external_id = str(randint(1, 100000))

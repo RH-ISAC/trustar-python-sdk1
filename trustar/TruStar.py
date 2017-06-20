@@ -158,7 +158,7 @@ class TruStar(object):
         if enclave_ids:
             enclave_ids = [i for i in enclave_ids.split(',') if i is not None]
 
-        payload = {'incidentReport': {'title': title, 'reportBody': report_body, 'timeBegan': time_began,
+        payload = {'incidentReport': {'title': title, 'reportBody': report_body, 'timeBegan': self.normalize_timestamp(time_began),
                                       'distributionType': distribution}, 'enclaveIds': enclave_ids,
                    'attributedToMe': attribution}
         resp = requests.put(url, json.dumps(payload), params=params, headers=headers, verify=verify)
