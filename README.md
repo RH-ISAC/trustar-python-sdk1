@@ -41,12 +41,12 @@ $ pip uninstall trustar
 
 ## Running examples and tests
 - Retrieve or generate API credentials from the TruSTAR Station: https://station.trustar.co/settings/api
-- Inside the `examples` directory, create your own `trustar.conf` file from `trustar.conf.example` and Copy in your credentials and enclave ID 
+- Inside the `examples` directory, create your own `trustar.conf` file from `trustar.conf.example` and Copy in your credentials and enclave IDs
 
 ```shell
     $ cd examples
     $ python basic_usage.py
-    $ python basic_usage_v1.2.py
+    $ python3 basic_usage.py
 ```
 ## API Documentation
 
