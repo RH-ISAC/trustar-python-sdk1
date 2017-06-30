@@ -12,14 +12,14 @@ Pre-requisites
 Make sure you have the latest version of Requests package
 ::
 
-  $sudo pip install requests --upgrade
+  $ sudo pip install requests --upgrade
 
 Using pip (recommended)
 ~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
-  $ pip install trusta
+  $ pip install trustar
 
 
 Manual
@@ -55,8 +55,8 @@ Uninstallation
 
 Running examples and tests
 --------------
- - Retrieve or generate API credentials from the TruSTAR Station: https://station.trustar.co/settings/api
- -  Inside the ``examples`` directory, create your own ``trustar.conf`` file from ``trustar.conf.example`` and Copy in your credentials and enclave IDs
+- Retrieve or generate API credentials from the TruSTAR Station: https://station.trustar.co/settings/api
+- Inside the ``examples`` directory, create your own ``trustar.conf`` file from ``trustar.conf.example`` and Copy in your credentials and enclave IDs
 
 ::
 
