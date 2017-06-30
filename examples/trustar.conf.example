@@ -1,17 +1,19 @@
+############################################################
+# Template  python SDK configuration file
 [trustar]
 
 # endpoint that provides oauth token
 auth_endpoint = https://api.trustar.co/oauth/token
 
 # base API URL access endpoint
-api_endpoint = https://api.trustar.co/api/1.1
+api_endpoint = https://api.trustar.co/api/1.2
 
-# Generate and copy your API key and secret on user API settings page on Station
+# Generate and copy your API key and secret on user API settings page on Station: https://station.trustar.co/settings/api
 user_api_key = abcdef
 user_api_secret = abcdef
 
 # OPTIONAL: enter one or more comma-separate enclave IDs to submit to - get these from  API settings page on Station
 enclave_ids = abcdef,1234f
 
-# OPTIONAL: Associate your user with your report submissions - necessary if you wish to modify or release your report in the future.
+# OPTIONAL: Associate your user with your report submissions - necessary if you ever wish to modify or release your report in the future.
 attribute_reports = True

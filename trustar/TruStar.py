@@ -118,7 +118,6 @@ class TruStar(object):
         resp = requests.get(self.base + "/reports/latest", headers=headers)
         return json.loads(resp.content.decode('utf8'))
 
-
     def get_report_details(self, access_token, report_id, id_type=None, verify=True):
         """
         Retrieves the report details
@@ -158,7 +157,8 @@ class TruStar(object):
         if enclave_ids:
             enclave_ids = [i for i in enclave_ids.split(',') if i is not None]
 
-        payload = {'incidentReport': {'title': title, 'reportBody': report_body, 'timeBegan': self.normalize_timestamp(time_began),
+        payload = {'incidentReport': {'title': title, 'reportBody': report_body,
+                                      'timeBegan': self.normalize_timestamp(time_began),
                                       'distributionType': distribution}, 'enclaveIds': enclave_ids,
                    'attributedToMe': attribution}
         resp = requests.put(url, json.dumps(payload), params=params, headers=headers, verify=verify)
@@ -193,7 +193,7 @@ class TruStar(object):
 
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
-        resp = requests.get(self.base + "/indicators/latest", payload, headers=headers)
+        resp = requests.get(self.base + "/indicators/latest", params=payload, headers=headers)
         return json.loads(resp.content.decode('utf8'))
 
     def get_correlated_reports(self, access_token, indicator):
@@ -206,7 +206,7 @@ class TruStar(object):
 
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'q': indicator}
-        resp = requests.get(self.base + "/reports/correlate", payload, headers=headers)
+        resp = requests.get(self.base + "/reports/correlate", params=payload, headers=headers)
         return json.loads(resp.content.decode('utf8'))
 
     def query_indicators(self, access_token, indicators, limit):
@@ -221,7 +221,7 @@ class TruStar(object):
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'q': indicators, 'limit': limit}
 
-        resp = requests.get(self.base + "/indicators", payload, headers=headers)
+        resp = requests.get(self.base + "/indicators", params=payload, headers=headers)
         return json.loads(resp.content.decode('utf8'))
 
     def submit_report(self, access_token, report_body, title, external_id=None, time_began=datetime.now(),
