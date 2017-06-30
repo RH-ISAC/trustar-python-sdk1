@@ -1,0 +1,10 @@
+# Include the license file
+include LICENSE
+
+# Include docs
+include README.*
+
+# Include examples
+include examples/trustar.conf.example
+include examples/*.py
+
