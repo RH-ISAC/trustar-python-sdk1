@@ -1,8 +1,6 @@
 # git tag 0.1.2 -m "Bump version" && git push --tags origin master
-# python setup.py register -r pypitest
-# python setup.py sdist upload -r pypitest
-# python setup.py register -r pypi
-# python setup.py sdist upload -r pypi
+# python setup.py sdist
+# twine upload dist/*
 
 #from setuptools import setup, find_packages
 from distutils.core import setup
