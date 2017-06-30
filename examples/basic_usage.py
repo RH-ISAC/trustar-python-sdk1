@@ -34,7 +34,7 @@ verify = True
 
 
 def main():
-    ts = TruStar(config_role="trustar")
+    ts = TruStar(config_role="integration")
 
     # generate random id to use as external_id
     external_id = str(randint(1, 100000))
@@ -137,7 +137,7 @@ def main():
     if do_report_details_by_ext_id:
         token = ts.get_token(verify=verify)
         print("Get Report")
-        result = ts.get_report_details(token, external_id=external_id, id_type="external", verify=verify)
+        result = ts.get_report_details(token, report_id=external_id, id_type="external", verify=verify)
 
         print("Report Details using External ID")
         print("\ttitle: %s" % result['title'])
@@ -152,7 +152,7 @@ def main():
         print("Update Report")
         title = "Updated Sample Title"
         body = "updated report body: 21.22.23.24"
-        update_response = ts.update_report(token, external_id=external_id, id_type="external", title=title,
+        update_response = ts.update_report(token, report_id=external_id, id_type="external", title=title,
                                            report_body=body,
                                            verify=verify)
 
@@ -203,7 +203,7 @@ def main():
     if do_release_report_by_ext_id:
         token = ts.get_token(verify=verify)
         print("Release Report")
-        update_response = ts.update_report(token, external_id=external_id, id_type='external', distribution="COMMUNITY",
+        update_response = ts.update_report(token, report_id=external_id, id_type='external', distribution="COMMUNITY",
                                            verify=verify)
 
         print("Report Released using External ID")
@@ -215,7 +215,7 @@ def main():
     if do_report_details_by_ext_id_2:
         token = ts.get_token(verify=verify)
         print("Get Report")
-        result = ts.get_report_details(token, external_id=external_id, id_type="external", verify=verify)
+        result = ts.get_report_details(token, report_id=external_id, id_type="external", verify=verify)
 
         print("Report Details using External ID")
         print("\ttitle: %s" % result['title'])
@@ -227,7 +227,7 @@ def main():
     if do_delete_report_by_ext_id:
         token = ts.get_token(verify=verify)
         print("Delete Report")
-        response = ts.delete_report(token, external_id=external_id, id_type="external", verify=verify)
+        response = ts.delete_report(token, report_id=external_id, id_type="external", verify=verify)
         print("Report Deleted using External ID")
 
 
