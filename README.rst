@@ -29,15 +29,15 @@ Manual
 
 2. Install requirements
 
- Python 2.7+:
+  - Python 2.7+:
     ::
 
-  $ sudo pip install future python-dateutil pytz requests configparser
+    $ sudo pip install future python-dateutil pytz requests configparser
 
- Python 3:
-  ::
+  - Python 3:
+    ::
 
-  $ sudo pip3 install future python-dateutil pytz requests configparser
+    $ sudo pip3 install future python-dateutil pytz requests configparser
 
 3. Install SDK
 
