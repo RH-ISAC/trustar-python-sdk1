@@ -34,7 +34,7 @@ verify = True
 
 
 def main():
-    ts = TruStar(config_role="integration")
+    ts = TruStar(config_role="trustar")
 
     # generate random id to use as external_id
     external_id = str(randint(1, 100000))
@@ -47,7 +47,7 @@ def main():
         token = ts.get_token(verify=verify)
         print("Getting Latest Accessible Reports...")
 
-        results = ts.get_latest_reports(token)
+        results = ts.get_latest_reports(token, verify=verify)
         for result in results:
             print("\t%s, %s, %s" % (result['id'], result['distributionType'], result['title']))
         print()
@@ -55,7 +55,7 @@ def main():
     if do_correlated:
         token = ts.get_token(verify=verify)
         print("Querying Accessible Correlated Reports...")
-        results = ts.get_correlated_reports(token, search_string)
+        results = ts.get_correlated_reports(token, search_string, verify=verify)
         print("%d report(s) correlated with indicators '%s':\n" % (len(results), search_string))
         print("\n".join(results))
         print()
@@ -65,7 +65,7 @@ def main():
         print("Get Latest Indicators (first 100)")
 
         results = ts.query_latest_indicators(token, source='INCIDENT_REPORT', indicator_types='ALL', interval_size=24,
-                                             limit=100)
+                                             limit=100, verify=verify)
         if 'indicators' in results:
             for ioc_type, value in results['indicators'].items():
                 if len(value) > 0:
@@ -75,7 +75,7 @@ def main():
     if do_query_indicators:
         token = ts.get_token(verify=verify)
         print("Querying correlated indicators with search string '%s' (first 100)" % search_string)
-        results = ts.query_indicators(token, search_string, '100')
+        results = ts.query_indicators(token, search_string, '100', verify=verify)
 
         indicator_hits = list(results["indicators"])
         if len(indicator_hits) > 0:
@@ -101,7 +101,7 @@ def main():
     if do_comm_submissions:
         token = ts.get_token(verify=verify)
         community_response = ts.submit_report(token, submit_indicators, "COMMUNITY API SUBMISSION TEST",
-                                              time_began="2017-02-01T01:23:45")
+                                              time_began="2017-02-01T01:23:45", verify=verify)
         print("\tURL: %s\n" % ts.get_report_url(community_response['reportId']))
 
         if 'reportIndicators' in community_response:
@@ -111,7 +111,7 @@ def main():
     # Submit simple test report to your enclave
     if do_enclave_submissions:
         token = ts.get_token(verify=verify)
-        enclave_response = ts.submit_report(token, submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True)
+        enclave_response = ts.submit_report(token, submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True, verify=verify)
         print("\tURL: %s\n" % ts.get_report_url(enclave_response['reportId']))
 
         print(enclave_response)

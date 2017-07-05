@@ -108,14 +108,14 @@ class TruStar(object):
         token_json = resp.json()
         return token_json["access_token"]
 
-    def get_latest_reports(self, access_token):
+    def get_latest_reports(self, access_token, verify=True):
         """
         Retrieves the latest 5 reports submitted to the TruSTAR community
         :param access_token: OAuth API token
         """
 
         headers = {"Authorization": "Bearer " + access_token}
-        resp = requests.get(self.base + "/reports/latest", headers=headers)
+        resp = requests.get(self.base + "/reports/latest", headers=headers, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
     def get_report_details(self, access_token, report_id, id_type=None, verify=True):
@@ -179,7 +179,7 @@ class TruStar(object):
         resp = requests.delete(url, params=params, headers=headers, verify=verify)
         return resp
 
-    def query_latest_indicators(self, access_token, source, indicator_types, limit, interval_size):
+    def query_latest_indicators(self, access_token, source, indicator_types, limit, interval_size, verify=True):
         """
         Finds all latest indicators
         :param access_token: OAUTH access token
@@ -193,10 +193,10 @@ class TruStar(object):
 
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
-        resp = requests.get(self.base + "/indicators/latest", params=payload, headers=headers)
+        resp = requests.get(self.base + "/indicators/latest", params=payload, headers=headers, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
-    def get_correlated_reports(self, access_token, indicator):
+    def get_correlated_reports(self, access_token, indicator, verify=True):
         """
         Retrieves all TruSTAR reports that contain the searched indicator. You can specify multiple indicators
         separated by commas
@@ -206,10 +206,10 @@ class TruStar(object):
 
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'q': indicator}
-        resp = requests.get(self.base + "/reports/correlate", params=payload, headers=headers)
+        resp = requests.get(self.base + "/reports/correlate", params=payload, headers=headers, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
-    def query_indicators(self, access_token, indicators, limit):
+    def query_indicators(self, access_token, indicators, limit, verify=True):
         """
         Finds all reports that contain the indicators and returns correlated indicators from those reports.
         you can specify the limit of indicators returned.
@@ -221,7 +221,7 @@ class TruStar(object):
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'q': indicators, 'limit': limit}
 
-        resp = requests.get(self.base + "/indicators", params=payload, headers=headers)
+        resp = requests.get(self.base + "/indicators", params=payload, headers=headers, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
     def submit_report(self, access_token, report_body, title, external_id=None, time_began=datetime.now(),
@@ -254,8 +254,7 @@ class TruStar(object):
             'enclaveIds': self.enclaveIds,
             'attributedToMe': self.attributedToMe}
         print("Submitting report %s to TruSTAR Station..." % title)
-        resp = requests.post(self.base + "/report", json.dumps(payload), headers=headers,
-                             timeout=60, verify=verify)
+        resp = requests.post(self.base + "/report", json.dumps(payload), headers=headers, timeout=60, verify=verify)
 
         return resp.json()
 
