@@ -1,18 +1,17 @@
-# git tag 0.1.2 -m "Bump version" && git push --tags origin master
+# git tag 0.2.0 -m "Bump version" && git push --tags origin master
 # python setup.py sdist
 # twine upload dist/*
 
-#from setuptools import setup, find_packages
 from distutils.core import setup
 
 setup(
     name='trustar',
-    packages= ['trustar'],
-    version='0.1.2',
+    packages=['trustar'],
+    version='0.2.0',
     author='TruSTAR Technology, Inc.',
     author_email='support@trustar.co',
     url='https://github.com/trustar/trustar-python',
-    download_url='https://github.com/trustar/trustar-python/tarball/0.1.2',
+    download_url='https://github.com/trustar/trustar-python/tarball/0.2.0',
     description='Python SDK for the TruSTAR REST API',
     license='MIT',
     install_requires=['future',

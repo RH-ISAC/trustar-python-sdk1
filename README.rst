@@ -1,13 +1,13 @@
-=========================================
+==============================
 Python SDK for the TruSTAR API
-=========================================
+==============================
 
 
 Installation
------------------
+------------
 
 Pre-requisites
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 Make sure you have the latest version of Requests package
 ::
@@ -15,7 +15,7 @@ Make sure you have the latest version of Requests package
   $ sudo pip install requests --upgrade
 
 Using pip (recommended)
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -23,7 +23,7 @@ Using pip (recommended)
 
 
 Manual
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
 
 1. Get the latest SDK by downloading as a [ZIP](https://github.com/trustar/trustar-python/archive/master.zip) and extract locally.  You can also clone the repository directly from [GitHub](https://github.com/trustar/trustar-python)
 
@@ -54,7 +54,7 @@ Uninstallation
 
 
 Running examples and tests
---------------
+--------------------------
 - Retrieve or generate API credentials from the TruSTAR Station: https://station.trustar.co/settings/api
 - Inside the ``examples`` directory, create your own ``trustar.conf`` file from ``trustar.conf.example`` and Copy in your credentials and enclave IDs
 
@@ -66,7 +66,7 @@ Running examples and tests
 
 
 API Documentation
---------------
+-----------------
 
 See https://github.com/trustar/public/wiki/TruSTAR-API for full API documentation
 
