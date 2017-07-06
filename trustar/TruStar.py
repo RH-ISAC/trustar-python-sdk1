@@ -22,7 +22,7 @@ class TruStar(object):
     Main class you to instantiate the TruStar API
     """
 
-    def __init__(self, config_file="trustar.conf", config_role="trustar"):
+    def __init__(self, config_file="trustar.conf", config_role="integration"):
 
         self.enclaveIds = []
         self.attributedToMe = False
@@ -104,6 +104,7 @@ class TruStar(object):
         client_auth = requests.auth.HTTPBasicAuth(self.apikey, self.apisecret)
         post_data = {"grant_type": "client_credentials"}
         resp = requests.post(self.auth, auth=client_auth, data=post_data, verify=verify)
+        resp.raise_for_status()
         token_json = resp.json()
         return token_json["access_token"]
 
@@ -111,10 +112,13 @@ class TruStar(object):
         """
         Retrieves the latest 5 reports submitted to the TruSTAR community
         :param access_token: OAuth API token
+        :param verify: Optional server SSL verification, default True
         """
 
         headers = {"Authorization": "Bearer " + access_token}
         resp = requests.get(self.base + "/reports/latest", headers=headers, verify=verify)
+
+        resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
     def get_report_details(self, access_token, report_id, id_type=None, verify=True):
@@ -131,12 +135,8 @@ class TruStar(object):
         params = {'idType': id_type}
         resp = requests.get(url, params=params, headers=headers, verify=verify)
 
-        # TODO: temporary workaround for buggy non-json server responses
-        try:
-            return json.loads(resp.content.decode('utf8'))
-        except Exception as e:
-            print("Error retrieving report %s" % e.message)
-            return {'error': resp.content}
+        resp.raise_for_status()
+        return json.loads(resp.content.decode('utf8'))
 
     def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_began=None,
                       distribution=None, attribution=None, enclave_ids=None, verify=True):
@@ -167,6 +167,8 @@ class TruStar(object):
                                       'distributionType': distribution}, 'enclaveIds': enclave_ids,
                    'attributedToMe': attribution}
         resp = requests.put(url, json.dumps(payload), params=params, headers=headers, verify=verify)
+        resp.raise_for_status()
+
         return json.loads(resp.content.decode('utf8'))
 
     def delete_report(self, access_token, report_id, id_type=None, verify=True):
@@ -182,6 +184,8 @@ class TruStar(object):
         headers = {"Authorization": "Bearer " + access_token}
         params = {'idType': id_type}
         resp = requests.delete(url, params=params, headers=headers, verify=verify)
+        resp.raise_for_status()
+
         return resp
 
     def query_latest_indicators(self, access_token, source, indicator_types, limit, interval_size, verify=True):
@@ -193,12 +197,15 @@ class TruStar(object):
         by TruSTAR
         :param limit: limit on the number of indicators. Max is set to 5000
         :param interval_size: time interval on returned indicators. Max is set to 24 hours
+        :param verify: Optional server SSL verification, default True
         :return json response of the result
         """
 
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
         resp = requests.get(self.base + "/indicators/latest", params=payload, headers=headers, verify=verify)
+
+        resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
     def get_correlated_reports(self, access_token, indicator, verify=True):
@@ -207,11 +214,14 @@ class TruStar(object):
         separated by commas
         :param access_token:  OAuth API token
         :param indicator:
+        :param verify: Optional server SSL verification, default True
+
         """
 
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'q': indicator}
         resp = requests.get(self.base + "/reports/correlate", params=payload, headers=headers, verify=verify)
+        resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
     def query_indicators(self, access_token, indicators, limit, verify=True):
@@ -221,12 +231,14 @@ class TruStar(object):
         :param access_token: OAuth API token
         :param indicators: list of space-separated indicators to search for
         :param limit: max number of results to return
+        :param verify: Optional server SSL verification, default True
         """
 
         headers = {"Authorization": "Bearer " + access_token}
         payload = {'q': indicators, 'limit': limit}
 
         resp = requests.get(self.base + "/indicators", params=payload, headers=headers, verify=verify)
+        resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
     def submit_report(self, access_token, report_body, title, external_id=None, time_began=datetime.now(),
@@ -258,17 +270,11 @@ class TruStar(object):
             'distributionType': distribution_type},
             'enclaveIds': self.enclaveIds,
             'attributedToMe': self.attributedToMe}
-        print("Submitting report %s to TruSTAR Station..." % title)
+
         resp = requests.post(self.base + "/report", json.dumps(payload), headers=headers, timeout=60, verify=verify)
+        resp.raise_for_status()
+        return resp.json()
 
-        # TODO: temporary workaround for buggy non-json server responses
-
-        try:
-            return resp.json()
-        except Exception as e:
-            print("Error retrieving response %s" % e.message)
-            return {'error': resp.content}
-        
     def get_report_url(self, report_id):
         """
         Build direct URL to report from its ID

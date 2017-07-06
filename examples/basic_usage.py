@@ -5,10 +5,11 @@ Comprehensive script with various TruSTAR API usage examples
 """
 
 from __future__ import print_function
-from trustar import TruStar
+
 import json
 from random import randint
-import dateutil.parser
+
+from trustar import TruStar
 
 do_latest_reports = True
 do_correlated = True
@@ -22,19 +23,19 @@ do_report_details_by_ext_id = True
 do_update_report_by_ext_id = True
 do_report_details_by_guid = True
 do_update_report_by_guid = True
-do_release_report_by_ext_id = True
+do_release_report_by_ext_id = False
 do_report_details_by_ext_id_2 = True
 do_delete_report_by_ext_id = True
 
-# search_string = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
-search_string = "167.114.35.70,103.255.61.39,miel-maroc.com,malware.exe"
+search_string = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
+# search_string = "167.114.35.70,103.255.61.39,miel-maroc.com,malware.exe"
 submit_indicators = "google.com malware.exe 103.255.61.39"
 
 verify = True
 
 
 def main():
-    ts = TruStar(config_role="trustar")
+    ts = TruStar(config_role="integration")
 
     # generate random id to use as external_id
     external_id = str(randint(1, 100000))
@@ -44,18 +45,23 @@ def main():
     report_guid = None
 
     if do_latest_reports:
-        token = ts.get_token(verify=verify)
-        print("Getting Latest Accessible Reports...")
+        try:
+            token = ts.get_token(verify=verify)
+            print("Getting Latest Accessible Reports...")
 
-        results = ts.get_latest_reports(token, verify=verify)
-        for result in results:
-            print("\t%s, %s, %s" % (result['id'], result['distributionType'], result['title']))
-        print()
+            results = ts.get_latest_reports(token, verify=verify)
+            for result in results:
+                print("\t%s, %s, %s" % (result['id'], result['distributionType'], result['title']))
+            print()
+        except Exception as e:
+            print('Error: %s' % e)
 
     if do_correlated:
         token = ts.get_token(verify=verify)
         print("Querying Accessible Correlated Reports...")
         results = ts.get_correlated_reports(token, search_string, verify=verify)
+
+        print(results)
         print("%d report(s) correlated with indicators '%s':\n" % (len(results), search_string))
         print("\n".join(results))
         print()
@@ -111,7 +117,8 @@ def main():
     # Submit simple test report to your enclave
     if do_enclave_submissions:
         token = ts.get_token(verify=verify)
-        enclave_response = ts.submit_report(token, submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True, verify=verify)
+        enclave_response = ts.submit_report(token, submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True,
+                                            verify=verify)
         print("\tURL: %s\n" % ts.get_report_url(enclave_response['reportId']))
 
         print(enclave_response)
@@ -135,101 +142,131 @@ def main():
 
     # Get test report previously submitted
     if do_report_details_by_ext_id:
-        token = ts.get_token(verify=verify)
-        print("Get Report")
-        result = ts.get_report_details(token, report_id=external_id, id_type="external", verify=verify)
 
-        print("Report Details using External ID")
-        print("\ttitle: %s" % result['title'])
-        print("\texternalTrackingId: %s" % result['externalTrackingId'])
-        print("\tindicators: %s" % result['indicators'])
-        print("\tURL: %s\n" % ts.get_report_url(result['id']))
-        report_guid = result['id']
+        try:
+            # external_id = '666'
+            token = ts.get_token(verify=verify)
+            print("Get Report")
+            result = ts.get_report_details(token, report_id=external_id, id_type="external", verify=verify)
+
+            print("Report Details using External ID")
+            print("\ttitle: %s" % result['title'])
+            print("\texternalTrackingId: %s" % result['externalTrackingId'])
+            print("\tindicators: %s" % result['indicators'])
+            print("\tURL: %s\n" % ts.get_report_url(result['id']))
+            report_guid = result['id']
+        except Exception as e:
+            print('Could not get report, error: %s' % e)
 
     # Update a test report and test with get report
     if do_update_report_by_ext_id:
-        token = ts.get_token(verify=verify)
-        print("Update Report")
-        title = "Updated Sample Title"
-        body = "updated report body: 21.22.23.24"
-        update_response = ts.update_report(token, report_id=external_id, id_type="external", title=title,
-                                           report_body=body,
-                                           verify=verify)
+        try:
+            token = ts.get_token(verify=verify)
+            print("Update Report")
+            title = "Updated Sample Title"
+            body = "updated report body: 21.22.23.24"
+            update_response = ts.update_report(token, report_id=external_id, id_type="external", title=title,
+                                               report_body=body,
+                                               verify=verify)
 
-        print("Updated Report using External ID")
-        print("\texternalTrackingId: %s" % update_response['externalTrackingId'])
-        print("\tindicators: %s" % update_response['reportIndicators'])
-        print("\tURL: %s\n" % ts.get_report_url(update_response['reportId']))
+            print("Updated Report using External ID")
+            print("\texternalTrackingId: %s" % update_response['externalTrackingId'])
+            print("\tindicators: %s" % update_response['reportIndicators'])
+            print("\tURL: %s\n" % ts.get_report_url(update_response['reportId']))
+        except Exception as e:
+            print('Could not update report, error: %s' % e)
 
     # Get test report previously submitted
     if do_report_details_by_guid:
-        token = ts.get_token(verify=verify)
-        print("Get Report")
-        result = ts.get_report_details(token, report_guid, id_type="internal", verify=verify)
+        print("Get Report Details by GUID")
 
-        print("Report Details using GUID")
-        print("\ttitle: %s" % result['title'])
-        print("\texternalTrackingId: %s" % result['externalTrackingId'])
-        print("\tindicators: %s" % result['indicators'])
-        print("\tURL: %s\n" % ts.get_report_url(result['id']))
+        try:
+            token = ts.get_token(verify=verify)
+            result = ts.get_report_details(token, report_guid, id_type="internal", verify=verify)
+
+            print("Report Details using GUID")
+            print("\ttitle: %s" % result['title'])
+            print("\texternalTrackingId: %s" % result['externalTrackingId'])
+            print("\tindicators: %s" % result['indicators'])
+            print("\tURL: %s\n" % ts.get_report_url(result['id']))
+        except Exception as e:
+            print('Could not get report, error: %s' % e)
 
     # Update a test report and test with get report
     if do_update_report_by_guid:
-        token = ts.get_token(verify=verify)
-        print("Update Report")
-        title = "New Sample Title"
-        body = "new sample body - 7.8.9.10"
-        update_response = ts.update_report(token, report_guid, id_type="internal", title=title, report_body=body,
-                                           verify=verify)
+        try:
+            token = ts.get_token(verify=verify)
+            print("Update Report")
+            title = "New Sample Title"
+            body = "new sample body - 7.8.9.10"
+            update_response = ts.update_report(token, report_guid, id_type="internal", title=title, report_body=body,
+                                               verify=verify)
 
-        print("Updated Report using GUID")
-        print("\texternalTrackingId: %s" % update_response['externalTrackingId'])
-        print("\tindicators: %s" % update_response['reportIndicators'])
-        print("\tURL: %s\n" % ts.get_report_url(update_response['reportId']))
+            print("Updated Report using GUID")
+            print("\texternalTrackingId: %s" % update_response['externalTrackingId'])
+            print("\tindicators: %s" % update_response['reportIndicators'])
+            print("\tURL: %s\n" % ts.get_report_url(update_response['reportId']))
+        except Exception as e:
+            print('Could not update report, error: %s' % e)
 
     # Get test report previously submitted
     if do_report_details_by_guid:
-        token = ts.get_token(verify=verify)
-        print("Get Report")
-        result = ts.get_report_details(token, report_guid, id_type="internal", verify=verify)
+        try:
+            token = ts.get_token(verify=verify)
+            print("Get Report")
+            result = ts.get_report_details(token, report_guid, id_type="internal", verify=verify)
 
-        print("Report Details using GUID")
-        print("\ttitle: %s" % result['title'])
-        print("\texternalTrackingId: %s" % result['externalTrackingId'])
-        print("\tindicators: %s" % result['indicators'])
-        print("\tURL: %s\n" % ts.get_report_url(result['id']))
+            print("Report Details using GUID")
+            print("\ttitle: %s" % result['title'])
+            print("\texternalTrackingId: %s" % result['externalTrackingId'])
+            print("\tindicators: %s" % result['indicators'])
+            print("\tURL: %s\n" % ts.get_report_url(result['id']))
+        except Exception as e:
+            print('Could not get report, error: %s' % e)
 
     # Release report to community
     if do_release_report_by_ext_id:
-        token = ts.get_token(verify=verify)
-        print("Release Report")
-        update_response = ts.update_report(token, report_id=external_id, id_type='external', distribution="COMMUNITY",
-                                           verify=verify)
 
-        print("Report Released using External ID")
-        print("\texternalTrackingId: %s" % update_response['externalTrackingId'])
-        print("\tindicators: %s" % update_response['reportIndicators'])
-        print("\tURL: %s\n" % ts.get_report_url(update_response['reportId']))
+        try:
+
+            token = ts.get_token(verify=verify)
+            print("Release Report")
+            update_response = ts.update_report(token, report_id=external_id, id_type='external',
+                                               distribution="COMMUNITY",
+                                               verify=verify)
+
+            print("Report Released using External ID")
+            print("\texternalTrackingId: %s" % update_response['externalTrackingId'])
+            print("\tindicators: %s" % update_response['reportIndicators'])
+            print("\tURL: %s\n" % ts.get_report_url(update_response['reportId']))
+        except Exception as e:
+            print('Could not release report, error: %s' % e)
 
     # Get test report previously submitted
     if do_report_details_by_ext_id_2:
-        token = ts.get_token(verify=verify)
-        print("Get Report")
-        result = ts.get_report_details(token, report_id=external_id, id_type="external", verify=verify)
+        try:
+            token = ts.get_token(verify=verify)
+            print("Get Report")
+            result = ts.get_report_details(token, report_id=external_id, id_type="external", verify=verify)
 
-        print("Report Details using External ID")
-        print("\ttitle: %s" % result['title'])
-        print("\texternalTrackingId: %s" % result['externalTrackingId'])
-        print("\tindicators: %s" % result['indicators'])
-        print("\tURL: %s\n" % ts.get_report_url(result['id']))
+            print("Report Details using External ID")
+            print("\ttitle: %s" % result['title'])
+            print("\texternalTrackingId: %s" % result['externalTrackingId'])
+            print("\tindicators: %s" % result['indicators'])
+            print("\tURL: %s\n" % ts.get_report_url(result['id']))
+        except Exception as e:
+            print('Could not get report, error: %s' % e)
 
     # Delete test report previously submitted
     if do_delete_report_by_ext_id:
-        token = ts.get_token(verify=verify)
-        print("Delete Report")
-        response = ts.delete_report(token, report_id=external_id, id_type="external", verify=verify)
-        print("Report Deleted using External ID")
+        try:
+            token = ts.get_token(verify=verify)
+            print("Delete Report")
+            response = ts.delete_report(token, report_id=external_id, id_type="external", verify=verify)
+            print("Report Deleted using External ID")
 
+        except Exception as e:
+            print('Could not delete report, error: %s' % e)
 
 if __name__ == '__main__':
     main()
