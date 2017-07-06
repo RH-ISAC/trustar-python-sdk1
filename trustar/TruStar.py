@@ -123,11 +123,12 @@ class TruStar(object):
 
     def get_report_details(self, access_token, report_id, id_type=None, verify=True):
         """
-        Retrieves the report details
+        Retrieves the report details dictionary
         :param access_token: OAuth API token
         :param report_id: Incident Report ID
         :param id_type: indicates if ID is internal report guid or external ID provided by the user
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
+        :return Incident report dictionary if found, else exception.
         """
 
         url = "%s/report/%s" % (self.base, report_id)
