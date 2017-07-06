@@ -1,19 +1,18 @@
 from __future__ import print_function
 
-from future import standard_library
-
-from builtins import object
+import json
+import sys
+import time
 from datetime import datetime
-from tzlocal import get_localzone
 
 import configparser
-import json
+import dateutil.parser
 import pytz
-import sys
 import requests
 import requests.auth
-import dateutil.parser
-import time
+from builtins import object
+from future import standard_library
+from tzlocal import get_localzone
 
 standard_library.install_aliases()
 
@@ -131,7 +130,13 @@ class TruStar(object):
         headers = {"Authorization": "Bearer " + access_token}
         params = {'idType': id_type}
         resp = requests.get(url, params=params, headers=headers, verify=verify)
-        return json.loads(resp.content.decode('utf8'))
+
+        # TODO: temporary workaround for buggy non-json server responses
+        try:
+            return json.loads(resp.content.decode('utf8'))
+        except Exception as e:
+            print("Error retrieving report %s" % e.message)
+            return {'error': resp.content}
 
     def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_began=None,
                       distribution=None, attribution=None, enclave_ids=None, verify=True):
@@ -257,8 +262,14 @@ class TruStar(object):
         resp = requests.post(self.base + "/report", json.dumps(payload), headers=headers,
                              timeout=60, verify=verify)
 
-        return resp.json()
+        # TODO: temporary workaround for buggy non-json server responses
 
+        try:
+            return resp.json()
+        except Exception as e:
+            print("Error retrieving response %s" % e.message)
+            return {'error': resp.content}
+        
     def get_report_url(self, report_id):
         """
         Build direct URL to report from its ID
