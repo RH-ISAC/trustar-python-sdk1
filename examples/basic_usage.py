@@ -36,7 +36,7 @@ verify = True
 
 
 def main():
-    role = "trustar"
+    role = "integration"
     if len(sys.argv) > 1:
         role = sys.argv[1]
 
@@ -205,7 +205,7 @@ def main():
 
     # Get test report previously submitted
     if do_report_details_by_guid:
-        print("Get Incident eport Details by GUID (TruSTAR internal ID)")
+        print("Get Incident Report Details by GUID (TruSTAR internal ID)")
 
         try:
             token = ts.get_token(verify=verify)
