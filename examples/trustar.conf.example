@@ -14,6 +14,3 @@ user_api_secret = abcdef
 
 # OPTIONAL: enter one or more comma-separate enclave IDs to submit to - get these from  API settings page on Station
 enclave_ids = abcdef,1234f
-
-# OPTIONAL: Associate your user with your report submissions - necessary if you ever wish to modify or release your report in the future.
-attribute_reports = True
