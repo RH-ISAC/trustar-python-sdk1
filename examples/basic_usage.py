@@ -36,7 +36,7 @@ verify = True
 
 
 def main():
-    role = "integration"
+    role = "trustar"
     if len(sys.argv) > 1:
         role = sys.argv[1]
 
