@@ -25,7 +25,6 @@ class TruStar(object):
     def __init__(self, config_file="trustar.conf", config_role="integration"):
 
         self.enclaveIds = []
-        self.attributedToMe = False
 
         config_parser = configparser.RawConfigParser()
         config_parser.read(config_file)
@@ -37,12 +36,9 @@ class TruStar(object):
             self.apikey = config_parser.get(config_role, 'user_api_key')
             self.apisecret = config_parser.get(config_role, 'user_api_secret')
 
-            # parse enclave an attribution properties
+            # parse enclaves
             if config_parser.has_option(config_role, 'enclave_ids'):
                 self.enclaveIds = [i for i in config_parser.get(config_role, 'enclave_ids').split(',') if i is not None]
-
-            if config_parser.has_option(config_role, 'attribute_reports'):
-                self.attributedToMe = config_parser.getboolean(config_role, 'attribute_reports')
         except Exception as e:
             print("Problem reading config file: %s", e)
             sys.exit(1)
@@ -140,7 +136,7 @@ class TruStar(object):
         return json.loads(resp.content.decode('utf8'))
 
     def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_began=None,
-                      distribution=None, attribution=None, enclave_ids=None, verify=True):
+                      distribution=None, enclave_ids=None, verify=True):
         """
         Updates report with the given id, overwrites any fields that are provided
         :param access_token: OAuth API token
@@ -150,7 +146,6 @@ class TruStar(object):
         :param report_body: new body for report
         :param time_began: new time_began for report
         :param distribution: new distribution type for report
-        :param attribution: new value indicating if attribution is enabled for report
         :param enclave_ids: new list of enclave ids that the report will belong to
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
@@ -165,8 +160,7 @@ class TruStar(object):
 
         payload = {'incidentReport': {'title': title, 'reportBody': report_body,
                                       'timeBegan': self.normalize_timestamp(time_began),
-                                      'distributionType': distribution}, 'enclaveIds': enclave_ids,
-                   'attributedToMe': attribution}
+                                      'distributionType': distribution}, 'enclaveIds': enclave_ids}
         resp = requests.put(url, json.dumps(payload), params=params, headers=headers, verify=verify)
         resp.raise_for_status()
 
@@ -269,8 +263,7 @@ class TruStar(object):
             'timeBegan': self.normalize_timestamp(time_began),
             'reportBody': report_body,
             'distributionType': distribution_type},
-            'enclaveIds': self.enclaveIds,
-            'attributedToMe': self.attributedToMe}
+            'enclaveIds': self.enclaveIds}
 
         resp = requests.post(self.base + "/report", json.dumps(payload), headers=headers, timeout=60, verify=verify)
         resp.raise_for_status()
