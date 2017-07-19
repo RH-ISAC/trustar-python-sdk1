@@ -268,7 +268,7 @@ def main():
 
     # Get test report previously submitted
     if do_report_details_by_ext_id_2:
-        print("Get Incident Report Dertails by External ID")
+        print("Get Incident Report Details by External ID")
 
         try:
             token = ts.get_token(verify=verify)
