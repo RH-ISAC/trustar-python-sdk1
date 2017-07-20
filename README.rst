@@ -3,8 +3,8 @@ Python SDK for the TruSTAR API
 ==============================
 
 
-Installation
-------------
+Installation/Upgrade
+--------------------
 
 Pre-requisites
 ~~~~~~~~~~~~~~
@@ -19,7 +19,7 @@ Using pip (recommended)
 
 ::
 
-  $ pip install trustar
+  $ pip install trustar --upgrade
 
 
 Manual
