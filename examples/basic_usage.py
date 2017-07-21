@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import json
 import sys
+import time
 from random import randint
 
 from trustar import TruStar
@@ -47,17 +48,33 @@ def main():
 
     # or use a specific external_id
     # external_id = "321"
-    
+
     report_guid = None
 
     if do_latest_reports:
-        print("Getting Latest Accessible Incident Reports...")
+
+        current_time = int(time.time())
+
+        print("Getting Latest Accessible Incident Reports Since 24 hours ago ...")
         try:
             token = ts.get_token(verify=verify)
-            results = ts.get_latest_reports(token, verify=verify)
-            for result in results:
-                print("\t%s, %s, %s" % (result['id'], result['distributionType'], result['title']))
+            results = ts.get_reports(token, from_time=current_time - 1 * 24 * 60 * 60, to_time=current_time,
+                                     verify=verify)
+
+            # print(results.get('status'))
+            # print(results.get('pageSize'))
+            # print(results.get('totalPages'))
+            # print(results.get('pageNumber'))
+            # print(results.get('moreResults'))
+            # print(results.get('totalElements'))
+            print("Got %s results" % (results.get('totalElements')))
+
+            # print(json.dumps(results))
+
+            for result in results.get('data').get('reports'):
+                print(result)
             print()
+
         except Exception as e:
             print('Could not get latest reports, error: %s' % e)
 

@@ -104,15 +104,19 @@ class TruStar(object):
         token_json = resp.json()
         return token_json["access_token"]
 
-    def get_latest_reports(self, access_token, verify=True):
+    def get_reports(self, access_token, from_time, to_time, verify=True):
         """
-        Retrieves the latest 5 reports submitted to the TruSTAR community
+        Retrieves reports in time window
         :param access_token: OAuth API token
+        :param from_time: start of time window (Unix timestamp - seconds since epoch)
+        :param to_time: end of time window (Unix timestamp - seconds since epoch)
         :param verify: Optional server SSL verification, default True
         """
 
         headers = {"Authorization": "Bearer " + access_token}
-        resp = requests.get(self.base + "/reports/latest", headers=headers, verify=verify)
+        params = {'from': from_time, 'to' : to_time}
+        resp = requests.get(self.base + "/reports", params=params, headers=headers, verify=verify)
+
 
         resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
