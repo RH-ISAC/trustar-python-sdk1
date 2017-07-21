@@ -114,9 +114,8 @@ class TruStar(object):
         """
 
         headers = {"Authorization": "Bearer " + access_token}
-        params = {'from': from_time, 'to' : to_time}
+        params = {'from': from_time, 'to': to_time}
         resp = requests.get(self.base + "/reports", params=params, headers=headers, verify=verify)
-
 
         resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
