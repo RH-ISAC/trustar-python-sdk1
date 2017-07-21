@@ -178,10 +178,9 @@ def main(inputfile):
     if do_enclave_submissions:
         for staged_report in all_reports:
             start_time = time.time()
-            response = ts.submit_report(token, staged_report['reportContent'], staged_report['reportTitle'],
-                                        discovered_time_str=staged_report['reportDateTime'],
+            response = ts.submit_report(token, report_body=staged_report['reportContent'],
+                                        title=staged_report['reportTitle'], time_began=staged_report['reportDateTime'],
                                         enclave=True)
-
             print(response)
             if 'error' in response:
                 print("Submission failed with error: {}, {}".format(response['error'], response['message']))
