@@ -93,7 +93,7 @@ def main():
         print("Getting community only reports for the previous day ...")
         try:
             token = ts.get_token(verify=verify)
-            results = ts.get_reports(token, from_time=two_days_ago, to_time=yesterday, distributionType='COMMUNITY',
+            results = ts.get_reports(token, from_time=two_days_ago, to_time=yesterday, distribution_type='COMMUNITY',
                                      verify=verify)
 
             print("Got %s results" % (results.get('totalElements')))
@@ -113,7 +113,7 @@ def main():
         print("Getting enclave only reports for the previous week ...")
         try:
             token = ts.get_token(verify=verify)
-            results = ts.get_reports(token, from_time=a_week_ago, to_time=current_time, distributionType='ENCLAVE',
+            results = ts.get_reports(token, from_time=a_week_ago, to_time=current_time, distribution_type='ENCLAVE',
                                      enclave_ids=ts.get_enclave_ids(), verify=verify)
 
             print("Got %s results" % (results.get('totalElements')))
@@ -133,7 +133,8 @@ def main():
         print("Getting my reports for the previous week ...")
         try:
             token = ts.get_token(verify=verify)
-            results = ts.get_reports(token, from_time=a_week_ago, to_time=current_time, submittedBy="me", verify=verify)
+            results = ts.get_reports(token, from_time=a_week_ago, to_time=current_time, submitted_by="me",
+                                     verify=verify)
 
             print("Got %s results" % (results.get('totalElements')))
 
@@ -374,7 +375,7 @@ def main():
         except Exception as e:
             print('Could not delete report, error: %s' % e)
 
-    # Add an enclave tag to a newly created report report
+    # Add an enclave tag to a newly created report
     if do_add_enclave_tag:
         print("Add enclave tag to incident report")
 

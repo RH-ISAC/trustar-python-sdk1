@@ -104,16 +104,16 @@ class TruStar(object):
         token_json = resp.json()
         return token_json["access_token"]
 
-    def get_reports(self, access_token, from_time=None, to_time=None, distributionType=None, submittedBy=None,
+    def get_reports(self, access_token, from_time=None, to_time=None, distribution_type=None, submitted_by=None,
                     enclave_ids=None, verify=True):
         """
         Retrieves reports filtering by time window, distribution type, ownership, and enclave association
         :param access_token: OAuth API token
         :param from_time: Optional start of time window (Unix timestamp - seconds since epoch)
         :param to_time: Optional end of time window (Unix timestamp - seconds since epoch)
-        :param distributionType: Optional, restrict reports to specific distribution type (defaults to all)
+        :param distribution_type: Optional, restrict reports to specific distribution type (defaults to all)
         Possible values are: 'COMMUNITY' and 'ENCLAVE'
-        :param submittedBy: Optional, restrict reports by ownership (defaults to all). Possible values are:
+        :param submitted_by: Optional, restrict reports by ownership (defaults to all). Possible values are:
         'me' and 'others'
         :param enclave_ids: Optional comma separated list of enclave ids, restrict reports to specific enclaves
         (defaults to all)
@@ -122,8 +122,8 @@ class TruStar(object):
         """
 
         headers = {"Authorization": "Bearer " + access_token}
-        params = {'from': from_time, 'to': to_time, 'distributionType': distributionType,
-                  'submittedBy': submittedBy, 'enclaveIds': enclave_ids}
+        params = {'from': from_time, 'to': to_time, 'distributionType': distribution_type,
+                  'submittedBy': submitted_by, 'enclaveIds': enclave_ids}
         resp = requests.get(self.base + "/reports", params=params, headers=headers, verify=verify)
 
         resp.raise_for_status()

@@ -9,3 +9,5 @@ build/
 # Installer logs
 MANIFEST
 trustar-python.iml
+trustar/TruStar.pyc
+trustar/__init__.pyc
