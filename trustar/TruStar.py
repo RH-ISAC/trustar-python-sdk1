@@ -104,17 +104,26 @@ class TruStar(object):
         token_json = resp.json()
         return token_json["access_token"]
 
-    def get_reports(self, access_token, from_time, to_time, verify=True):
+    def get_reports(self, access_token, from_time=None, to_time=None, distributionType=None, submittedBy=None,
+                    enclave_ids=None, verify=True):
         """
-        Retrieves reports in time window
+        Retrieves reports filtering by time window, distribution type, ownership, and enclave association
         :param access_token: OAuth API token
-        :param from_time: start of time window (Unix timestamp - seconds since epoch)
-        :param to_time: end of time window (Unix timestamp - seconds since epoch)
+        :param from_time: Optional start of time window (Unix timestamp - seconds since epoch)
+        :param to_time: Optional end of time window (Unix timestamp - seconds since epoch)
+        :param distributionType: Optional, restrict reports to specific distribution type (defaults to all)
+        Possible values are: 'COMMUNITY' and 'ENCLAVE'
+        :param submittedBy: Optional, restrict reports by ownership (defaults to all). Possible values are:
+        'me' and 'others'
+        :param enclave_ids: Optional comma separated list of enclave ids, restrict reports to specific enclaves
+        (defaults to all)
         :param verify: Optional server SSL verification, default True
+
         """
 
         headers = {"Authorization": "Bearer " + access_token}
-        params = {'from': from_time, 'to': to_time}
+        params = {'from': from_time, 'to': to_time, 'distributionType': distributionType,
+                  'submittedBy': submittedBy, 'enclaveIds': enclave_ids}
         resp = requests.get(self.base + "/reports", params=params, headers=headers, verify=verify)
 
         resp.raise_for_status()
@@ -272,6 +281,64 @@ class TruStar(object):
         resp.raise_for_status()
         return resp.json()
 
+    def get_enclave_tags(self, access_token, report_id, id_type=None, verify=True):
+        """
+        Retrieves the enclave tags present in a specific report
+        :param access_token: OAuth API token
+        :param report_id: Incident Report ID
+        :param id_type: Optional, indicates if ID is internal report guid or external ID provided by the user
+        (default Internal)
+        :param verify: Optional server SSL verification, default True
+        """
+
+        url = "%s/reports/%s/enclave-tags" % (self.base, report_id)
+        headers = {"Authorization": "Bearer " + access_token}
+        params = {'idType': id_type}
+
+        resp = requests.get(url, params=params, headers=headers, verify=verify)
+        resp.raise_for_status()
+        return json.loads(resp.content.decode('utf8'))
+
+    def add_enclave_tag(self, access_token, report_id, name, enclave_id, id_type=None, verify=True):
+        """
+        Adds a tag to a specific report, in a specific enclave
+        :param access_token: OAuth API token
+        :param report_id: Incident Report ID
+        :param name: name of the tag to be added
+        :param enclave_id: id of the enclave where the tag will be added
+        :param id_type: Optional, indicates if ID is internal report guid or external ID provided by the user
+        (default Internal)
+        :param verify: Optional server SSL verification, default True
+        """
+
+        url = "%s/reports/%s/enclave-tags" % (self.base, report_id)
+        headers = {"Authorization": "Bearer " + access_token}
+        params = {'idType': id_type, 'name': name, 'enclaveId': enclave_id}
+
+        resp = requests.post(url, params=params, headers=headers, verify=verify)
+        resp.raise_for_status()
+        return json.loads(resp.content.decode('utf8'))
+
+    def delete_enclave_tag(self, access_token, report_id, name, enclave_id, id_type=None, verify=True):
+        """
+        Deletes a tag from a specific report, in a specific enclave
+        :param access_token: OAuth API token
+        :param report_id: Incident Report ID
+        :param name: name of the tag to be deleted
+        :param enclave_id: id of the enclave where the tag will be deleted
+        :param id_type: Optional, indicates if ID is internal report guid or external ID provided by the user
+        (default Internal)
+        :param verify: Optional server SSL verification, default True
+        """
+
+        url = "%s/reports/%s/enclave-tags" % (self.base, report_id)
+        headers = {"Authorization": "Bearer " + access_token}
+        params = {'idType': id_type, 'name': name, 'enclaveId': enclave_id}
+
+        resp = requests.delete(url, params=params, headers=headers, verify=verify)
+        resp.raise_for_status()
+        return resp.content.decode('utf8')
+
     def get_report_url(self, report_id):
         """
         Build direct URL to report from its ID
@@ -284,3 +351,10 @@ class TruStar(object):
             self.base.split('/api/')[0]
 
         return "%s/constellation/reports/%s" % (base_url, report_id)
+
+    def get_enclave_ids(self):
+        """
+        Exposes the enclave ids as fetched from the configuration file
+        :return: list of enclave ids
+        """
+        return self.enclaveIds

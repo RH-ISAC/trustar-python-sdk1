@@ -28,6 +28,12 @@ do_update_report_by_guid = True
 do_release_report_by_ext_id = True
 do_report_details_by_ext_id_2 = True
 do_delete_report_by_ext_id = True
+do_add_enclave_tag = True
+do_delete_enclave_tag = True
+do_get_enclave_tags = True
+do_reports_by_community = True
+do_reports_by_enclave = True
+do_reports_mine = True
 
 # search_string = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
 search_string = "167.114.35.70,103.255.61.39,miel-maroc.com,malware.exe"
@@ -78,6 +84,65 @@ def main():
         except Exception as e:
             print('Could not get latest reports, error: %s' % e)
 
+    if do_reports_by_community:
+
+        current_time = int(time.time())
+        two_days_ago = current_time - 2 * 24 * 60 * 60
+        yesterday = current_time - 1 * 24 * 60 * 60
+
+        print("Getting community only reports for the previous day ...")
+        try:
+            token = ts.get_token(verify=verify)
+            results = ts.get_reports(token, from_time=two_days_ago, to_time=yesterday, distributionType='COMMUNITY',
+                                     verify=verify)
+
+            print("Got %s results" % (results.get('totalElements')))
+
+            for result in results.get('data').get('reports'):
+                print(result)
+            print()
+
+        except Exception as e:
+            print('Could not get community reports, error: %s' % e)
+
+    if do_reports_by_enclave:
+
+        current_time = int(time.time())
+        a_week_ago = current_time - 7 * 24 * 60 * 60
+
+        print("Getting enclave only reports for the previous week ...")
+        try:
+            token = ts.get_token(verify=verify)
+            results = ts.get_reports(token, from_time=a_week_ago, to_time=current_time, distributionType='ENCLAVE',
+                                     enclave_ids=ts.get_enclave_ids(), verify=verify)
+
+            print("Got %s results" % (results.get('totalElements')))
+
+            for result in results.get('data').get('reports'):
+                print(result)
+            print()
+
+        except Exception as e:
+            print('Could not get community reports, error: %s' % e)
+
+    if do_reports_mine:
+
+        current_time = int(time.time())
+        a_week_ago = current_time - 7 * 24 * 60 * 60
+
+        print("Getting my reports for the previous week ...")
+        try:
+            token = ts.get_token(verify=verify)
+            results = ts.get_reports(token, from_time=a_week_ago, to_time=current_time, submittedBy="me", verify=verify)
+
+            print("Got %s results" % (results.get('totalElements')))
+
+            for result in results.get('data').get('reports'):
+                print(result)
+            print()
+
+        except Exception as e:
+            print('Could not get community reports, error: %s' % e)
     if do_correlated:
         print("Querying Accessible Correlated Reports...")
         try:
@@ -304,11 +369,55 @@ def main():
         try:
             token = ts.get_token(verify=verify)
             response = ts.delete_report(token, report_id=external_id, id_type="external", verify=verify)
-            print("Report Deleted using External ID")
+            print("Report Deleted using External ID\n")
 
         except Exception as e:
             print('Could not delete report, error: %s' % e)
 
+    # Add an enclave tag to a newly created report report
+    if do_add_enclave_tag:
+        print("Add enclave tag to incident report")
+
+        try:
+            # submit report
+            response = ts.submit_report(token, submit_indicators, "Enclave report with tag", enclave=True,
+                                        verify=verify)
+            reportId = response['reportId']
+            print("\tId of new report %s\n" % reportId)
+            # get back report details, including the enclave it's in
+            response = ts.get_report_details(token, report_id=reportId, verify=verify)
+            enclave_id = response['enclaves'][0]['id']
+
+            # add an enclave tag
+            response = ts.add_enclave_tag(token, report_id=reportId, name="triage", enclave_id=enclave_id,
+                                          verify=verify)
+            # print the added enclave tag
+            print(response)
+            print("\tId of new enclave tag %s\n" % response['guid'])
+
+            # add another enclave tag
+            response = ts.add_enclave_tag(token, report_id=reportId, name="resolved", enclave_id=enclave_id,
+                                          verify=verify)
+            # print the added enclave tag
+            print(response)
+            print("\tId of new enclave tag %s\n" % response['guid'])
+
+            # Get enclave tag info
+            if do_get_enclave_tags:
+                print("Get enclave tags for report")
+                response = ts.get_enclave_tags(token, reportId, verify=verify)
+                print("\tEnclave tags for report %s\n" % reportId)
+                print(json.dumps(response, indent=2))
+
+            # delete enclave tag by name
+            if do_delete_enclave_tag:
+                print("Delete enclave tag from report")
+                response = ts.delete_enclave_tag(token, reportId, name="triage", enclave_id=enclave_id, verify=verify)
+                print("\tDeleted enclave tag for report %s\n" % reportId)
+                print(response)
+
+        except Exception as e:
+            print('Could not handle enclave tag operation, error: %s' % e)
 
 if __name__ == '__main__':
     main()
