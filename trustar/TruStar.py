@@ -111,12 +111,12 @@ class TruStar(object):
         :param access_token: OAuth API token
         :param from_time: Optional start of time window (Unix timestamp - seconds since epoch)
         :param to_time: Optional end of time window (Unix timestamp - seconds since epoch)
-        :param distribution_type: Optional, restrict reports to specific distribution type (defaults to all)
-        Possible values are: 'COMMUNITY' and 'ENCLAVE'
-        :param submitted_by: Optional, restrict reports by ownership (defaults to all). Possible values are:
-        'me' and 'others'
+        :param distribution_type: Optional, restrict reports to specific distribution type
+        (by default all accessible reports are returned). Possible values are: 'COMMUNITY' and 'ENCLAVE'
+        :param submitted_by: Optional, restrict reports by ownership (by default all accessible reports are returned).
+        Possible values are: 'me' and 'others'
         :param enclave_ids: Optional comma separated list of enclave ids, restrict reports to specific enclaves
-        (defaults to all)
+        (by default reports from all enclaves are returned)
         :param verify: Optional server SSL verification, default True
 
         """
