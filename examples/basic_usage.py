@@ -42,6 +42,14 @@ submit_indicators = "google.com malware.exe 103.255.61.39"
 verify = True
 
 
+def to_seconds(days):
+    """
+    :return: the number of days expressed as seconds. e.g to_seconds(1) -> 86400
+    """
+
+    return days * 24 * 60 * 60
+
+
 def main():
     role = "trustar"
     if len(sys.argv) > 1:
@@ -56,16 +64,15 @@ def main():
     # external_id = "321"
 
     report_guid = None
+    current_time = int(time.time())
+    yesterday_time = current_time - to_seconds(days=1)
 
     if do_latest_reports:
-
-        current_time = int(time.time())
 
         print("Getting Latest Accessible Incident Reports Since 24 hours ago ...")
         try:
             token = ts.get_token(verify=verify)
-            results = ts.get_reports(token, from_time=current_time - 1 * 24 * 60 * 60, to_time=current_time,
-                                     verify=verify)
+            results = ts.get_reports(token, from_time=yesterday_time, to_time=current_time, verify=verify)
 
             # print(results.get('status'))
             # print(results.get('pageSize'))
@@ -86,15 +93,13 @@ def main():
 
     if do_reports_by_community:
 
-        current_time = int(time.time())
-        two_days_ago = current_time - 2 * 24 * 60 * 60
-        yesterday = current_time - 1 * 24 * 60 * 60
+        two_days_ago = current_time - to_seconds(days=2)
 
         print("Getting community only reports for the previous day ...")
         try:
             token = ts.get_token(verify=verify)
-            results = ts.get_reports(token, from_time=two_days_ago, to_time=yesterday, distribution_type='COMMUNITY',
-                                     verify=verify)
+            results = ts.get_reports(token, from_time=two_days_ago, to_time=yesterday_time,
+                                     distribution_type='COMMUNITY', verify=verify)
 
             print("Got %s results" % (results.get('totalElements')))
 
@@ -107,8 +112,7 @@ def main():
 
     if do_reports_by_enclave:
 
-        current_time = int(time.time())
-        a_week_ago = current_time - 7 * 24 * 60 * 60
+        a_week_ago = current_time - to_seconds(days=7)
 
         print("Getting enclave only reports for the previous week ...")
         try:
@@ -127,8 +131,7 @@ def main():
 
     if do_reports_mine:
 
-        current_time = int(time.time())
-        a_week_ago = current_time - 7 * 24 * 60 * 60
+        a_week_ago = current_time - to_seconds(days=7)
 
         print("Getting my reports for the previous week ...")
         try:
