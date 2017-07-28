@@ -22,7 +22,7 @@ class TruStar(object):
     Main class you to instantiate the TruStar API
     """
 
-    def __init__(self, config_file="trustar.conf", config_role="integration"):
+    def __init__(self, config_file="trustar.conf", config_role="trustar"):
 
         self.enclaveIds = []
 

@@ -67,6 +67,7 @@ def main():
     current_time = int(time.time())
     yesterday_time = current_time - to_seconds(days=1)
 
+    token = ts.get_token(verify=verify)
     if do_latest_reports:
 
         print("Getting Latest Accessible Incident Reports Since 24 hours ago ...")
@@ -386,23 +387,23 @@ def main():
             # submit report
             response = ts.submit_report(token, submit_indicators, "Enclave report with tag", enclave=True,
                                         verify=verify)
-            reportId = response.get('reportId')
-            print("\tId of new report %s\n" % reportId)
+            report_id = response.get('reportId')
+            print("\tId of new report %s\n" % report_id)
 
             # get back report details, including the enclave it's in
-            response = ts.get_report_details(token, report_id=reportId, verify=verify)
+            response = ts.get_report_details(token, report_id=report_id, verify=verify)
             enclave_list = list(response.get('enclaves'))
             enclave_id = enclave_list.pop(0).get('id')
 
             # add an enclave tag
-            response = ts.add_enclave_tag(token, report_id=reportId, name="triage", enclave_id=enclave_id,
+            response = ts.add_enclave_tag(token, report_id=report_id, name="triage", enclave_id=enclave_id,
                                           verify=verify)
             # print the added enclave tag
             print(response)
             print("\tId of new enclave tag %s\n" % response.get('guid'))
 
             # add another enclave tag
-            response = ts.add_enclave_tag(token, report_id=reportId, name="resolved", enclave_id=enclave_id,
+            response = ts.add_enclave_tag(token, report_id=report_id, name="resolved", enclave_id=enclave_id,
                                           verify=verify)
             # print the added enclave tag
             print(response)
@@ -411,19 +412,19 @@ def main():
             # Get enclave tag info
             if do_get_enclave_tags:
                 print("Get enclave tags for report")
-                response = ts.get_enclave_tags(token, reportId, verify=verify)
-                print("\tEnclave tags for report %s\n" % reportId)
+                response = ts.get_enclave_tags(token, report_id, verify=verify)
+                print("\tEnclave tags for report %s\n" % report_id)
                 print(json.dumps(response, indent=2))
 
             # delete enclave tag by name
             if do_delete_enclave_tag:
                 print("Delete enclave tag from report")
-                response = ts.delete_enclave_tag(token, reportId, name="triage", enclave_id=enclave_id, verify=verify)
-                print("\tDeleted enclave tag for report %s\n" % reportId)
+                response = ts.delete_enclave_tag(token, report_id, name="triage", enclave_id=enclave_id, verify=verify)
+                print("\tDeleted enclave tag for report %s\n" % report_id)
                 print(response)
 
             # add it back
-            ts.add_enclave_tag(token, report_id=reportId, name="triage", enclave_id=enclave_id, verify=verify)
+            ts.add_enclave_tag(token, report_id=report_id, name="triage", enclave_id=enclave_id, verify=verify)
 
         except Exception as e:
             print('Could not handle enclave tag operation, error: %s' % e)
