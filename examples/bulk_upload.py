@@ -2,35 +2,25 @@
 
 """
 Submit one or more reports from local files (txt, pdf)
+
+Requirements
+pip install trustar, pdfminer
 """
 from __future__ import print_function
 
 import argparse
 import os
 import time
+import logging
 import pdfminer.pdfinterp
 from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from cStringIO import StringIO
-
 from trustar import TruStar
 
-
-def process_file(source_file):
-    """
-    Extract text from a file (pdf, txt, eml, csv, json)
-    :param source_file path to file to read
-    :return text from file
-    """
-    if source_file.endswith(('.pdf', '.PDF')):
-        txt = TruStar.extract_pdf(source_file)
-    elif source_file.endswith(('.txt', '.eml', '.csv', '.json')):
-        f = open(source_file, 'r')
-        txt = f.read()
-    else:
-        raise ValueError('UNSUPPORTED FILE EXTENSION')
-    return txt
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
 def extract_pdf(file_name):
@@ -61,25 +51,44 @@ def extract_pdf(file_name):
     return text
 
 
+def process_file(source_file):
+    """
+    Extract text from a file (pdf, txt, eml, csv, json)
+    :param source_file path to file to read
+    :return text from file
+    """
+    if source_file.endswith(('.pdf', '.PDF')):
+        txt = extract_pdf(source_file)
+    elif source_file.endswith(('.txt', '.eml', '.csv', '.json')):
+        f = open(source_file, 'r')
+        txt = f.read()
+    else:
+        logger.info("Unsupported file extension for file {}"
+                .format(source_file))
+        return ""
+    return txt
+
+
 def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description=(
                                          'Submit one or more reports from local files (txt, pdf, docx, etc) '
                                          'in a directory\n\n'
                                          'Example:\n'
-                                         'python bulk_upload.py ./sample_reports'))
-    parser.add_argument('dir', help='Path containing report files')
+                                         'python bulk_upload.py --dir ./sample_reports --ts_conf ./trustar.conf'))
+    parser.add_argument('--dir', '-d', help='Path containing report files', required=True)
+    parser.add_argument('--ts_config', '-c', help='Path containing trustar api config', required=True)
     parser.add_argument('-i', '--ignore', dest='ignore', action='store_true',
                         help='Ignore history and resubmit already procesed files')
 
     args = parser.parse_args()
     source_report_dir = args.dir
 
-    ts = TruStar(config_role="trustar")
-    token = ts.get_token()
+    ts_config = args.ts_config
+    ts = TruStar(config_file=ts_config, config_role="trustar")
 
     # process all files in directory
-    print("Processing and submitting each source file in %s as a TruSTAR Incident Report" % source_report_dir)
+    logger.info("Processing and submitting each source file in %s as a TruSTAR Incident Report" % source_report_dir)
 
     processed_files = set()
 
@@ -93,16 +102,28 @@ def main():
                 if source_file in processed_files:
                     continue
 
-                print("Processing source file %s " % source_file)
+                logger.info("Processing source file %s " % source_file)
                 try:
                     path = os.path.join(source_report_dir, source_file)
                     report_body = process_file(path)
+                    if not report_body:
+                        logger.debug("File {} ignored for no data".format(source_file))
+                        continue
 
                     # response_json = ts.submit_report(token, report_body, "COMMUNITY: " + file)
-                    response_json = ts.submit_report(token, report_body, "ENCLAVE: " + source_file, enclave=True)
-                    report_id = response_json['reportId']
+                    token = ts.get_token()
+                    try:
+                        response_json = ts.submit_report(token, report_body, 
+                                "ENCLAVE: " + source_file, enclave=True)
+                    except Exception as e:
+                        if '413' in e.message:
+                            logger.warn("Could not submit file {}. Contains more indicators than currently supported."
+                                        .format(source_file))
+                        else:
+                            raise
 
-                    print("SUCCESSFULLY SUBMITTED REPORT, TRUSTAR REPORT as Incident Report ID %s" % report_id)
+                    report_id = response_json['reportId']
+                    logger.info("SUCCESSFULLY SUBMITTED REPORT, TRUSTAR REPORT as Incident Report ID %s" % report_id)
                     pf.write("%s\n" % source_file)
 
                     # if 'reportIndicators' in response_json:
@@ -118,7 +139,7 @@ def main():
                     #     print("No correlatedIndicators found in report id {0}".format(report_id))
 
                 except Exception as e:
-                    print("Problem with file %s, exception: %s " % (source_file, e))
+                    logger.error("Problem with file %s, exception: %s " % (source_file, e))
                     continue
 
                 time.sleep(2)
