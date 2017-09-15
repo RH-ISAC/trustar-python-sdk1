@@ -5,6 +5,9 @@ Submit one or more reports from local files (txt, pdf)
 
 Requirements
 pip install trustar, pdfminer
+
+Run
+python bulk_upload.py --dir ./files_to_upload_dir/ --ts_conf ./trustar_api.conf
 """
 from __future__ import print_function
 
@@ -96,10 +99,19 @@ def main():
     if os.path.isfile(processed_files_file) and not args.ignore:
         processed_files = set(line.strip() for line in open(processed_files_file))
 
+    skipped_files_file = os.path.join(source_report_dir, "skipped_files.log")
+
     with open(processed_files_file, 'a', 0) as pf:
         for (dirpath, dirnames, filenames) in os.walk(source_report_dir):
             for source_file in filenames:
+
+                if (source_file == "processed_files.log" or
+                    source_file == "skipped_files.log"):
+                    continue
+
                 if source_file in processed_files:
+                    logger.debug("File {} was already processed. Ignoring."
+                                 .format(source_file))
                     continue
 
                 logger.info("Processing source file %s " % source_file)
@@ -108,10 +120,11 @@ def main():
                     report_body = process_file(path)
                     if not report_body:
                         logger.debug("File {} ignored for no data".format(source_file))
-                        continue
+                        raise
 
                     # response_json = ts.submit_report(token, report_body, "COMMUNITY: " + file)
                     token = ts.get_token()
+                    logger.info("Report {}".format(report_body))
                     try:
                         response_json = ts.submit_report(token, report_body, 
                                 "ENCLAVE: " + source_file, enclave=True)
@@ -140,6 +153,8 @@ def main():
 
                 except Exception as e:
                     logger.error("Problem with file %s, exception: %s " % (source_file, e))
+                    with open(skipped_files_file, 'w', 0) as sf:
+                        sf.write("{}\n".format(source_file))
                     continue
 
                 time.sleep(2)
