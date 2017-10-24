@@ -249,7 +249,7 @@ class TruStar(object):
         return json.loads(resp.content.decode('utf8'))
 
     def submit_report(self, access_token, report_body, title, external_id=None, time_began=datetime.now(),
-                      enclave=False, verify=True):
+                      enclave=False, report_url=None, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave(s), set enclave parameter to True,
@@ -260,6 +260,7 @@ class TruStar(object):
         :param external_id: external tracking id of report, optional if user doesn't have their own tracking id that they want associated with this report
         :param time_began: time report began
         :param enclave: boolean - whether or not to submit report to user's enclaves (see 'enclave_ids' config property)
+        :param report_url: string indicating how the report was retr
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
@@ -274,7 +275,8 @@ class TruStar(object):
             'externalTrackingId': external_id,
             'timeBegan': self.normalize_timestamp(time_began),
             'reportBody': report_body,
-            'distributionType': distribution_type},
+            'distributionType': distribution_type,
+            'reportUrl': report_url},
             'enclaveIds': self.enclaveIds}
 
         resp = requests.post(self.base + "/report", json.dumps(payload), headers=headers, timeout=60, verify=verify)
