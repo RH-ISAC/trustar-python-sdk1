@@ -148,7 +148,7 @@ class TruStar(object):
         return json.loads(resp.content.decode('utf8'))
 
     def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_began=None,
-                      distribution=None, enclave_ids=None, verify=True):
+                      external_url=None, distribution=None, enclave_ids=None, verify=True):
         """
         Updates report with the given id, overwrites any fields that are provided
         :param access_token: OAuth API token
@@ -159,6 +159,7 @@ class TruStar(object):
         :param time_began: new time_began for report
         :param distribution: new distribution type for report
         :param enclave_ids: new list of enclave ids that the report will belong to
+        :param external_url: external url of report, optional and is associated with the original source of this report 
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
@@ -170,9 +171,12 @@ class TruStar(object):
         if enclave_ids:
             enclave_ids = [i for i in enclave_ids.split(',') if i is not None]
 
-        payload = {'incidentReport': {'title': title, 'reportBody': report_body,
+        payload = {'incidentReport': {'title': title,
+                                      'reportBody': report_body,
                                       'timeBegan': self.normalize_timestamp(time_began),
-                                      'distributionType': distribution}, 'enclaveIds': enclave_ids}
+                                      'distributionType': distribution,
+                                      'externalUrl': external_url},
+                   'enclaveIds': enclave_ids}
         resp = requests.put(url, json.dumps(payload), params=params, headers=headers, verify=verify)
         resp.raise_for_status()
 
@@ -248,8 +252,8 @@ class TruStar(object):
         resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
-    def submit_report(self, access_token, report_body, title, external_id=None, time_began=datetime.now(),
-                      enclave=False, external_url=None, verify=True):
+    def submit_report(self, access_token, report_body, title, external_id=None, external_url=None, time_began=datetime.now(),
+                      enclave=False, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave(s), set enclave parameter to True,
@@ -270,14 +274,13 @@ class TruStar(object):
 
         headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
 
-        payload = {'incidentReport': {
-            'title': title,
-            'externalTrackingId': external_id,
-            'timeBegan': self.normalize_timestamp(time_began),
-            'reportBody': report_body,
-            'distributionType': distribution_type,
-            'externalUrl': external_url},
-            'enclaveIds': self.enclaveIds}
+        payload = {'incidentReport': {'title': title,
+                                      'externalTrackingId': external_id,
+                                      'externalUrl': external_url,
+                                      'timeBegan': self.normalize_timestamp(time_began),
+                                      'reportBody': report_body,
+                                      'distributionType': distribution_type},
+                   'enclaveIds': self.enclaveIds}
 
         resp = requests.post(self.base + "/report", json.dumps(payload), headers=headers, timeout=60, verify=verify)
         resp.raise_for_status()
