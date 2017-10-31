@@ -232,6 +232,7 @@ class TruStar(object):
         :param verify: Optional server SSL verification, default True
         :return: json response of the result
         """
+
         headers = {"Authorization": "Bearer " + access_token}
         payload = {
             'type': type,
