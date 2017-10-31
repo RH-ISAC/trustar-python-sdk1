@@ -219,6 +219,20 @@ class TruStar(object):
         resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
+    def get_community_trends(self, access_token, type, from_time, to_time, limit, page_size, start_page, verify=True):
+        headers = {"Authorization": "Bearer " + access_token}
+        payload = {
+            'type': type,
+            'from': from_time,
+            'to': to_time,
+            'limit': limit,
+            'pageSize': page_size,
+            'startPage': start_page
+        }
+        resp = requests.get('%s/community-indicators/trending' % self.base,
+                            params=payload, headers=headers, verify=verify)
+        return json.loads(resp.content.decode('utf8'))
+
     def get_correlated_reports(self, access_token, indicator, verify=True):
         """
         Retrieves all TruSTAR reports that contain the searched indicator. You can specify multiple indicators
