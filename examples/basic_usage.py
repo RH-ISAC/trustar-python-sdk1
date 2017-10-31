@@ -16,6 +16,7 @@ from trustar import TruStar
 do_latest_reports = True
 do_correlated = True
 do_latest_indicators = True
+do_community_trends = True
 do_query_indicators = True
 do_comm_submissions = True
 do_enclave_submissions = True
@@ -177,6 +178,22 @@ def main():
                 print()
         except Exception as e:
             print('Could not get latest indicators, error: %s' % e)
+
+    if do_community_trends:
+        print("Get community trends")
+
+        try:
+            token = ts.get_token(verify=verify)
+
+            results = ts.get_community_trends(token,
+                                              type='other',
+                                              from_time=yesterday_time,
+                                              to_time=current_time,
+                                              page_size=5,
+                                              start_page=0)
+            print(results)
+        except Exception as e:
+            print('Could not get community trends, error: %s' % e)
 
     if do_query_indicators:
         print("Querying Correlated Indicators with Search String '%s' (first 100)" % search_string)
