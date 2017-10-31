@@ -219,13 +219,24 @@ class TruStar(object):
         resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
-    def get_community_trends(self, access_token, type, from_time, to_time, limit, page_size, start_page, verify=True):
+    def get_community_trends(self, access_token, type, from_time, to_time, page_size, start_page, verify=True):
+        """
+        Find community trending indicators.
+        :param access_token: OAUTH access token
+        :param type: the type of indicators.  3 types are supported: "malware", "cve" (vulnerabilities), "other" (all
+        other types of indicators)
+        :param from_time: Optional start of time window (Unix timestamp - seconds since epoch)
+        :param to_time: Optional end of time window (Unix timestamp - seconds since epoch)
+        :param page_size: # of results on returned page
+        :param start_page: page to start returning results on
+        :param verify: Optional server SSL verification, default True
+        :return: json response of the result
+        """
         headers = {"Authorization": "Bearer " + access_token}
         payload = {
             'type': type,
             'from': from_time,
             'to': to_time,
-            'limit': limit,
             'pageSize': page_size,
             'startPage': start_page
         }

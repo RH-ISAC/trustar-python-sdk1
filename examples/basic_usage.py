@@ -189,7 +189,6 @@ def main():
                                               type='other',
                                               from_time=yesterday_time,
                                               to_time=current_time,
-                                              limit=50,
                                               page_size=5,
                                               start_page=0)
             print(results)
