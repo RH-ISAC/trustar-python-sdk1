@@ -240,7 +240,7 @@ class TruStar(object):
             'pageSize': page_size,
             'startPage': start_page
         }
-        resp = requests.get('%s/community-indicators/trending' % self.base,
+        resp = requests.get("{}/community-indicators/trending".format(self.base),
                             params=payload, headers=headers, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
