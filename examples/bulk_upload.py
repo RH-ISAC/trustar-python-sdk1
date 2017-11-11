@@ -63,11 +63,10 @@ def process_file(source_file):
     if source_file.endswith(('.pdf', '.PDF')):
         txt = extract_pdf(source_file)
     elif source_file.endswith(('.txt', '.eml', '.csv', '.json')):
-        f = open(source_file, 'r')
-        txt = f.read()
+        with open(source_file, 'r') as f:
+            txt = f.read()
     else:
-        logger.info("Unsupported file extension for file {}"
-                .format(source_file))
+        logger.info("Unsupported file extension for file {}".format(source_file))
         return ""
     return txt
 
@@ -80,7 +79,7 @@ def main():
                                          'Example:\n'
                                          'python bulk_upload.py --dir ./sample_reports --ts_conf ./trustar.conf'))
     parser.add_argument('--dir', '-d', help='Path containing report files', required=True)
-    parser.add_argument('--ts_config', '-c', help='Path containing trustar api config', required=True)
+    parser.add_argument('--ts_config', '-c', help='Path containing trustar api config', nargs='?', default="./trustar.conf")
     parser.add_argument('-i', '--ignore', dest='ignore', action='store_true',
                         help='Ignore history and resubmit already procesed files')
 
@@ -123,11 +122,9 @@ def main():
                         raise
 
                     # response_json = ts.submit_report(token, report_body, "COMMUNITY: " + file)
-                    token = ts.get_token()
                     logger.info("Report {}".format(report_body))
                     try:
-                        response_json = ts.submit_report(token, report_body, 
-                                "ENCLAVE: " + source_file, enclave=True)
+                        response_json = ts.submit_report(report_body, "ENCLAVE: " + source_file, enclave=True)
                     except Exception as e:
                         if '413' in e.message:
                             logger.warn("Could not submit file {}. Contains more indicators than currently supported."

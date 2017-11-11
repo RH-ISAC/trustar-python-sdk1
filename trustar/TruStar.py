@@ -1,7 +1,6 @@
 from __future__ import print_function
 
 import json
-import sys
 import time
 from datetime import datetime
 
@@ -22,9 +21,17 @@ class TruStar(object):
     Main class you to instantiate the TruStar API
     """
 
-    def __init__(self, config_file="trustar.conf", config_role="trustar"):
+    def __init__(self, config_file="trustar.conf",
+                       config_role="trustar",
+                       client_type="PYTHON_SDK",
+                       client_version=None,
+                       client_metatag=None):
 
         self.enclaveIds = []
+
+        self.client_type = client_type
+        self.client_version = client_version
+        self.client_metatag = client_metatag
 
         config_parser = configparser.RawConfigParser()
         config_parser.read(config_file)
@@ -41,7 +48,7 @@ class TruStar(object):
                 self.enclaveIds = [i for i in config_parser.get(config_role, 'enclave_ids').split(',') if i is not None]
         except Exception as e:
             print("Problem reading config file: %s", e)
-            sys.exit(1)
+            raise
 
     @staticmethod
     def normalize_timestamp(date_time):
@@ -101,14 +108,36 @@ class TruStar(object):
         post_data = {"grant_type": "client_credentials"}
         resp = requests.post(self.auth, auth=client_auth, data=post_data, verify=verify)
         resp.raise_for_status()
-        token_json = resp.json()
-        return token_json["access_token"]
+        return resp.json()["access_token"]
 
-    def get_reports(self, access_token, from_time=None, to_time=None, distribution_type=None, submitted_by=None,
+    def __get_headers(self, is_json=False):
+        """
+        Create headers dictionary for a request.
+        :param is_json: Whether the request body is a json.
+        :return: The headers dictionary.
+        """
+        headers = {
+            "Authorization": "Bearer " + self.get_token(),
+        }
+
+        if self.client_type is not None:
+            headers["Client-Type"] = self.client_type
+
+        if self.client_version is not None:
+            headers["Client-Version"] = self.client_version
+
+        if self.client_metatag is not None:
+            headers["Client-Metatag"] = self.client_metatag
+
+        if is_json:
+            headers['Content-Type'] = 'application/json'
+
+        return headers
+
+    def get_reports(self, from_time=None, to_time=None, distribution_type=None, submitted_by=None,
                     enclave_ids=None, verify=True):
         """
         Retrieves reports filtering by time window, distribution type, ownership, and enclave association
-        :param access_token: OAuth API token
         :param from_time: Optional start of time window (Unix timestamp - seconds since epoch)
         :param to_time: Optional end of time window (Unix timestamp - seconds since epoch)
         :param distribution_type: Optional, restrict reports to specific distribution type
@@ -118,58 +147,63 @@ class TruStar(object):
         :param enclave_ids: Optional comma separated list of enclave ids, restrict reports to specific enclaves
         (by default reports from all enclaves are returned)
         :param verify: Optional server SSL verification, default True
-
         """
-
-        headers = {"Authorization": "Bearer " + access_token}
+        url = "%s/reports" % self.base
+        headers = self.__get_headers()
         params = {'from': from_time, 'to': to_time, 'distributionType': distribution_type,
                   'submittedBy': submitted_by, 'enclaveIds': enclave_ids}
-        resp = requests.get(self.base + "/reports", params=params, headers=headers, verify=verify)
+        resp = requests.get(url, params=params, headers=headers, verify=verify)
 
         resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
-    def get_report_details(self, access_token, report_id, id_type=None, verify=True):
+    def get_report_details(self, report_id, id_type=None, verify=True):
         """
         Retrieves the report details dictionary
-        :param access_token: OAuth API token
         :param report_id: Incident Report ID
         :param id_type: indicates if ID is internal report guid or external ID provided by the user
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         :return Incident report dictionary if found, else exception.
         """
-
         url = "%s/report/%s" % (self.base, report_id)
-        headers = {"Authorization": "Bearer " + access_token}
+        headers = self.__get_headers()
         params = {'idType': id_type}
         resp = requests.get(url, params=params, headers=headers, verify=verify)
 
         resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
-    def update_report(self, access_token, report_id, id_type=None, title=None, report_body=None, time_began=None,
+    def update_report(self, report_id, id_type=None, title=None, report_body=None, time_began=None,
                       external_url=None, distribution=None, enclave_ids=None, verify=True):
         """
         Updates report with the given id, overwrites any fields that are provided
-        :param access_token: OAuth API token
         :param report_id: Incident Report ID
         :param id_type: indicates if ID is internal report guid or external ID provided by the user
         :param title: new title for report
         :param report_body: new body for report
         :param time_began: new time_began for report
         :param distribution: new distribution type for report
-        :param enclave_ids: new list of enclave ids that the report will belong to
+        :param enclave_ids: new list of enclave ids that the report will belong to (python list or comma-separated list)
         :param external_url: external url of report, optional and is associated with the original source of this report 
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
         url = "%s/report/%s" % (self.base, report_id)
-        headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
+        headers = self.__get_headers(is_json=True)
         params = {'idType': id_type}
 
         # if enclave_ids field is not null, parse into array of strings
         if enclave_ids:
-            enclave_ids = [i for i in enclave_ids.split(',') if i is not None]
+            # if string, interpret as comma-separated list and convert to python list
+            if isinstance(enclave_ids, str) or isinstance(enclave_ids, unicode):
+                enclave_ids = enclave_ids.split(',')
+
+            # filter out None values
+            if isinstance(enclave_ids, list):
+                enclave_ids = [i for i in enclave_ids if i is not None]
+            # ensure enclave_ids is a list
+            else:
+                raise Exception("enclave_ids parameter should be either a list or a comma-separated list in string form")
 
         payload = {'incidentReport': {'title': title,
                                       'reportBody': report_body,
@@ -182,27 +216,25 @@ class TruStar(object):
 
         return json.loads(resp.content.decode('utf8'))
 
-    def delete_report(self, access_token, report_id, id_type=None, verify=True):
+    def delete_report(self, report_id, id_type=None, verify=True):
         """
         Deletes the report for the given id
-        :param access_token: OAuth API token
         :param report_id: Incident Report ID
         :param id_type: indicates if ID is internal report guid or external ID provided by the user
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
         url = "%s/report/%s" % (self.base, report_id)
-        headers = {"Authorization": "Bearer " + access_token}
+        headers = self.__get_headers()
         params = {'idType': id_type}
         resp = requests.delete(url, params=params, headers=headers, verify=verify)
         resp.raise_for_status()
 
         return resp
 
-    def query_latest_indicators(self, access_token, source, indicator_types, limit, interval_size, verify=True):
+    def query_latest_indicators(self, source, indicator_types, limit, interval_size, verify=True):
         """
         Finds all latest indicators
-        :param access_token: OAUTH access token
         :param source: source of the indicators which can either be INCIDENT_REPORT or OSINT
         :param indicator_types: a list of indicators or a string equal to "ALL" to query all indicator types extracted
         by TruSTAR
@@ -212,17 +244,17 @@ class TruStar(object):
         :return json response of the result
         """
 
-        headers = {"Authorization": "Bearer " + access_token}
+        url = "{}/indicators/latest".format(self.base)
+        headers = self.__get_headers()
         payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
-        resp = requests.get(self.base + "/indicators/latest", params=payload, headers=headers, verify=verify)
+        resp = requests.get(url, params=payload, headers=headers, verify=verify)
 
         resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
-    def get_community_trends(self, access_token, type, from_time, to_time, page_size, start_page, verify=True):
+    def get_community_trends(self, type, from_time, to_time, page_size, start_page, verify=True):
         """
         Find community trending indicators.
-        :param access_token: OAUTH access token
         :param type: the type of indicators.  3 types are supported: "malware", "cve" (vulnerabilities), "other" (all
         other types of indicators)
         :param from_time: Optional start of time window (Unix timestamp - seconds since epoch)
@@ -233,7 +265,8 @@ class TruStar(object):
         :return: json response of the result
         """
 
-        headers = {"Authorization": "Bearer " + access_token}
+        url = "{}/community-indicators/trending".format(self.base)
+        headers = self.__get_headers()
         payload = {
             'type': type,
             'from': from_time,
@@ -241,50 +274,48 @@ class TruStar(object):
             'pageSize': page_size,
             'startPage': start_page
         }
-        resp = requests.get("{}/community-indicators/trending".format(self.base),
-                            params=payload, headers=headers, verify=verify)
+        resp = requests.get(url, params=payload, headers=headers, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
-    def get_correlated_reports(self, access_token, indicator, verify=True):
+    def get_correlated_reports(self, indicator, verify=True):
         """
         Retrieves all TruSTAR reports that contain the searched indicator. You can specify multiple indicators
         separated by commas
-        :param access_token:  OAuth API token
         :param indicator:
         :param verify: Optional server SSL verification, default True
 
         """
 
-        headers = {"Authorization": "Bearer " + access_token}
+        url = "{}/reports/correlate".format(self.base)
+        headers = self.__get_headers()
         payload = {'q': indicator}
-        resp = requests.get(self.base + "/reports/correlate", params=payload, headers=headers, verify=verify)
+        resp = requests.get(url, params=payload, headers=headers, verify=verify)
         resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
-    def query_indicators(self, access_token, indicators, limit, verify=True):
+    def query_indicators(self, indicators, limit, verify=True):
         """
         Finds all reports that contain the indicators and returns correlated indicators from those reports.
         you can specify the limit of indicators returned.
-        :param access_token: OAuth API token
         :param indicators: list of space-separated indicators to search for
         :param limit: max number of results to return
         :param verify: Optional server SSL verification, default True
         """
 
-        headers = {"Authorization": "Bearer " + access_token}
+        url = "{}/indicators".format(self.base)
+        headers = self.__get_headers()
         payload = {'q': indicators, 'limit': limit}
 
-        resp = requests.get(self.base + "/indicators", params=payload, headers=headers, verify=verify)
+        resp = requests.get(url, params=payload, headers=headers, verify=verify)
         resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
-    def submit_report(self, access_token, report_body, title, external_id=None, external_url=None, time_began=datetime.now(),
+    def submit_report(self, report_body, title, external_id=None, external_url=None, time_began=datetime.now(),
                       enclave=False, verify=True):
         """
         Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
         By default, this submits to the TruSTAR community. To submit to your enclave(s), set enclave parameter to True,
         and ensure that the target enclaves' ids are specified in the config file field enclave_ids.
-        :param access_token: OAuth API token
         :param report_body: body of report
         :param title: title of report
         :param external_id: external tracking id of report, optional if user doesn't have their own tracking id that they want associated with this report
@@ -298,8 +329,8 @@ class TruStar(object):
         if distribution_type == 'ENCLAVE' and len(self.enclaveIds) < 1:
             raise Exception("Must specify one or more enclave IDs to submit enclave reports into")
 
-        headers = {'Authorization': 'Bearer ' + access_token, 'content-Type': 'application/json'}
-
+        url = "{}/report".format(self.base)
+        headers = self.__get_headers(is_json=True)
         payload = {'incidentReport': {'title': title,
                                       'externalTrackingId': external_id,
                                       'externalUrl': external_url,
@@ -308,14 +339,13 @@ class TruStar(object):
                                       'distributionType': distribution_type},
                    'enclaveIds': self.enclaveIds}
 
-        resp = requests.post(self.base + "/report", json.dumps(payload), headers=headers, timeout=60, verify=verify)
+        resp = requests.post(url, json.dumps(payload), headers=headers, timeout=60, verify=verify)
         resp.raise_for_status()
         return resp.json()
 
-    def get_enclave_tags(self, access_token, report_id, id_type=None, verify=True):
+    def get_enclave_tags(self, report_id, id_type=None, verify=True):
         """
         Retrieves the enclave tags present in a specific report
-        :param access_token: OAuth API token
         :param report_id: Incident Report ID
         :param id_type: Optional, indicates if ID is internal report guid or external ID provided by the user
         (default Internal)
@@ -323,17 +353,16 @@ class TruStar(object):
         """
 
         url = "%s/reports/%s/enclave-tags" % (self.base, report_id)
-        headers = {"Authorization": "Bearer " + access_token}
+        headers = self.__get_headers()
         params = {'idType': id_type}
 
         resp = requests.get(url, params=params, headers=headers, verify=verify)
         resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
-    def add_enclave_tag(self, access_token, report_id, name, enclave_id, id_type=None, verify=True):
+    def add_enclave_tag(self, report_id, name, enclave_id, id_type=None, verify=True):
         """
         Adds a tag to a specific report, in a specific enclave
-        :param access_token: OAuth API token
         :param report_id: Incident Report ID
         :param name: name of the tag to be added
         :param enclave_id: id of the enclave where the tag will be added
@@ -343,17 +372,16 @@ class TruStar(object):
         """
 
         url = "%s/reports/%s/enclave-tags" % (self.base, report_id)
-        headers = {"Authorization": "Bearer " + access_token}
+        headers = self.__get_headers()
         params = {'idType': id_type, 'name': name, 'enclaveId': enclave_id}
 
         resp = requests.post(url, params=params, headers=headers, verify=verify)
         resp.raise_for_status()
         return json.loads(resp.content.decode('utf8'))
 
-    def delete_enclave_tag(self, access_token, report_id, name, enclave_id, id_type=None, verify=True):
+    def delete_enclave_tag(self, report_id, name, enclave_id, id_type=None, verify=True):
         """
         Deletes a tag from a specific report, in a specific enclave
-        :param access_token: OAuth API token
         :param report_id: Incident Report ID
         :param name: name of the tag to be deleted
         :param enclave_id: id of the enclave where the tag will be deleted
@@ -363,7 +391,7 @@ class TruStar(object):
         """
 
         url = "%s/reports/%s/enclave-tags" % (self.base, report_id)
-        headers = {"Authorization": "Bearer " + access_token}
+        headers = self.__get_headers()
         params = {'idType': id_type, 'name': name, 'enclaveId': enclave_id}
 
         resp = requests.delete(url, params=params, headers=headers, verify=verify)

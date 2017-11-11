@@ -55,7 +55,6 @@ def main():
         allowed_keys_content = args.cols.split(",")
 
     ts = TruStar(config_role="trustar")
-    token = ts.get_token()
 
     df = pd.read_csv(args.file_name, nrows=args.num_reports, encoding="latin1")
 
@@ -111,17 +110,12 @@ def main():
             while not successful and attempts < 5:
                 attempts += 1
                 try:
-                    response = ts.submit_report(token, report_body=staged_report['reportContent'],
+                    response = ts.submit_report(report_body=staged_report['reportContent'],
                                                 title=staged_report['reportTitle'],
                                                 time_began=staged_report['reportDateTime'], enclave=True)
                     if 'error' in response:
                         print("Submission failed with error: %s, %s" % (response['error'], response['message']))
-                        if response['error'] in (
-                                "Internal Server Error", "Access token expired", "Authentication error"):
-                            print("Auth token expired, requesting new one")
-                            token = ts.get_token()
-                        else:
-                            raise Exception
+                        raise Exception
                     else:
                         num_submitted += 1
                         successful = True

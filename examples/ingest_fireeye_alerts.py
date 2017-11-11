@@ -148,7 +148,6 @@ def process_alert(file_name):
 
 def main(inputfile):
     ts = TruStar()
-    token = ts.get_token()
 
     df = pd.read_json(process_alert(inputfile))
 
@@ -178,17 +177,13 @@ def main(inputfile):
     if do_enclave_submissions:
         for staged_report in all_reports:
             start_time = time.time()
-            response = ts.submit_report(token, report_body=staged_report['reportContent'],
+            response = ts.submit_report(report_body=staged_report['reportContent'],
                                         title=staged_report['reportTitle'], time_began=staged_report['reportDateTime'],
                                         enclave=True)
             print(response)
             if 'error' in response:
                 print("Submission failed with error: {}, {}".format(response['error'], response['message']))
-                if response['error'] in ("Internal Server Error", "Access token expired", "Authentication error"):
-                    print("Auth token expired, requesting new one")
-                    token = ts.get_token()
-                else:
-                    raise Exception
+                raise Exception
             else:
                 end_time = time.time()
                 delta_time = end_time - start_time
