@@ -225,7 +225,7 @@ def main():
                 print("Extracted the following community indicators: \n%s\n" % json.dumps(
                     response.get('reportIndicators'), indent=2))
         except Exception as e:
-            print('Could not get submit community report, error: %s' % e)
+            print('Could not submit community report, error: %s' % e)
 
     # Submit simple test report to your enclave
     if do_enclave_submissions:
