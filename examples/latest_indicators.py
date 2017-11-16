@@ -48,7 +48,7 @@ def save_to_file(all_data, file_name, source, indicator_types):
     with open(file_name, 'wd') as csvfile:
         writer = unicodecsv.writer(csvfile, delimiter=",", quotechar="\"", quoting=csv.QUOTE_MINIMAL)
         for indicator_type in indicator_types:
-            if len(all_data[indicator_type]) != 0:
+            if indicator_type in all_data and len(all_data[indicator_type]) != 0:
                 for data in all_data[indicator_type]:
                     current = data + "," + indicator_type + "," + source
                     writer.writerow(current.split(","))
@@ -93,7 +93,7 @@ def main():
     else:
         file_name = FILE_NAME
 
-    response = ts.query_latest_indicators(ts.get_token(), source_type, indicator_types, limit, interval_size)
+    response = ts.query_latest_indicators(source_type, indicator_types, limit, interval_size)
     print(json.dumps(response, indent=2))
     save_to_file(response['indicators'], file_name, source_type, indicator_types)
 
