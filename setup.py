@@ -7,7 +7,7 @@ from distutils.core import setup
 setup(
     name='trustar',
     packages=['trustar'],
-    version='0.2.4',
+    version='0.3.0',
     author='TruSTAR Technology, Inc.',
     author_email='support@trustar.co',
     url='https://github.com/trustar/trustar-python',
