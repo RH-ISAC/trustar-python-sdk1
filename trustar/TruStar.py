@@ -24,7 +24,7 @@ class TruStar(object):
     def __init__(self, config_file="trustar.conf",
                        config_role="trustar",
                        client_type="PYTHON_SDK",
-                       client_version=None,
+                       client_version="0.3.0",
                        client_metatag=None):
 
         self.enclaveIds = []
