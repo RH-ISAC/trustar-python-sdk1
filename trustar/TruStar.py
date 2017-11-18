@@ -134,6 +134,34 @@ class TruStar(object):
 
         return headers
 
+    def request(self, method, path, headers=None, raise_for_status=True, verify=True, **kwargs):
+        base_headers = self.__get_headers(is_json=method in ["POST", "PUT"])
+        if headers is not None:
+            base_headers.update(headers)
+        resp = requests.request(method=method,
+                                url="{}/{}".format(self.base, path),
+                                headers=base_headers,
+                                verify=verify,
+                                **kwargs)
+        if raise_for_status:
+            resp.raise_for_status()
+        return resp
+
+    def get(self, path, **kwargs):
+        return self.request("GET", path, **kwargs)
+
+    def put(self, path, **kwargs):
+        return self.request("PUT", path, **kwargs)
+
+    def post(self, path, **kwargs):
+        return self.request("POST", path, **kwargs)
+
+    def delete(self, path, **kwargs):
+        return self.request("DELETE", path, **kwargs)
+
+    def ping(self, verify=True):
+        return self.get("ping", verify=verify).content.decode('utf-8').strip('\n')
+
     def get_reports(self, from_time=None, to_time=None, distribution_type=None, submitted_by=None,
                     enclave_ids=None, verify=True):
         """
@@ -148,13 +176,9 @@ class TruStar(object):
         (by default reports from all enclaves are returned)
         :param verify: Optional server SSL verification, default True
         """
-        url = "%s/reports" % self.base
-        headers = self.__get_headers()
         params = {'from': from_time, 'to': to_time, 'distributionType': distribution_type,
                   'submittedBy': submitted_by, 'enclaveIds': enclave_ids}
-        resp = requests.get(url, params=params, headers=headers, verify=verify)
-
-        resp.raise_for_status()
+        resp = self.get("reports", params=params, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
     def get_report_details(self, report_id, id_type=None, verify=True):
@@ -165,12 +189,8 @@ class TruStar(object):
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         :return Incident report dictionary if found, else exception.
         """
-        url = "%s/report/%s" % (self.base, report_id)
-        headers = self.__get_headers()
         params = {'idType': id_type}
-        resp = requests.get(url, params=params, headers=headers, verify=verify)
-
-        resp.raise_for_status()
+        resp = self.get("report/%s" % report_id, params=params, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
     def update_report(self, report_id, id_type=None, title=None, report_body=None, time_began=None,
@@ -188,8 +208,6 @@ class TruStar(object):
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
 
-        url = "%s/report/%s" % (self.base, report_id)
-        headers = self.__get_headers(is_json=True)
         params = {'idType': id_type}
 
         # if enclave_ids field is not null, parse into array of strings
@@ -211,8 +229,7 @@ class TruStar(object):
                                       'distributionType': distribution,
                                       'externalUrl': external_url},
                    'enclaveIds': enclave_ids}
-        resp = requests.put(url, json.dumps(payload), params=params, headers=headers, verify=verify)
-        resp.raise_for_status()
+        resp = self.put("report/%s" % report_id, data=json.dumps(payload), params=params, verify=verify)
 
         return json.loads(resp.content.decode('utf8'))
 
@@ -223,13 +240,8 @@ class TruStar(object):
         :param id_type: indicates if ID is internal report guid or external ID provided by the user
         :param verify: boolean - ignore verifying the SSL certificate if you set verify to False
         """
-
-        url = "%s/report/%s" % (self.base, report_id)
-        headers = self.__get_headers()
         params = {'idType': id_type}
-        resp = requests.delete(url, params=params, headers=headers, verify=verify)
-        resp.raise_for_status()
-
+        resp = self.delete("report/%s" % report_id, params=params, verify=verify)
         return resp
 
     def query_latest_indicators(self, source, indicator_types, limit, interval_size, verify=True):
@@ -243,13 +255,8 @@ class TruStar(object):
         :param verify: Optional server SSL verification, default True
         :return json response of the result
         """
-
-        url = "{}/indicators/latest".format(self.base)
-        headers = self.__get_headers()
         payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
-        resp = requests.get(url, params=payload, headers=headers, verify=verify)
-
-        resp.raise_for_status()
+        resp = self.get("indicators/latest", params=payload, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
     def get_community_trends(self, type, from_time, to_time, page_size, start_page, verify=True):
@@ -265,8 +272,6 @@ class TruStar(object):
         :return: json response of the result
         """
 
-        url = "{}/community-indicators/trending".format(self.base)
-        headers = self.__get_headers()
         payload = {
             'type': type,
             'from': from_time,
@@ -274,7 +279,7 @@ class TruStar(object):
             'pageSize': page_size,
             'startPage': start_page
         }
-        resp = requests.get(url, params=payload, headers=headers, verify=verify)
+        resp = self.get("community-indicators/trending", params=payload, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
     def get_correlated_reports(self, indicator, verify=True):
@@ -283,14 +288,9 @@ class TruStar(object):
         separated by commas
         :param indicator:
         :param verify: Optional server SSL verification, default True
-
         """
-
-        url = "{}/reports/correlate".format(self.base)
-        headers = self.__get_headers()
         payload = {'q': indicator}
-        resp = requests.get(url, params=payload, headers=headers, verify=verify)
-        resp.raise_for_status()
+        resp = self.get("reports/correlate", params=payload, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
     def query_indicators(self, indicators, limit, verify=True):
@@ -301,13 +301,8 @@ class TruStar(object):
         :param limit: max number of results to return
         :param verify: Optional server SSL verification, default True
         """
-
-        url = "{}/indicators".format(self.base)
-        headers = self.__get_headers()
         payload = {'q': indicators, 'limit': limit}
-
-        resp = requests.get(url, params=payload, headers=headers, verify=verify)
-        resp.raise_for_status()
+        resp = self.get("indicators", params=payload, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
     def submit_report(self, report_body, title, external_id=None, external_url=None, time_began=datetime.now(),
@@ -329,8 +324,6 @@ class TruStar(object):
         if distribution_type == 'ENCLAVE' and len(self.enclaveIds) < 1:
             raise Exception("Must specify one or more enclave IDs to submit enclave reports into")
 
-        url = "{}/report".format(self.base)
-        headers = self.__get_headers(is_json=True)
         payload = {'incidentReport': {'title': title,
                                       'externalTrackingId': external_id,
                                       'externalUrl': external_url,
@@ -339,8 +332,7 @@ class TruStar(object):
                                       'distributionType': distribution_type},
                    'enclaveIds': self.enclaveIds}
 
-        resp = requests.post(url, json.dumps(payload), headers=headers, timeout=60, verify=verify)
-        resp.raise_for_status()
+        resp = self.post("report", data=json.dumps(payload), timeout=60, verify=verify)
         return resp.json()
 
     def get_enclave_tags(self, report_id, id_type=None, verify=True):
@@ -351,13 +343,8 @@ class TruStar(object):
         (default Internal)
         :param verify: Optional server SSL verification, default True
         """
-
-        url = "%s/reports/%s/enclave-tags" % (self.base, report_id)
-        headers = self.__get_headers()
         params = {'idType': id_type}
-
-        resp = requests.get(url, params=params, headers=headers, verify=verify)
-        resp.raise_for_status()
+        resp = self.get("reports/%s/enclave-tags" % report_id, params=params, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
     def add_enclave_tag(self, report_id, name, enclave_id, id_type=None, verify=True):
@@ -370,13 +357,8 @@ class TruStar(object):
         (default Internal)
         :param verify: Optional server SSL verification, default True
         """
-
-        url = "%s/reports/%s/enclave-tags" % (self.base, report_id)
-        headers = self.__get_headers()
         params = {'idType': id_type, 'name': name, 'enclaveId': enclave_id}
-
-        resp = requests.post(url, params=params, headers=headers, verify=verify)
-        resp.raise_for_status()
+        resp = self.post("reports/%s/enclave-tags" % report_id, params=params, verify=verify)
         return json.loads(resp.content.decode('utf8'))
 
     def delete_enclave_tag(self, report_id, name, enclave_id, id_type=None, verify=True):
@@ -389,13 +371,8 @@ class TruStar(object):
         (default Internal)
         :param verify: Optional server SSL verification, default True
         """
-
-        url = "%s/reports/%s/enclave-tags" % (self.base, report_id)
-        headers = self.__get_headers()
         params = {'idType': id_type, 'name': name, 'enclaveId': enclave_id}
-
-        resp = requests.delete(url, params=params, headers=headers, verify=verify)
-        resp.raise_for_status()
+        resp = self.delete("reports/%s/enclave-tags" % report_id, params=params, verify=verify)
         return resp.content.decode('utf8')
 
     def get_report_url(self, report_id):
