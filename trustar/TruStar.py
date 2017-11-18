@@ -172,15 +172,27 @@ class TruStar(object):
         return resp
 
     def get(self, path, **kwargs):
+        """
+        Convenience method for making GET calls.
+        """
         return self.request("GET", path, **kwargs)
 
     def put(self, path, **kwargs):
+        """
+        Convenience method for making PUT calls.
+        """
         return self.request("PUT", path, **kwargs)
 
     def post(self, path, **kwargs):
+        """
+        Convenience method for making POST calls.
+        """
         return self.request("POST", path, **kwargs)
 
     def delete(self, path, **kwargs):
+        """
+        Convenience method for making DELETE calls.
+        """
         return self.request("DELETE", path, **kwargs)
 
     def ping(self, **kwargs):
