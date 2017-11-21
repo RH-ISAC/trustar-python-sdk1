@@ -11,6 +11,7 @@ import requests
 import requests.auth
 from builtins import object
 from future import standard_library
+from requests import HTTPError
 from tzlocal import get_localzone
 
 standard_library.install_aliases()
@@ -167,7 +168,20 @@ class TruStar(object):
                                 **kwargs)
 
         if raise_for_status:
-            resp.raise_for_status()
+            try:
+                # raise exception if status code indicates an error
+                resp.raise_for_status()
+            except HTTPError as e:
+                try:
+                    # attempt to get error message from json
+                    message = "{} {} Error: {}".format(resp.status_code,
+                                                       "Client" if resp.status_code < 500 else "Server",
+                                                       resp.json()['message'])
+                except Exception:
+                    # if, for some reason, there is no error message in the json, then raise the original exception
+                    raise e
+                # raise a new HTTPError with the proper message
+                raise HTTPError(message, request=e.request, response=e.response)
 
         return resp
 
@@ -200,6 +214,12 @@ class TruStar(object):
         Ping the API.
         """
         return self.get("ping", **kwargs).content.decode('utf-8').strip('\n')
+
+    def version(self, **kwargs):
+        """
+        Ping the API.
+        """
+        return self.get("version", **kwargs).content.decode('utf-8').strip('\n')
 
     def get_reports(self, from_time=None, to_time=None, distribution_type=None, submitted_by=None,
                     enclave_ids=None, **kwargs):
