@@ -40,8 +40,6 @@ do_reports_mine = True
 search_string = "167.114.35.70,103.255.61.39,miel-maroc.com,malware.exe"
 submit_indicators = "google.com malware.exe 103.255.61.39"
 
-verify = True
-
 
 def to_seconds(days):
     """
@@ -52,7 +50,7 @@ def to_seconds(days):
 
 
 def main():
-    role = "trustar"
+    role = "staging"
     if len(sys.argv) > 1:
         role = sys.argv[1]
 
@@ -72,7 +70,7 @@ def main():
 
         print("Getting Latest Accessible Incident Reports Since 24 hours ago ...")
         try:
-            results = ts.get_reports(from_time=yesterday_time, to_time=current_time, verify=verify)
+            results = ts.get_reports(from_time=yesterday_time, to_time=current_time)
 
             # print(results.get('status'))
             # print(results.get('pageSize'))
@@ -98,7 +96,7 @@ def main():
         print("Getting community only reports for the previous day ...")
         try:
             results = ts.get_reports(from_time=two_days_ago, to_time=yesterday_time,
-                                     distribution_type='COMMUNITY', verify=verify)
+                                     distribution_type='COMMUNITY')
 
             print("Got %s results" % (results.get('totalElements')))
 
@@ -116,7 +114,7 @@ def main():
         print("Getting enclave only reports for the previous week ...")
         try:
             results = ts.get_reports(from_time=a_week_ago, to_time=current_time, distribution_type='ENCLAVE',
-                                     enclave_ids=ts.get_enclave_ids(), verify=verify)
+                                     enclave_ids=ts.get_enclave_ids())
 
             print("Got %s results" % (results.get('totalElements')))
 
@@ -133,8 +131,7 @@ def main():
 
         print("Getting my reports for the previous week ...")
         try:
-            results = ts.get_reports(from_time=a_week_ago, to_time=current_time, submitted_by="me",
-                                     verify=verify)
+            results = ts.get_reports(from_time=a_week_ago, to_time=current_time, submitted_by="me")
 
             print("Got %s results" % (results.get('totalElements')))
 
@@ -147,7 +144,7 @@ def main():
     if do_correlated:
         print("Querying Accessible Correlated Reports...")
         try:
-            results = ts.get_correlated_reports(search_string, verify=verify)
+            results = ts.get_correlated_reports(search_string)
 
             print(results)
             print("%d report(s) correlated with indicators '%s':\n" % (len(results), search_string))
@@ -162,7 +159,7 @@ def main():
         try:
             results = ts.query_latest_indicators(source='INCIDENT_REPORT', indicator_types='ALL',
                                                  interval_size=24,
-                                                 limit=100, verify=verify)
+                                                 limit=100)
             if 'indicators' in results:
                 for ioc_type, value in results['indicators'].items():
                     if len(value) > 0:
@@ -187,7 +184,7 @@ def main():
     if do_query_indicators:
         print("Querying Correlated Indicators with Search String '%s' (first 100)" % search_string)
         try:
-            results = ts.query_indicators(search_string, '100', verify=verify)
+            results = ts.query_indicators(search_string, '100')
 
             indicator_hits = list(results["indicators"])
             if len(indicator_hits) > 0:
@@ -218,7 +215,7 @@ def main():
         print("Submit New Community Incident Report")
         try:
             response = ts.submit_report(submit_indicators, "COMMUNITY API SUBMISSION TEST",
-                                        time_began="2017-02-01T01:23:45", verify=verify)
+                                        time_began="2017-02-01T01:23:45")
             print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
 
             if 'reportIndicators' in response:
@@ -232,8 +229,7 @@ def main():
         print("Submit New Enclave Incident Report")
 
         try:
-            enclave_response = ts.submit_report(submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True,
-                                                verify=verify)
+            enclave_response = ts.submit_report(submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True)
             print("\tURL: %s\n" % ts.get_report_url(enclave_response.get('reportId')))
 
             print(enclave_response)
@@ -251,7 +247,7 @@ def main():
         try:
             submission_response = ts.submit_report(submit_indicators, "Sample SDK Test Report",
                                                    external_id=external_id,
-                                                   time_began="2017-02-01T01:23:45", enclave=True, verify=verify)
+                                                   time_began="2017-02-01T01:23:45", enclave=True)
 
             print("Report Submitted")
             print("\texternalTrackingId: %s" % submission_response.get('externalTrackingId'))
@@ -264,7 +260,7 @@ def main():
     if do_report_details_by_ext_id:
         print("Get Incident Report By External ID")
         try:
-            result = ts.get_report_details(report_id=external_id, id_type="external", verify=verify)
+            result = ts.get_report_details(report_id=external_id, id_type="external")
 
             print("\ttitle: %s" % result.get('title'))
             print("\texternalTrackingId: %s" % result.get('externalTrackingId'))
@@ -281,8 +277,7 @@ def main():
             title = "Updated Sample Title"
             body = "updated report body: 21.22.23.24"
             update_response = ts.update_report(report_id=external_id, id_type="external", title=title,
-                                               report_body=body,
-                                               verify=verify)
+                                               report_body=body)
 
             print("\texternalTrackingId: %s" % update_response.get('externalTrackingId'))
             print("\tindicators: %s" % update_response.get('reportIndicators'))
@@ -295,7 +290,7 @@ def main():
         print("Get Incident Report Details by GUID (TruSTAR internal ID)")
 
         try:
-            result = ts.get_report_details(report_guid, id_type="internal", verify=verify)
+            result = ts.get_report_details(report_guid, id_type="internal")
 
             print("\ttitle: %s" % result.get('title'))
             print("\texternalTrackingId: %s" % result.get('externalTrackingId'))
@@ -310,8 +305,7 @@ def main():
         try:
             title = "New Sample Title"
             body = "new sample body - 7.8.9.10"
-            update_response = ts.update_report(report_guid, id_type="internal", title=title, report_body=body,
-                                               verify=verify)
+            update_response = ts.update_report(report_guid, id_type="internal", title=title, report_body=body)
 
             print("Updated Report using GUID")
             print("\texternalTrackingId: %s" % update_response.get('externalTrackingId'))
@@ -324,7 +318,7 @@ def main():
     if do_report_details_by_guid:
         print("Get Report by GUID (TruSTAR internal ID)")
         try:
-            result = ts.get_report_details(report_guid, id_type="internal", verify=verify)
+            result = ts.get_report_details(report_guid, id_type="internal")
 
             print("\ttitle: %s" % result['title'])
             print("\texternalTrackingId: %s" % result.get('externalTrackingId'))
@@ -339,8 +333,7 @@ def main():
         try:
 
             update_response = ts.update_report(report_id=external_id, id_type='external',
-                                               distribution="COMMUNITY",
-                                               verify=verify)
+                                               distribution="COMMUNITY")
 
             print("Report Released using External ID:")
             print("\texternalTrackingId: %s" % update_response.get('externalTrackingId'))
@@ -354,7 +347,7 @@ def main():
         print("Get Incident Report Details by External ID")
 
         try:
-            result = ts.get_report_details(report_id=external_id, id_type="external", verify=verify)
+            result = ts.get_report_details(report_id=external_id, id_type="external")
 
             print("\ttitle: %s" % result.get('title'))
             print("\texternalTrackingId: %s" % result.get('externalTrackingId'))
@@ -367,7 +360,7 @@ def main():
     if do_delete_report_by_ext_id:
         print("Delete Incident Report by External ID")
         try:
-            response = ts.delete_report(report_id=external_id, id_type="external", verify=verify)
+            response = ts.delete_report(report_id=external_id, id_type="external")
             print("Report Deleted using External ID\n")
 
         except Exception as e:
@@ -379,26 +372,23 @@ def main():
 
         try:
             # submit report
-            response = ts.submit_report(submit_indicators, "Enclave report with tag", enclave=True,
-                                        verify=verify)
+            response = ts.submit_report(submit_indicators, "Enclave report with tag", enclave=True)
             report_id = response.get('reportId')
             print("\tId of new report %s\n" % report_id)
 
             # get back report details, including the enclave it's in
-            response = ts.get_report_details(report_id=report_id, verify=verify)
+            response = ts.get_report_details(report_id=report_id)
             enclave_list = list(response.get('enclaves'))
             enclave_id = enclave_list.pop(0).get('id')
 
             # add an enclave tag
-            response = ts.add_enclave_tag(report_id=report_id, name="triage", enclave_id=enclave_id,
-                                          verify=verify)
+            response = ts.add_enclave_tag(report_id=report_id, name="triage", enclave_id=enclave_id)
             # print the added enclave tag
             print(response)
             print("\tId of new enclave tag %s\n" % response.get('guid'))
 
             # add another enclave tag
-            response = ts.add_enclave_tag(report_id=report_id, name="resolved", enclave_id=enclave_id,
-                                          verify=verify)
+            response = ts.add_enclave_tag(report_id=report_id, name="resolved", enclave_id=enclave_id)
             # print the added enclave tag
             print(response)
             print("\tId of new enclave tag %s\n" % response.get('guid'))
@@ -406,19 +396,19 @@ def main():
             # Get enclave tag info
             if do_get_enclave_tags:
                 print("Get enclave tags for report")
-                response = ts.get_enclave_tags(report_id, verify=verify)
+                response = ts.get_enclave_tags(report_id)
                 print("\tEnclave tags for report %s\n" % report_id)
                 print(json.dumps(response, indent=2))
 
             # delete enclave tag by name
             if do_delete_enclave_tag:
                 print("Delete enclave tag from report")
-                response = ts.delete_enclave_tag(report_id, name="triage", enclave_id=enclave_id, verify=verify)
+                response = ts.delete_enclave_tag(report_id, name="triage", enclave_id=enclave_id)
                 print("\tDeleted enclave tag for report %s\n" % report_id)
                 print(response)
 
             # add it back
-            ts.add_enclave_tag(report_id=report_id, name="triage", enclave_id=enclave_id, verify=verify)
+            ts.add_enclave_tag(report_id=report_id, name="triage", enclave_id=enclave_id)
 
         except Exception as e:
             print('Could not handle enclave tag operation, error: %s' % e)
