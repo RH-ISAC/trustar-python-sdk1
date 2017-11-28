@@ -24,8 +24,7 @@ while reports is None or len(reports) > 0:
     reports = ts.get_reports(from_time=from_time,
                              to_time=to_time,
                              distribution_type="ENCLAVE",
-                             enclave_ids=ts.enclaveIds,
-                             verify=True)
+                             enclave_ids=ts.enclaveIds)
     for report in reports['data']['reports']:
         print("deleting report %s" % report['id'])
-        ts.delete_report(report_id=report['id'], verify=True)
+        ts.delete_report(report_id=report['id'])
