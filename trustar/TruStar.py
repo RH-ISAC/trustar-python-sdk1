@@ -16,6 +16,7 @@ from tzlocal import get_localzone
 
 standard_library.install_aliases()
 
+client_version = "0.2.5"
 
 class TruStar(object):
     """
@@ -25,7 +26,7 @@ class TruStar(object):
     def __init__(self, config_file="trustar.conf",
                        config_role="trustar",
                        client_type="PYTHON_SDK",
-                       client_version="0.3.0",
+                       client_version=client_version,
                        client_metatag=None,
                        verify=True):
 
