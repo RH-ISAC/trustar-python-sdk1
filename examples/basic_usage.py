@@ -172,7 +172,7 @@ def main():
         print("Get community trends")
 
         try:
-            results = ts.get_community_trends(type='other',
+            results = ts.get_community_trends(indicator_type='other',
                                               from_time=yesterday_time,
                                               to_time=current_time,
                                               page_size=5,

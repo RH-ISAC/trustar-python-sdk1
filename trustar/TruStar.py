@@ -7,53 +7,89 @@ from datetime import datetime
 import configparser
 import dateutil.parser
 import pytz
+import math
 import requests
 import requests.auth
 from builtins import object
 from future import standard_library
-from requests import HTTPError
 from tzlocal import get_localzone
+from requests import HTTPError\
 
 standard_library.install_aliases()
 
-client_version = "0.2.5"
+CLIENT_VERSION = "0.3.0"
+
+DISTRIBUTION_TYPE_ENCLAVE = "ENCLAVE"
+DISTRIBUTION_TYPE_COMMUNITY = "COMMUNITY"
+
 
 class TruStar(object):
     """
     Main class you to instantiate the TruStar API
     """
 
-    def __init__(self, config_file="trustar.conf",
-                       config_role="trustar",
-                       client_type="PYTHON_SDK",
-                       client_version=client_version,
-                       client_metatag=None,
-                       verify=True):
+    REQUIRED_KEYS = ['auth', 'base', 'api_key', 'api_secret']
+    DEFAULTS = {
+        'client_type': 'PYTHON_SDK',
+        'client_version': CLIENT_VERSION,
+        'client_metatag': None,
+        'verify': True
+    }
 
-        self.enclaveIds = []
+    def __init__(self, config_file="../examples/trustar.conf", config_role="trustar", config=None):
 
-        self.client_type = client_type
-        self.client_version = client_version
-        self.client_metatag = client_metatag
+        # attempt to use configuration file if one exists
+        if config is None:
 
-        self.verify = verify
+            if config is not None:
+                raise Exception("Cannot use 'config' parameter if also using 'config_file' parameter.")
 
-        config_parser = configparser.RawConfigParser()
-        config_parser.read(config_file)
+            config_parser = configparser.RawConfigParser()
+            config_parser.read(config_file)
 
-        try:
-            # parse required properties
-            self.auth = config_parser.get(config_role, 'auth_endpoint')
-            self.base = config_parser.get(config_role, 'api_endpoint')
-            self.apikey = config_parser.get(config_role, 'user_api_key')
-            self.apisecret = config_parser.get(config_role, 'user_api_secret')
+            try:
+                # parse enclaves
+                if config_parser.has_option(config_role, 'enclave_ids'):
+                    enclave_ids = config_parser.get(config_role, 'enclave_ids').split(',')
+                else:
+                    enclave_ids = []
 
-            # parse enclaves
-            if config_parser.has_option(config_role, 'enclave_ids'):
-                self.enclaveIds = [i for i in config_parser.get(config_role, 'enclave_ids').split(',') if i is not None]
-        except Exception as e:
-            print("Problem reading config file: %s", e)
-            raise
+                # use config file to create config dict
+                config = {
+                    'auth': config_parser.get(config_role, 'auth_endpoint'),
+                    'base': config_parser.get(config_role, 'api_endpoint'),
+                    'api_key': config_parser.get(config_role, 'user_api_key'),
+                    'api_secret': config_parser.get(config_role, 'user_api_secret'),
+                    'client_type': config_parser.get(config_role, 'client_type', fallback=None),
+                    'client_version': config_parser.get(config_role, 'client_version', fallback=None),
+                    'client_metatag': config_parser.get(config_role, 'client_metatag', fallback=None),
+                    'verify': config_parser.get(config_role, 'verify', fallback=None),
+                    'enclave_ids': [x.strip() for x in enclave_ids if x is not None]
+                }
+
+            except Exception as e:
+                raise KeyError("Problem reading config file: %s" % e)
+
+        # set properties from config dict
+        for key, val in config.items():
+            if val is None:
+                # ensure required properties are present
+                if val in TruStar.REQUIRED_KEYS:
+                    raise Exception("Missing config value for %s" % key)
+                elif val in TruStar.DEFAULTS:
+                    config[key] = TruStar.DEFAULTS[key]
+
+        # set properties
+        self.auth = config['auth']
+        self.base = config['base']
+        self.api_key = config['api_key']
+        self.api_secret = config['api_secret']
+        self.client_type = config['client_type']
+        self.client_version = config['client_version']
+        self.client_metatag = config['client_metatag']
+        self.verify = config['verify']
+        self.enclave_ids = config['enclave_ids']
+
 
     @staticmethod
     def normalize_timestamp(date_time):
@@ -92,13 +128,8 @@ class TruStar(object):
 
         # if timestamp is timezone naive, add timezone
         if not datetime_dt.tzinfo:
-            timezone = get_localzone()
-
-            # add system timezone
-            datetime_dt = timezone.localize(datetime_dt)
-
-            # convert to UTC
-            datetime_dt = datetime_dt.astimezone(pytz.utc)
+            # add system timezone and convert to UTC
+            datetime_dt = get_localzone().localize(datetime_dt).astimezone(pytz.utc)
 
         # converts datetime to iso8601
         return datetime_dt.isoformat()
@@ -108,11 +139,17 @@ class TruStar(object):
         Retrieves the OAUTH token generated by your API key and API secret.
         this function has to be called before any API calls can be made
         """
-        client_auth = requests.auth.HTTPBasicAuth(self.apikey, self.apisecret)
+        client_auth = requests.auth.HTTPBasicAuth(self.api_key, self.api_secret)
         post_data = {"grant_type": "client_credentials"}
-        resp = requests.post(self.auth, auth=client_auth, data=post_data)
-        resp.raise_for_status()
-        return resp.json()["access_token"]
+        response = requests.post(self.auth, auth=client_auth, data=post_data)
+
+        # raise exception if status code indicates an error
+        if 400 <= response.status_code < 600:
+            message = "{} {} Error: {}".format(response.status_code,
+                                               "Client" if response.status_code < 500 else "Server",
+                                               "unable to get token")
+            raise HTTPError(message=message, response=response)
+        return response.json()["access_token"]
 
     def __get_headers(self, is_json=False):
         """
@@ -138,13 +175,12 @@ class TruStar(object):
 
         return headers
 
-    def __request(self, method, path, headers=None, raise_for_status=True, **kwargs):
+    def __request(self, method, path, headers=None, **kwargs):
         """
         A wrapper around requests.request that handles boilerplate code specific to TruStar's API.
         :param method: The method of the request ("GET", "PUT", "POST", or "DELETE")
         :param path: The path of the request, i.e. the piece of the URL after the base URL
         :param headers: A dictionary of headers that will be merged with the base headers for the SDK
-        :param raise_for_status: Whether to raise an exception if the response's status indicates an error
         :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
         :return: The response object.
         """
@@ -155,29 +191,23 @@ class TruStar(object):
             base_headers.update(headers)
 
         # make request
-        resp = requests.request(method=method,
-                                url="{}/{}".format(self.base, path),
-                                headers=base_headers,
-                                verify=self.verify,
-                                **kwargs)
+        response = requests.request(method=method,
+                                    url="{}/{}".format(self.base, path),
+                                    headers=base_headers,
+                                    verify=self.verify,
+                                    **kwargs)
 
-        if raise_for_status:
-            try:
-                # raise exception if status code indicates an error
-                resp.raise_for_status()
-            except HTTPError as e:
-                try:
-                    # attempt to get error message from json
-                    message = "{} {} Error: {}".format(resp.status_code,
-                                                       "Client" if resp.status_code < 500 else "Server",
-                                                       resp.json()['message'])
-                except Exception:
-                    # if, for some reason, there is no error message in the json, then raise the original exception
-                    raise e
-                # raise a new HTTPError with the proper message
-                raise HTTPError(message, request=e.request, response=e.response)
-
-        return resp
+        # raise exception if status code indicates an error
+        if 400 <= response.status_code < 600:
+            if 'message' in response.json():
+                reason = response.json()['message']
+            else:
+                reason = "unknown cause"
+            message = "{} {} Error: {}".format(response.status_code,
+                                               "Client" if response.status_code < 500 else "Server",
+                                               reason)
+            raise HTTPError(message, response=response)
+        return response
 
     def __get(self, path, **kwargs):
         """
@@ -211,6 +241,25 @@ class TruStar(object):
         """
         return self.__request("DELETE", path, **kwargs)
 
+    def get_report_url(self, report_id):
+        """
+        Build direct URL to report from its ID
+        :param report_id: Incident Report (IR) ID, e.g., as returned from `submit_report`
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
+        :return URL
+        """
+
+        # Check environment for URL
+        base_url = 'https://station.trustar.co' if ('https://api.trustar.co' in self.base) else \
+            self.base.split('/api/')[0]
+
+        return "%s/constellation/reports/%s" % (base_url, report_id)
+
+
+    #####################
+    ### API Endpoints ###
+    #####################
+
     def ping(self, **kwargs):
         """
         Ping the API.
@@ -225,24 +274,10 @@ class TruStar(object):
         """
         return self.__get("version", **kwargs).content.decode('utf-8').strip('\n')
 
-    def get_reports(self, from_time=None, to_time=None, distribution_type=None, submitted_by=None,
-                    enclave_ids=None, **kwargs):
-        """
-        Retrieves reports filtering by time window, distribution type, ownership, and enclave association
-        :param from_time: Optional start of time window (Unix timestamp - seconds since epoch)
-        :param to_time: Optional end of time window (Unix timestamp - seconds since epoch)
-        :param distribution_type: Optional, restrict reports to specific distribution type
-        (by default all accessible reports are returned). Possible values are: 'COMMUNITY' and 'ENCLAVE'
-        :param submitted_by: Optional, restrict reports by ownership (by default all accessible reports are returned).
-        Possible values are: 'me' and 'others'
-        :param enclave_ids: Optional comma separated list of enclave ids, restrict reports to specific enclaves
-        (by default reports from all enclaves are returned)
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
-        """
-        params = {'from': from_time, 'to': to_time, 'distributionType': distribution_type,
-                  'submittedBy': submitted_by, 'enclaveIds': enclave_ids}
-        resp = self.__get("reports", params=params, **kwargs)
-        return json.loads(resp.content.decode('utf8'))
+
+    ########################
+    ### Report Endpoints ###
+    ########################
 
     def get_report_details(self, report_id, id_type=None, **kwargs):
         """
@@ -256,8 +291,78 @@ class TruStar(object):
         resp = self.__get("report/%s" % report_id, params=params, **kwargs)
         return json.loads(resp.content.decode('utf8'))
 
-    def update_report(self, report_id, id_type=None, title=None, report_body=None, time_began=None,
-                      external_url=None, distribution=None, enclave_ids=None, **kwargs):
+    def get_reports(self, distribution_type=DISTRIBUTION_TYPE_ENCLAVE, enclave_ids=None,
+                    from_time=None, to_time=None, page_number=None, page_size=None, **kwargs):
+        """
+        Retrieves reports filtering by time window, distribution type, and enclave association.
+
+        :param distribution_type: Optional, restrict reports to specific distribution type
+        (by default all accessible reports are returned). Possible values are: 'COMMUNITY' and 'ENCLAVE'
+        :param enclave_ids: Optional comma separated list of enclave ids, restrict reports to specific enclaves
+        (by default reports from all enclaves are returned)
+        :param from_time: Optional start of time window (Unix timestamp - seconds since epoch)
+        :param to_time: Optional end of time window (Unix timestamp - seconds since epoch)
+        :param page_number: The page number to get.
+        :param page_size: The size of the page to be returned.
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
+        """
+
+        # make enclave_ids default to configured list of enclave IDs
+        if enclave_ids is None and distribution_type is not None and distribution_type.upper() == DISTRIBUTION_TYPE_ENCLAVE:
+            enclave_ids = self.enclave_ids
+
+        params = {
+            'from': from_time,
+            'to': to_time,
+            'distributionType': distribution_type,
+            'enclaveIds': enclave_ids,
+            'pageNumber': page_number,
+            'pageSize': page_size
+        }
+        resp = self.__get("reports", params=params, **kwargs)
+
+        body = json.loads(resp.content.decode('utf8'))
+        body['items'] = [Report.from_dict(report) for report in body['items']]
+
+        return Page.from_dict(body)
+
+
+    def submit_report(self, report_body=None, title=None, external_id=None, external_url=None, time_began=datetime.now(),
+                      enclave=False, enclave_ids=None, report=None, **kwargs):
+        """
+        Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
+        By default, this submits to the TruSTAR community. To submit to your enclave(s), set enclave parameter to True,
+        and ensure that the target enclaves' ids are specified in the config file field enclave_ids.
+        :param report_body: body of report
+        :param title: title of report
+        :param external_id: external tracking id of report, optional if user doesn't have their own tracking id that they want associated with this report
+        :param external_url: external url of report, optional and is associated with the original source of this report
+        :param time_began: time report began
+        :param enclave: boolean - whether or not to submit report to user's enclaves (see 'enclave_ids' config property)
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
+        """
+
+        if report is None:
+            if enclave_ids is None:
+                enclave_ids = self.enclave_ids
+            report = Report(title=title,
+                            body=report_body,
+                            time_began=time_began,
+                            external_id=external_id,
+                            external_url=external_url,
+                            is_enclave=enclave,
+                            enclave_ids=enclave_ids)
+
+        payload = {
+            'incidentReport': report.to_dict(),
+            'enclaveIds': report.enclave_ids
+        }
+
+        resp = self.__post("report", data=json.dumps(payload), timeout=60, **kwargs)
+        return resp.json()
+
+    def update_report(self, report_id=None, id_type=None, title=None, report_body=None, time_began=None,
+                      external_url=None, distribution=None, enclave_ids=None, report=None, **kwargs):
         """
         Updates report with the given id, overwrites any fields that are provided
         :param report_id: Incident Report ID
@@ -271,29 +376,32 @@ class TruStar(object):
         :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
         """
 
+        if report is None:
+            if enclave_ids is None:
+                enclave_ids = self.enclave_ids
+            report = Report(id=report_id,
+                            title=title,
+                            body=report_body,
+                            time_began=time_began,
+                            external_url=external_url,
+                            is_enclave=distribution is None or distribution.upper() == Report.DISTRIBUTION_TYPE_ENCLAVE,
+                            enclave_ids=enclave_ids)
+
+        id_type = id_type or Report.ID_TYPE_INTERNAL
+
+        if id_type.upper() == Report.ID_TYPE_EXTERNAL:
+            report_id = report.external_id
+        else:
+            report_id = report.id
+
+
         params = {'idType': id_type}
+        payload = {
+            'incidentReport': report.to_dict(update=True),
+            'enclaveIds': report.enclave_ids
+        }
 
-        # if enclave_ids field is not null, parse into array of strings
-        if enclave_ids:
-            # if string, interpret as comma-separated list and convert to python list
-            if isinstance(enclave_ids, str) or isinstance(enclave_ids, unicode):
-                enclave_ids = enclave_ids.split(',')
-
-            # filter out None values
-            if isinstance(enclave_ids, list):
-                enclave_ids = [i for i in enclave_ids if i is not None]
-            # ensure enclave_ids is a list
-            else:
-                raise Exception("enclave_ids parameter should be either a list or a comma-separated list in string form")
-
-        payload = {'incidentReport': {'title': title,
-                                      'reportBody': report_body,
-                                      'timeBegan': self.normalize_timestamp(time_began),
-                                      'distributionType': distribution,
-                                      'externalUrl': external_url},
-                   'enclaveIds': enclave_ids}
         resp = self.__put("report/%s" % report_id, data=json.dumps(payload), params=params, **kwargs)
-
         return json.loads(resp.content.decode('utf8'))
 
     def delete_report(self, report_id, id_type=None, **kwargs):
@@ -307,25 +415,42 @@ class TruStar(object):
         resp = self.__delete("report/%s" % report_id, params=params, **kwargs)
         return resp
 
-    def query_latest_indicators(self, source, indicator_types, limit, interval_size, **kwargs):
+    def get_correlated_reports(self, indicators, **kwargs):
         """
-        Finds all latest indicators
-        :param source: source of the indicators which can either be INCIDENT_REPORT or OSINT
-        :param indicator_types: a list of indicators or a string equal to "ALL" to query all indicator types extracted
-        by TruSTAR
-        :param limit: limit on the number of indicators. Max is set to 5000
-        :param interval_size: time interval on returned indicators. Max is set to 24 hours
+        Retrieves all TruSTAR reports that contain the searched indicator. You can specify multiple indicators
+        separated by commas
+        :param indicators: The list of indicators to retrieve correlated reports for.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
-        :return json response of the result
         """
-        payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
-        resp = self.__get("indicators/latest", params=payload, **kwargs)
+        payload = {'indicators': indicators}
+        resp = self.__get("reports/correlate", params=payload, **kwargs)
         return json.loads(resp.content.decode('utf8'))
 
-    def get_community_trends(self, type, from_time, to_time, page_size, start_page, **kwargs):
+
+    ###########################
+    ### Indicator Endpoints ###
+    ###########################
+
+    # def query_latest_indicators(self, source, indicator_types, limit, interval_size, **kwargs):
+    #     """
+    #     Finds all latest indicators
+    #     :param source: source of the indicators which can either be INCIDENT_REPORT or OSINT
+    #     :param indicator_types: a list of indicators or a string equal to "ALL" to query all indicator types extracted
+    #     by TruSTAR
+    #     :param limit: limit on the number of indicators. Max is set to 5000
+    #     :param interval_size: time interval on returned indicators. Max is set to 24 hours
+    #     :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
+    #     :return json response of the result
+    #     """
+    #     payload = {'source': source, 'types': indicator_types, 'limit': limit, 'intervalSize': interval_size}
+    #     resp = self.__get("indicators/latest", params=payload, **kwargs)
+    #     return json.loads(resp.content.decode('utf8'))
+
+    def get_community_trends(self, indicator_type=None, from_time=None, to_time=None, page_size=None, page_number=None, **kwargs):
         """
         Find community trending indicators.
-        :param type: the type of indicators.  3 types are supported: "malware", "cve" (vulnerabilities), "other" (all
+        :param indicator_type: the type of indicators.  3 types are supported: "malware", "cve" (vulnerabilities),
+        "other" (all
         other types of indicators)
         :param from_time: Optional start of time window (Unix timestamp - seconds since epoch)
         :param to_time: Optional end of time window (Unix timestamp - seconds since epoch)
@@ -336,67 +461,47 @@ class TruStar(object):
         """
 
         payload = {
-            'type': type,
+            'type': indicator_type,
             'from': from_time,
             'to': to_time,
             'pageSize': page_size,
-            'startPage': start_page
+            'pageNumber': page_number
         }
-        resp = self.__get("community-indicators/trending", params=payload, **kwargs)
+        resp = self.__get("indicators/community-trending", params=payload, **kwargs)
+        return Page.from_dict(json.loads(resp.content.decode('utf8')))
+
+    def get_related_indicators(self, indicators=None, sources=None, page_number=None, page_size=None, **kwargs):
+        """
+         Finds all reports that contain the indicators and returns correlated indicators from those reports.
+         :param indicators: list of indicators to search for
+         :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
+         """
+        params = {
+            'indicators': indicators,
+            'sources': sources,
+            'pageNumber': page_number,
+            'pageSize': page_size
+        }
+        resp = self.__get("indicators/related", params=params, **kwargs)
+        return Page.from_dict(json.loads(resp.content.decode('utf8')))
+
+    def get_related_external_indicators(self, indicators=None, sources=None, **kwargs):
+        """
+         Finds all reports that contain the indicators and returns correlated indicators from those reports.
+         :param indicators: list of indicators to search for
+         :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
+         """
+        params = {
+            'indicators': indicators,
+            'sources': sources
+        }
+        resp = self.__get("indicators/external/related", params=params, **kwargs)
         return json.loads(resp.content.decode('utf8'))
 
-    def get_correlated_reports(self, indicators, **kwargs):
-        """
-        Retrieves all TruSTAR reports that contain the searched indicator. You can specify multiple indicators
-        separated by commas
-        :param indicators: The list of indicators to retrieve correlated reports for.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
-        """
-        payload = {'q': indicators}
-        resp = self.__get("reports/correlate", params=payload, **kwargs)
-        return json.loads(resp.content.decode('utf8'))
 
-    def query_indicators(self, indicators, limit, **kwargs):
-        """
-        Finds all reports that contain the indicators and returns correlated indicators from those reports.
-        you can specify the limit of indicators returned.
-        :param indicators: list of space-separated indicators to search for
-        :param limit: max number of results to return
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
-        """
-        payload = {'q': indicators, 'limit': limit}
-        resp = self.__get("indicators", params=payload, **kwargs)
-        return json.loads(resp.content.decode('utf8'))
-
-    def submit_report(self, report_body, title, external_id=None, external_url=None, time_began=datetime.now(),
-                      enclave=False, **kwargs):
-        """
-        Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
-        By default, this submits to the TruSTAR community. To submit to your enclave(s), set enclave parameter to True,
-        and ensure that the target enclaves' ids are specified in the config file field enclave_ids.
-        :param report_body: body of report
-        :param title: title of report
-        :param external_id: external tracking id of report, optional if user doesn't have their own tracking id that they want associated with this report
-        :param external_url: external url of report, optional and is associated with the original source of this report 
-        :param time_began: time report began
-        :param enclave: boolean - whether or not to submit report to user's enclaves (see 'enclave_ids' config property)
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
-        """
-
-        distribution_type = 'ENCLAVE' if enclave else 'COMMUNITY'
-        if distribution_type == 'ENCLAVE' and len(self.enclaveIds) < 1:
-            raise Exception("Must specify one or more enclave IDs to submit enclave reports into")
-
-        payload = {'incidentReport': {'title': title,
-                                      'externalTrackingId': external_id,
-                                      'externalUrl': external_url,
-                                      'timeBegan': self.normalize_timestamp(time_began),
-                                      'reportBody': report_body,
-                                      'distributionType': distribution_type},
-                   'enclaveIds': self.enclaveIds}
-
-        resp = self.__post("report", data=json.dumps(payload), timeout=60, **kwargs)
-        return resp.json()
+    #####################
+    ### Tag Endpoints ###
+    #####################
 
     def get_enclave_tags(self, report_id, id_type=None, **kwargs):
         """
@@ -420,7 +525,11 @@ class TruStar(object):
         (default Internal)
         :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
         """
-        params = {'idType': id_type, 'name': name, 'enclaveId': enclave_id}
+        params = {
+            'idType': id_type,
+            'name': name,
+            'enclaveId': enclave_id
+        }
         resp = self.__post("reports/%s/enclave-tags" % report_id, params=params, **kwargs)
         return json.loads(resp.content.decode('utf8'))
 
@@ -434,28 +543,186 @@ class TruStar(object):
         (default Internal)
         :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
         """
-        params = {'idType': id_type, 'name': name, 'enclaveId': enclave_id}
+        params = {
+            'idType': id_type,
+            'name': name,
+            'enclaveId': enclave_id
+        }
         resp = self.__delete("reports/%s/enclave-tags" % report_id, params=params, **kwargs)
         return resp.content.decode('utf8')
 
-    def get_report_url(self, report_id):
-        """
-        Build direct URL to report from its ID
-        :param report_id: Incident Report (IR) ID, e.g., as returned from `submit_report`
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
-        :return URL
-        """
 
-        # Check environment for URL
-        base_url = 'https://station.trustar.co' if ('https://api.trustar.co' in self.base) else \
-            self.base.split('/api/')[0]
+    #################
+    ### Iterators ###
+    #################
 
-        return "%s/constellation/reports/%s" % (base_url, report_id)
+    @staticmethod
+    def get_page_iterator(func, start_page=0, page_size=None):
+        page_number = start_page
+        more_pages = True
+        while more_pages:
+            page = func(page_number=page_number, page_size=page_size)
+            yield page
+            more_pages = page.has_more_pages()
+            page_number += 1
 
-    def get_enclave_ids(self):
-        """
-        Exposes the enclave ids as fetched from the configuration file
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
-        :return: list of enclave ids
-        """
-        return self.enclaveIds
+    @classmethod
+    def get_iterator(cls, func=None, page_iterator=None):
+
+        if page_iterator is None:
+            if func is None:
+                raise Exception("To use 'get_iterator', must provide either a page iterator or a method.")
+            else:
+                page_iterator = cls.get_page_iterator(func)
+
+        for page in page_iterator:
+            for item in page.items:
+                yield item
+
+    def get_report_page_iterator(self, start_page=0, page_size=None, **kwargs):
+        def func(page_number, page_size):
+            return self.get_reports(page_number=page_number, page_size=page_size, **kwargs)
+
+        return self.get_page_iterator(func, start_page, page_size)
+
+    def get_report_iterator(self, **kwargs):
+        return self.get_iterator(page_iterator=self.get_report_page_iterator(**kwargs))
+
+    def get_community_trends_page_iterator(self, start_page=0, page_size=None, **kwargs):
+        def func(page_number, page_size):
+            return self.get_community_trends(page_number=page_number, page_size=page_size, **kwargs)
+
+        return self.get_page_iterator(func, start_page, page_size)
+
+    def get_community_trends_iterator(self, **kwargs):
+        return self.get_iterator(page_iterator=self.get_community_trends_page_iterator(**kwargs))
+
+    def get_related_indicators_page_iterator(self, start_page=0, page_size=None, **kwargs):
+        def func(page_number, page_size):
+            return self.get_related_indicators(page_number=page_number, page_size=page_size, **kwargs)
+
+        return self.get_page_iterator(func, start_page, page_size)
+
+    def get_related_indicators_iterator(self, **kwargs):
+        return self.get_iterator(page_iterator=self.get_related_indicators_page_iterator(**kwargs))
+
+
+class Report(object):
+
+    ID_TYPE_INTERNAL = "INTERNAL"
+    ID_TYPE_EXTERNAL = "EXTERNAL"
+
+    def __init__(self,
+                 id=None,
+                 title=None,
+                 body=None,
+                 time_began=None,
+                 external_id=None,
+                 external_url=None,
+                 is_enclave=True,
+                 enclave_ids=None):
+
+        if is_enclave:
+
+            # if string, convert comma-separated list into python list
+            if isinstance(enclave_ids, str) or isinstance(enclave_ids, unicode):
+                enclave_ids = [x.strip() for x in enclave_ids.split(',')]
+
+            # ensure is list
+            if not isinstance(enclave_ids, list):
+                raise ValueError("Enclave IDs must either be a list or a comma-separated string.")
+
+            # ensure non-empty
+            if len(enclave_ids) == 0:
+                raise ValueError("Enclave report must have one or more enclave IDs.")
+
+            # filter out None values
+            enclave_ids = [i for i in enclave_ids if i is not None]
+
+        self.id = id
+        self.title = title
+        self.body = body
+        self.time_began = time_began
+        self.external_id = external_id
+        self.external_url = external_url
+        self.is_enclave = is_enclave
+        self.enclave_ids = enclave_ids
+
+    def get_distribution_type(self):
+        if self.is_enclave:
+            return DISTRIBUTION_TYPE_ENCLAVE
+        else:
+            return DISTRIBUTION_TYPE_COMMUNITY
+
+    def to_dict(self, update=False):
+        result = {
+            'title': self.title,
+            'reportBody': self.body,
+            'timeBegan': TruStar.normalize_timestamp(self.time_began),
+            'externalUrl': self.external_url,
+            'distributionType': self.get_distribution_type()
+        }
+
+        if not update:
+            result['externalTrackingId'] = self.external_id
+
+        return result
+
+    @classmethod
+    def from_dict(cls, report):
+
+        is_enclave = report.get('distributionType')
+        if is_enclave is not None:
+            is_enclave = is_enclave.upper() != DISTRIBUTION_TYPE_COMMUNITY
+
+        return Report(
+            id=report.get('id'),
+            title=report.get('title'),
+            body=report.get('reportBody'),
+            time_began=report.get('timeBegan'),
+            external_url=report.get('externalUrl'),
+            is_enclave=is_enclave
+        )
+
+    def __str__(self):
+        return json.dumps(self.to_dict())
+
+
+class Page(object):
+
+    def __init__(self, items=None, page_number=None, page_size=None, total_elements=None):
+        self.items = items
+        self.page_number = page_number
+        self.page_size = page_size
+        self.total_elements = total_elements
+
+    def get_total_pages(self):
+        return math.ceil(self.total_elements / self.page_size)
+
+    def has_more_pages(self):
+        return self.page_number < self.get_total_pages()
+
+    @staticmethod
+    def from_dict(page):
+        return Page(items=page['items'],
+                    page_number=page['pageNumber'],
+                    page_size=page['pageSize'],
+                    total_elements=page['totalElements'])
+
+    def to_dict(self):
+        items = []
+        for item in self.items:
+            if hasattr(item, 'to_dict'):
+                items.append(item.to_dict())
+            else:
+                items.append(item)
+
+        return {
+            'items': items,
+            'pageNumber': self.page_number,
+            'pageSize': self.page_size,
+            'totalElements': self.total_elements
+        }
+
+    def __str__(self):
+        return json.dumps(self.to_dict())
