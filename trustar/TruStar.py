@@ -226,7 +226,7 @@ class TruStar(object):
         return self.__get("version", **kwargs).content.decode('utf-8').strip('\n')
 
     def get_reports(self, from_time=None, to_time=None, distribution_type=None, submitted_by=None,
-                    enclave_ids=None, **kwargs):
+                    enclave_ids=None, tag=None, **kwargs):
         """
         Retrieves reports filtering by time window, distribution type, ownership, and enclave association
         :param from_time: Optional start of time window (Unix timestamp - seconds since epoch)
@@ -237,10 +237,12 @@ class TruStar(object):
         Possible values are: 'me' and 'others'
         :param enclave_ids: Optional comma separated list of enclave ids, restrict reports to specific enclaves
         (by default reports from all enclaves are returned)
+        :param tag: Optional tag that must be present in the list of enclave ids passed as parameter (or in an enclave
+        the user has access to). Tag is found by name
         :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
         """
         params = {'from': from_time, 'to': to_time, 'distributionType': distribution_type,
-                  'submittedBy': submitted_by, 'enclaveIds': enclave_ids}
+                  'submittedBy': submitted_by, 'enclaveIds': enclave_ids, 'tag': tag}
         resp = self.__get("reports", params=params, **kwargs)
         return json.loads(resp.content.decode('utf8'))
 
@@ -377,7 +379,7 @@ class TruStar(object):
         :param report_body: body of report
         :param title: title of report
         :param external_id: external tracking id of report, optional if user doesn't have their own tracking id that they want associated with this report
-        :param external_url: external url of report, optional and is associated with the original source of this report 
+        :param external_url: external url of report, optional and is associated with the original source of this report
         :param time_began: time report began
         :param enclave: boolean - whether or not to submit report to user's enclaves (see 'enclave_ids' config property)
         :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
@@ -459,3 +461,14 @@ class TruStar(object):
         :return: list of enclave ids
         """
         return self.enclaveIds
+
+    def get_all_enclave_tags(self, enclave_ids=None, **kwargs):
+        """
+        Retrieves all tags present in the enclaves passed as parameter. If the enclave list is empty, the
+        tags returned include all tags for enclaves the user has access to
+        :param enclave_ids: Optional comma separated list of enclave ids
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
+        """
+        params = {'enclaveIds': enclave_ids}
+        resp = self.__get("enclave-tags", params=params, **kwargs)
+        return json.loads(resp.content.decode('utf8'))
