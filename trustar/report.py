@@ -7,6 +7,9 @@ DISTRIBUTION_TYPE_COMMUNITY = "COMMUNITY"
 
 
 class Report(object):
+    """
+    Models an incident report.
+    """
 
     ID_TYPE_INTERNAL = "INTERNAL"
     ID_TYPE_EXTERNAL = "EXTERNAL"
@@ -21,6 +24,7 @@ class Report(object):
                  is_enclave=True,
                  enclave_ids=None):
 
+        # if the report belongs to any enclaves, resolve the list of enclave IDs
         if is_enclave:
 
             # if string, convert comma-separated list into python list
@@ -48,24 +52,26 @@ class Report(object):
         self.enclave_ids = enclave_ids
 
     def get_distribution_type(self):
+        """
+        :return: A string indicating whether the report belongs to an enclave or not.
+        """
         if self.is_enclave:
             return DISTRIBUTION_TYPE_ENCLAVE
         else:
             return DISTRIBUTION_TYPE_COMMUNITY
 
-    def to_dict(self, update=False):
-        result = {
+    def to_dict(self):
+        """
+        :return: A dictionary representation of the report.
+        """
+        return {
             'title': self.title,
             'reportBody': self.body,
             'timeBegan': normalize_timestamp(self.time_began),
             'externalUrl': self.external_url,
-            'distributionType': self.get_distribution_type()
+            'distributionType': self.get_distribution_type(),
+            'externalTrackingId': self.external_id
         }
-
-        if not update:
-            result['externalTrackingId'] = self.external_id
-
-        return result
 
     @classmethod
     def from_dict(cls, report):

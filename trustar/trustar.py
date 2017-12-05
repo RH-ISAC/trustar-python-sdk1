@@ -372,10 +372,12 @@ class TruStar(object):
         else:
             report_id = report.id
 
+        # not allowed to update value of 'externalTrackingId', so remove it
+        report_dict = {k: v for k, v in report.to_dict() if k != 'externalTrackingId'}
 
         params = {'idType': id_type}
         payload = {
-            'incidentReport': report.to_dict(update=True),
+            'incidentReport': report_dict,
             'enclaveIds': report.enclave_ids
         }
 

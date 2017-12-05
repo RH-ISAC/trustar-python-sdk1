@@ -19,8 +19,8 @@ class TruStarTests(unittest.TestCase):
         self.ts = TruStar()
 
     def test_get_reports(self):
-        for t in [yesterday_time, old_time]:
-            reports = self.ts.get_reports(from_time=t,
+        for from_time in [yesterday_time, old_time]:
+            reports = self.ts.get_reports(from_time=from_time,
                                           to_time=current_time,
                                           distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
             print(reports)
@@ -59,7 +59,6 @@ class TruStarTests(unittest.TestCase):
         # delete report
         response = self.ts.delete_report(report_id=report.id)
         self.assertEqual(response.status_code, 200)
-
 
     def test_community_trends(self):
         for indicator_type in ['malware', 'cve', None]:
