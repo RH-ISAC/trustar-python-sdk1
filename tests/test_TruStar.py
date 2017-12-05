@@ -1,5 +1,10 @@
 import unittest
+
 from trustar import *
+
+import time
+import json
+
 
 DAY = 24 * 60 * 60 * 1000
 
@@ -14,12 +19,12 @@ class TruStarTests(unittest.TestCase):
         self.ts = TruStar()
 
     def test_get_reports(self):
-        reports = self.ts.get_reports(from_time=old_time,
-                                      to_time=current_time,
-                                      distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
-        print(reports)
+        for t in [yesterday_time, old_time]:
+            reports = self.ts.get_reports(from_time=t,
+                                          to_time=current_time,
+                                          distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
+            print(reports)
 
-    @unittest.skip
     def test_submit_report(self):
         # create and submit report
         report = Report(title="Report 1",
@@ -69,6 +74,9 @@ class TruStarTests(unittest.TestCase):
         result = self.ts.get_related_external_indicators(indicators=["evil", "1.2.3.4", "wannacry"],
                                                          sources=["facebook", "crowdstrike"])
 
+    def test_get_correlated_reports(self):
+        result = self.ts.get_correlated_reports(["evil", "wannacry"])
+
     def test_page_iterator(self):
         def func(page_size, page_number):
             return self.ts.get_reports(from_time=old_time,
@@ -77,7 +85,7 @@ class TruStarTests(unittest.TestCase):
                                        page_number=page_number,
                                        page_size=page_size)
 
-        page_iterator = self.ts.get_page_iterator(func)
+        page_iterator = self.ts.get_page_generator(func)
 
         count = 0
         total = None
@@ -100,7 +108,7 @@ class TruStarTests(unittest.TestCase):
                                        page_number=page_number,
                                        page_size=page_size)
 
-        iterator = self.ts.get_iterator(func)
+        iterator = self.ts.get_generator(func)
 
         count = 0
         total = func(page_number=0, page_size=1).total_elements
