@@ -413,6 +413,20 @@ def main():
             # add it back
             ts.add_enclave_tag(report_id=report_id, name="triage", enclave_id=enclave_id)
 
+            # List all enclave tags
+            result = ts.get_all_enclave_tags(enclave_ids=ts.enclave_ids)
+            print("List of enclave tags for enclave %s\n" % enclave_id)
+            print(json.dumps(result, indent=2))
+
+            # Search report by tag
+            results = ts.get_reports(from_time=yesterday_time, to_time=current_time, enclave_ids=ts.enclave_ids,
+                                     tag="triage")
+            # print("Got %s results" % (results.get('totalElements')))
+
+            for result in results:
+                print(result)
+            print()
+
         except Exception as e:
             print('Could not handle enclave tag operation, error: %s' % e)
 

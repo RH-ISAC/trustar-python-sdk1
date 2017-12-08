@@ -257,7 +257,7 @@ class TruStar(object):
         resp = self.__get("report/%s" % report_id, params=params, **kwargs)
         return json.loads(resp.content.decode('utf8'))
 
-    def get_reports(self, distribution_type=DISTRIBUTION_TYPE_ENCLAVE, enclave_ids=None,
+    def get_reports(self, distribution_type=DISTRIBUTION_TYPE_ENCLAVE, enclave_ids=None, tag=None,
                     from_time=None, to_time=None, page_number=None, page_size=None, **kwargs):
         """
         Retrieves reports filtering by time window, distribution type, and enclave association.
@@ -270,6 +270,8 @@ class TruStar(object):
         :param to_time: Optional end of time window (Unix timestamp - milliseconds since epoch)
         :param page_number: The page number to get.
         :param page_size: The size of the page to be returned.
+        :param tag: Optional tag that must be present in the list of enclave ids passed as parameter (or in an enclave
+        the user has access to). Tag is found by name
         :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
         """
 
@@ -282,6 +284,7 @@ class TruStar(object):
             'to': to_time,
             'distributionType': distribution_type,
             'enclaveIds': enclave_ids,
+            'tag': tag,
             'pageNumber': page_number,
             'pageSize': page_size
         }
@@ -526,6 +529,17 @@ class TruStar(object):
         }
         resp = self.__delete("reports/%s/enclave-tags" % report_id, params=params, **kwargs)
         return resp.content.decode('utf8')
+
+    def get_all_enclave_tags(self, enclave_ids=None, **kwargs):
+        """
+        Retrieves all tags present in the enclaves passed as parameter. If the enclave list is empty, the
+        tags returned include all tags for enclaves the user has access to
+        :param enclave_ids: Optional comma separated list of enclave ids
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
+        """
+        params = {'enclaveIds': enclave_ids}
+        resp = self.__get("enclave-tags", params=params, **kwargs)
+        return resp.json()
 
 
     #################
