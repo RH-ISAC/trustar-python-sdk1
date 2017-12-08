@@ -13,3 +13,4 @@ trustar/TruStar.pyc
 trustar/__init__.pyc
 venv
 .DS_Store
+tests/config.yml

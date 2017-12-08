@@ -63,3 +63,6 @@ class Page(object):
 
     def __str__(self):
         return json.dumps(self.to_dict())
+
+    def __iter__(self):
+        return self.items.__iter__()

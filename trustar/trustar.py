@@ -86,15 +86,18 @@ class TruStar(object):
                     config[key] = TruStar.DEFAULTS[key]
 
         # set properties
-        self.auth = config['auth']
-        self.base = config['base']
-        self.api_key = config['api_key']
-        self.api_secret = config['api_secret']
-        self.client_type = config['client_type']
-        self.client_version = config['client_version']
-        self.client_metatag = config['client_metatag']
-        self.verify = config['verify']
-        self.enclave_ids = config['enclave_ids']
+        self.auth = config.get('auth')
+        self.base = config.get('base')
+        self.api_key = config.get('api_key')
+        self.api_secret = config.get('api_secret')
+        self.client_type = config.get('client_type')
+        self.client_version = config.get('client_version')
+        self.client_metatag = config.get('client_metatag')
+        self.verify = config.get('verify')
+        self.enclave_ids = config.get('enclave_ids')
+
+        if isinstance(self.enclave_ids, str):
+            self.enclave_ids = [self.enclave_ids]
 
     @staticmethod
     def normalize_timestamp(date_time):
@@ -114,7 +117,7 @@ class TruStar(object):
             message = "{} {} Error: {}".format(response.status_code,
                                                "Client" if response.status_code < 500 else "Server",
                                                "unable to get token")
-            raise HTTPError(message=message, response=response)
+            raise HTTPError(message, response=response)
         return response.json()["access_token"]
 
     def __get_headers(self, is_json=False):
@@ -291,7 +294,6 @@ class TruStar(object):
         # create a Page object from the dict
         return Page.from_dict(body)
 
-
     def submit_report(self, report_body=None, title=None, external_id=None, external_url=None, time_began=datetime.now(),
                       enclave=False, enclave_ids=None, report=None, **kwargs):
         """
@@ -373,7 +375,7 @@ class TruStar(object):
             report_id = report.id
 
         # not allowed to update value of 'externalTrackingId', so remove it
-        report_dict = {k: v for k, v in report.to_dict() if k != 'externalTrackingId'}
+        report_dict = {k: v for k, v in report.to_dict().items() if k != 'externalTrackingId'}
 
         params = {'idType': id_type}
         payload = {
