@@ -11,7 +11,7 @@ import sys
 import time
 from random import randint
 
-from trustar import TruStar
+from trustar import TruStar, DISTRIBUTION_TYPE_COMMUNITY, DISTRIBUTION_TYPE_ENCLAVE, Report
 
 do_latest_reports = True
 do_correlated = True
@@ -50,7 +50,7 @@ def to_seconds(days):
 
 
 def main():
-    role = "staging"
+    role = "trustar"
     if len(sys.argv) > 1:
         role = sys.argv[1]
 
@@ -63,14 +63,14 @@ def main():
     # external_id = "321"
 
     report_guid = None
-    current_time = int(time.time())
-    yesterday_time = current_time - to_seconds(days=1)
+    current_time = int(time.time()) * 1000
+    yesterday_time = current_time - to_seconds(days=1) * 1000
 
     if do_latest_reports:
 
         print("Getting Latest Accessible Incident Reports Since 24 hours ago ...")
         try:
-            results = ts.get_reports(from_time=yesterday_time, to_time=current_time)
+            # results = ts.get_report_iterator(from_time=yesterday_time, to_time=current_time)
 
             # print(results.get('status'))
             # print(results.get('pageSize'))
@@ -78,12 +78,12 @@ def main():
             # print(results.get('pageNumber'))
             # print(results.get('moreResults'))
             # print(results.get('totalElements'))
-            print("Got %s results" % (results.get('totalElements')))
+            # print("Got %s results" % (results.get('totalElements')))
 
             # print(json.dumps(results))
 
-            for result in results.get('data').get('reports'):
-                print(result)
+            for report in ts.get_report_iterator(from_time=yesterday_time, to_time=current_time):
+                print(report)
             print()
 
         except Exception as e:
@@ -91,17 +91,17 @@ def main():
 
     if do_reports_by_community:
 
-        two_days_ago = current_time - to_seconds(days=2)
+        two_days_ago = current_time - to_seconds(days=2) * 1000
 
         print("Getting community only reports for the previous day ...")
         try:
-            results = ts.get_reports(from_time=two_days_ago, to_time=yesterday_time,
-                                     distribution_type='COMMUNITY')
+            report_iterator = ts.get_reports(from_time=two_days_ago, to_time=yesterday_time,
+                                             distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
 
-            print("Got %s results" % (results.get('totalElements')))
+            # print("Got %s results" % (results.get('totalElements')))
 
-            for result in results.get('data').get('reports'):
-                print(result)
+            for report in report_iterator:
+                print(report)
             print()
 
         except Exception as e:
@@ -109,16 +109,16 @@ def main():
 
     if do_reports_by_enclave:
 
-        a_week_ago = current_time - to_seconds(days=7)
+        a_week_ago = current_time - to_seconds(days=7) * 1000
 
         print("Getting enclave only reports for the previous week ...")
         try:
-            results = ts.get_reports(from_time=a_week_ago, to_time=current_time, distribution_type='ENCLAVE',
-                                     enclave_ids=ts.get_enclave_ids())
+            results = ts.get_report_iterator(from_time=a_week_ago, to_time=current_time, distribution_type='ENCLAVE',
+                                             enclave_ids=ts.enclave_ids)
 
-            print("Got %s results" % (results.get('totalElements')))
+            # print("Got %s results" % (results.get('totalElements')))
 
-            for result in results.get('data').get('reports'):
+            for result in results:
                 print(result)
             print()
 
@@ -127,15 +127,15 @@ def main():
 
     if do_reports_mine:
 
-        a_week_ago = current_time - to_seconds(days=7)
+        a_week_ago = current_time - to_seconds(days=7) * 1000
 
         print("Getting my reports for the previous week ...")
         try:
-            results = ts.get_reports(from_time=a_week_ago, to_time=current_time, submitted_by="me")
+            results = ts.get_report_iterator(from_time=a_week_ago, to_time=current_time)
 
-            print("Got %s results" % (results.get('totalElements')))
+            # print("Got %s results" % (results.get('totalElements')))
 
-            for result in results.get('data').get('reports'):
+            for result in results:
                 print(result)
             print()
 
@@ -153,62 +153,65 @@ def main():
         except Exception as e:
             print('Could not get correlated reports, error: %s' % e)
 
-    if do_latest_indicators:
-        print("Get Latest Indicators (first 100)")
-
-        try:
-            results = ts.query_latest_indicators(source='INCIDENT_REPORT', indicator_types='ALL',
-                                                 interval_size=24,
-                                                 limit=100)
-            if 'indicators' in results:
-                for ioc_type, value in results['indicators'].items():
-                    if len(value) > 0:
-                        print("\t%s:  %s" % (ioc_type, ','.join(value)))
-                print()
-        except Exception as e:
-            print('Could not get latest indicators, error: %s' % e)
+    # if do_latest_indicators:
+    #     print("Get Latest Indicators (first 100)")
+    #
+    #     try:
+    #         results = ts.query_latest_indicators(source='INCIDENT_REPORT', indicator_types='ALL',
+    #                                              interval_size=24,
+    #                                              limit=100)
+    #         if 'indicators' in results:
+    #             for ioc_type, value in results['indicators'].items():
+    #                 if len(value) > 0:
+    #                     print("\t%s:  %s" % (ioc_type, ','.join(value)))
+    #             print()
+    #     except Exception as e:
+    #         print('Could not get latest indicators, error: %s' % e)
 
     if do_community_trends:
         print("Get community trends")
 
         try:
-            results = ts.get_community_trends(indicator_type='other',
-                                              from_time=yesterday_time,
-                                              to_time=current_time,
-                                              page_size=5,
-                                              start_page=0)
-            print(results)
+            # results = ts.get_community_trends(indicator_type='other',
+            #                                   from_time=yesterday_time,
+            #                                   to_time=current_time,
+            #                                   page_size=5,
+            #                                   start_page=0)
+            results = ts.get_community_trends_iterator(indicator_type=None, from_time=yesterday_time, to_time=current_time)
+            for result in results:
+                print(result)
         except Exception as e:
             print('Could not get community trends, error: %s' % e)
 
-    if do_query_indicators:
-        print("Querying Correlated Indicators with Search String '%s' (first 100)" % search_string)
-        try:
-            results = ts.query_indicators(search_string, '100')
-
-            indicator_hits = list(results["indicators"])
-            if len(indicator_hits) > 0:
-                print("Correlated Incident Report Indicators:")
-                for indicator_type, indicator_list in list(results["indicators"].items()):
-                    print(
-                        "\n%s:\n\t%s" % (indicator_type, "\n\t".join(['{}'.format(value) for value in indicator_list])))
-                print()
-
-            os_hits = list(results["openSourceCorrelations"])
-            if len(os_hits) > 0:
-                print("Correlated Open Source Documents:")
-                for os_url in os_hits:
-                    print("\t%s" % os_url)
-                print()
-
-            exint_hits = list(results["externalIntelligence"])
-            if len(exint_hits) > 0:
-                print("External Intelligence hits:")
-                print('\t'.join(exint_hits))
-                print()
-
-        except Exception as e:
-            print('Could not get correlated indicators, error: %s' % e)
+    # if do_query_indicators:
+    #     print("Querying Correlated Indicators with Search String '%s' (first 100)" % search_string)
+    #     try:
+    #         results = ts.query_indicators(search_string, '100')
+    #         results = ts.get_related_indicators_iterator(indicators=search_string, '100')
+    #
+    #         indicator_hits = list(results["indicators"])
+    #         if len(indicator_hits) > 0:
+    #             print("Correlated Incident Report Indicators:")
+    #             for indicator_type, indicator_list in list(results["indicators"].items()):
+    #                 print(
+    #                     "\n%s:\n\t%s" % (indicator_type, "\n\t".join(['{}'.format(value) for value in indicator_list])))
+    #             print()
+    #
+    #         os_hits = list(results["openSourceCorrelations"])
+    #         if len(os_hits) > 0:
+    #             print("Correlated Open Source Documents:")
+    #             for os_url in os_hits:
+    #                 print("\t%s" % os_url)
+    #             print()
+    #
+    #         exint_hits = list(results["externalIntelligence"])
+    #         if len(exint_hits) > 0:
+    #             print("External Intelligence hits:")
+    #             print('\t'.join(exint_hits))
+    #             print()
+    #
+    #     except Exception as e:
+    #         print('Could not get correlated indicators, error: %s' % e)
 
     # Submit simple test report to community
     if do_comm_submissions:
@@ -276,7 +279,7 @@ def main():
         try:
             title = "Updated Sample Title"
             body = "updated report body: 21.22.23.24"
-            update_response = ts.update_report(report_id=external_id, id_type="external", title=title,
+            update_response = ts.update_report(report_id=external_id, id_type=Report.ID_TYPE_EXTERNAL, title=title,
                                                report_body=body)
 
             print("\texternalTrackingId: %s" % update_response.get('externalTrackingId'))

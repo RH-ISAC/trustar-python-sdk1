@@ -80,13 +80,20 @@ class Report(object):
         if is_enclave is not None:
             is_enclave = is_enclave.upper() != DISTRIBUTION_TYPE_COMMUNITY
 
+        enclaves = report.get('enclaves')
+        if enclaves is not None:
+            enclave_ids = [enclave['id'] for enclave in enclaves]
+        else:
+            enclave_ids = None
+
         return Report(
             id=report.get('id'),
             title=report.get('title'),
             body=report.get('reportBody'),
             time_began=report.get('timeBegan'),
             external_url=report.get('externalUrl'),
-            is_enclave=is_enclave
+            is_enclave=is_enclave,
+            enclave_ids=enclave_ids
         )
 
     def __str__(self):

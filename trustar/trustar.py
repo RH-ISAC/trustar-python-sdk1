@@ -357,13 +357,17 @@ class TruStar(object):
             if enclave_ids is None:
                 enclave_ids = self.enclave_ids
 
-            report = Report(id=report_id,
-                            title=title,
+            report = Report(title=title,
                             body=report_body,
                             time_began=time_began,
                             external_url=external_url,
                             is_enclave=distribution is None or distribution.upper() == DISTRIBUTION_TYPE_ENCLAVE,
                             enclave_ids=enclave_ids)
+
+        if id_type.upper() == Report.ID_TYPE_EXTERNAL:
+            report.external_id = report_id
+        else:
+            report.id = report_id
 
         # make id_type default to "internal"
         id_type = id_type or Report.ID_TYPE_INTERNAL
