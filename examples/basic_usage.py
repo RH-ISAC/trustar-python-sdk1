@@ -183,35 +183,12 @@ def main():
         except Exception as e:
             print('Could not get community trends, error: %s' % e)
 
-    # if do_query_indicators:
-    #     print("Querying Correlated Indicators with Search String '%s' (first 100)" % search_string)
-    #     try:
-    #         results = ts.query_indicators(search_string, '100')
-    #         results = ts.get_related_indicators_iterator(indicators=search_string, '100')
-    #
-    #         indicator_hits = list(results["indicators"])
-    #         if len(indicator_hits) > 0:
-    #             print("Correlated Incident Report Indicators:")
-    #             for indicator_type, indicator_list in list(results["indicators"].items()):
-    #                 print(
-    #                     "\n%s:\n\t%s" % (indicator_type, "\n\t".join(['{}'.format(value) for value in indicator_list])))
-    #             print()
-    #
-    #         os_hits = list(results["openSourceCorrelations"])
-    #         if len(os_hits) > 0:
-    #             print("Correlated Open Source Documents:")
-    #             for os_url in os_hits:
-    #                 print("\t%s" % os_url)
-    #             print()
-    #
-    #         exint_hits = list(results["externalIntelligence"])
-    #         if len(exint_hits) > 0:
-    #             print("External Intelligence hits:")
-    #             print('\t'.join(exint_hits))
-    #             print()
-    #
-    #     except Exception as e:
-    #         print('Could not get correlated indicators, error: %s' % e)
+    if do_query_indicators:
+        try:
+            for indicator in ts.get_related_indicators_iterator(indicators=search_string):
+                print(indicator)
+        except Exception as e:
+            print('Could not get correlated indicators, error: %s' % e)
 
     # Submit simple test report to community
     if do_comm_submissions:
@@ -336,7 +313,7 @@ def main():
         try:
 
             update_response = ts.update_report(report_id=external_id, id_type='external',
-                                               distribution="COMMUNITY")
+                                               distribution_type="COMMUNITY")
 
             print("Report Released using External ID:")
             print("\texternalTrackingId: %s" % update_response.get('externalTrackingId'))

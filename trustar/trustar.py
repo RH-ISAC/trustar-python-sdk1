@@ -257,7 +257,7 @@ class TruStar(object):
         resp = self.__get("report/%s" % report_id, params=params, **kwargs)
         return json.loads(resp.content.decode('utf8'))
 
-    def get_reports(self, distribution_type=DISTRIBUTION_TYPE_ENCLAVE, enclave_ids=None, tag=None,
+    def get_reports(self, distribution_type=None, enclave_ids=None, tag=None,
                     from_time=None, to_time=None, page_number=None, page_size=None, **kwargs):
         """
         Retrieves reports filtering by time window, distribution type, and enclave association.
@@ -338,7 +338,7 @@ class TruStar(object):
         return resp.json()
 
     def update_report(self, report_id=None, id_type=None, title=None, report_body=None, time_began=None,
-                      external_url=None, distribution=None, enclave_ids=None, report=None, **kwargs):
+                      external_url=None, distribution_type=None, enclave_ids=None, report=None, **kwargs):
         """
         Updates report with the given id, overwrites any fields that are provided
         :param report_id: Incident Report ID
@@ -347,11 +347,14 @@ class TruStar(object):
         :param report_body: new body for report
         :param time_began: new time_began for report
         :param external_url: external url of report, optional and is associated with the original source of this report
-        :param distribution: new distribution type for report
+        :param distribution_type: new distribution type for report
         :param enclave_ids: new list of enclave ids that the report will belong to (python list or comma-separated list)
         :param report: a Report object.  If present, other parameters will be ignored.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
         """
+
+        # make id_type default to "internal"
+        id_type = id_type or Report.ID_TYPE_INTERNAL
 
         # if no Report object was passed, construct one from the other parameters
         if report is None:
@@ -364,22 +367,15 @@ class TruStar(object):
                             body=report_body,
                             time_began=time_began,
                             external_url=external_url,
-                            is_enclave=distribution is None or distribution.upper() == DISTRIBUTION_TYPE_ENCLAVE,
+                            is_enclave=distribution_type is None or distribution_type.upper() == DISTRIBUTION_TYPE_ENCLAVE,
                             enclave_ids=enclave_ids)
 
-        if id_type.upper() == Report.ID_TYPE_EXTERNAL:
-            report.external_id = report_id
-        else:
-            report.id = report_id
-
-        # make id_type default to "internal"
-        id_type = id_type or Report.ID_TYPE_INTERNAL
-
         # determine which ID to use based on id_type
-        if id_type.upper() == Report.ID_TYPE_EXTERNAL:
-            report_id = report.external_id
         else:
-            report_id = report.id
+            if id_type.upper() == Report.ID_TYPE_EXTERNAL:
+                report_id = report.external_id
+            else:
+                report_id = report.id
 
         # not allowed to update value of 'externalTrackingId', so remove it
         report_dict = {k: v for k, v in report.to_dict().items() if k != 'externalTrackingId'}

@@ -47,7 +47,7 @@ class TruStarTests(unittest.TestCase):
         with open('config.yml', 'r') as f:
             config = yaml.load(f)
 
-        cls.ts = TruStar(config=config['trustar']['dev'])
+        cls.ts = TruStar(config=config['trustar']['trustar'])
 
     def test_get_reports(self):
         """
@@ -122,7 +122,7 @@ class TruStarTests(unittest.TestCase):
 
             correlation_counts = [item['correlationCount'] for item in result]
             for i in range(len(correlation_counts) - 1):
-                self.assertTrue(correlation_counts[i] > correlation_counts[i+1])
+                self.assertTrue(correlation_counts[i] >= correlation_counts[i+1])
 
 
     def test_get_related_indicators_and_correlated_reports(self):
