@@ -269,17 +269,16 @@ class TruStarTests(unittest.TestCase):
 
         self.assertEqual(count, total)
 
-    def test_report_iterator(self):
+    def test_report_generator(self):
+        """
+        Test that the report generator works.
+        """
         reports = self.ts.get_report_generator(from_time=old_time,
                                                to_time=current_time,
                                                distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
-        count = 0
-        total = self.ts.get_reports(from_time=old_time,
-                                    to_time=current_time,
-                                    distribution_type=DISTRIBUTION_TYPE_COMMUNITY,
-                                    page_number=0,
-                                    page_size=1).total_elements
+        total = len(reports)
 
+        count = 0
         for report in reports:
             count += 1
             print(report)
