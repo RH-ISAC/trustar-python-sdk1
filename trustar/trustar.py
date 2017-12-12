@@ -7,7 +7,9 @@ from .page import Page
 from .utils import normalize_timestamp
 
 import logging
+import os
 import json
+import yaml
 from datetime import datetime
 import configparser
 import requests
@@ -29,6 +31,12 @@ class TruStar(object):
     """
 
     REQUIRED_KEYS = ['auth', 'base', 'api_key', 'api_secret']
+    REMAPPED_KEYS = {
+        'auth_endpoint': 'auth',
+        'api_endpoint': 'base',
+        'user_api_key': 'api_key',
+        'user_api_secret': 'api_secret'
+    }
     DEFAULTS = {
         'client_type': 'PYTHON_SDK',
         'client_version': CLIENT_VERSION,
@@ -36,11 +44,11 @@ class TruStar(object):
         'verify': True
     }
 
-    def __init__(self, config_file="../examples/trustar.conf", config_role="trustar", config=None):
+    def __init__(self, config_file="trustar.conf", config_role="trustar", config=None):
         """
         Constructs and configures the instance.  Attempts to use 'config' to configure.  If it is None,
         then attempts to use 'config_file' instead.
-        :param config_file: Path to configuration file.
+        :param config_file: Path to configuration file (conf, json, or yaml).
         :param config_role: The section in the configuration file to use.
         :param config: A dictionary of configuration options.
         """
@@ -51,31 +59,41 @@ class TruStar(object):
             if config is not None:
                 raise Exception("Cannot use 'config' parameter if also using 'config_file' parameter.")
 
-            config_parser = configparser.RawConfigParser()
-            config_parser.read(config_file)
+            # read config file depending on filetype, parse into dictionary
+            ext = os.path.splitext(config_file)[-1]
+            if ext == '.conf':
+                config_parser = configparser.RawConfigParser()
+                config_parser.read(config_file)
+                roles = dict(config_parser)
+            elif ext in ['.json', '.yml', '.yaml']:
+                with open(config_file, 'r') as f:
+                    roles = yaml.load(f)
+            else:
+                raise IOError("Unrecognized filetype for config file '%s'" % config_file)
 
-            try:
-                # parse enclaves
-                if config_parser.has_option(config_role, 'enclave_ids'):
-                    enclave_ids = config_parser.get(config_role, 'enclave_ids').split(',')
-                else:
-                    enclave_ids = []
+            # ensure that config file has indicated role
+            if config_role in roles:
+                config = roles[config_role]
+            else:
+                raise KeyError("Could not find role %s" % config_role)
 
-                # use config file to create config dict
-                config = {
-                    'auth': config_parser.get(config_role, 'auth_endpoint'),
-                    'base': config_parser.get(config_role, 'api_endpoint'),
-                    'api_key': config_parser.get(config_role, 'user_api_key'),
-                    'api_secret': config_parser.get(config_role, 'user_api_secret'),
-                    'client_type': config_parser.get(config_role, 'client_type', fallback=None),
-                    'client_version': config_parser.get(config_role, 'client_version', fallback=None),
-                    'client_metatag': config_parser.get(config_role, 'client_metatag', fallback=None),
-                    'verify': config_parser.get(config_role, 'verify', fallback=None),
-                    'enclave_ids': [x.strip() for x in enclave_ids if x is not None]
-                }
+            # parse enclave ids
+            if 'enclave_ids' in config:
+                # split comma separated list if necessary
+                if isinstance(config['enclave_ids'], str):
+                    config['enclave_ids'] = config['enclave_ids'].split(',')
+                elif not isinstance(config['enclave_ids'], list):
+                    raise Exception("'enclave_ids' must be a list or a comma-separated list")
+                # strip out whitespace
+                config['enclave_ids'] = [x.strip() for x in config['enclave_ids'] if x is not None]
+            else:
+                # default to empty list
+                config['enclave_ids'] = []
 
-            except Exception as e:
-                raise KeyError("Problem reading config file: %s" % e)
+        # remap legacy keys to current keys
+        for k, v in self.REMAPPED_KEYS.items():
+            if k in config and v not in config:
+                config[v] = config[k]
 
         # set properties from config dict
         for key, val in config.items():
@@ -256,7 +274,7 @@ class TruStar(object):
         """
         params = {'idType': id_type}
         resp = self.__get("report/%s" % report_id, params=params, **kwargs)
-        return json.loads(resp.content.decode('utf8'))
+        return Report.from_dict(resp.json())
 
     def get_reports(self, distribution_type=None, enclave_ids=None, tag=None,
                     from_time=None, to_time=None, page_number=None, page_size=None, **kwargs):
@@ -539,50 +557,11 @@ class TruStar(object):
         return resp.json()
 
 
-    #################
-    ### Iterators ###
-    #################
+    ##################
+    ### Generators ###
+    ##################
 
-    @staticmethod
-    def get_page_generator(func, start_page=0, page_size=None):
-        """
-        Gets a generator for retrieving pages from a paginated endpoint.
-        :param func: Should take parameters 'page_number' and 'page_size' and return the corresponding Page object.
-        :param start_page: The page to start on.
-        :param page_size: The size of each page.
-        :return: The generator.
-        """
-        page_number = start_page
-        more_pages = True
-        while more_pages:
-            page = func(page_number=page_number, page_size=page_size)
-            yield page
-            more_pages = page.has_more_pages()
-            page_number += 1
-
-    @classmethod
-    def get_generator(cls, func=None, page_iterator=None):
-        """
-        Gets a generator for retrieving all results from a paginated endpoint.  Pass exactly one of 'page_iterator'
-        or 'func'.
-        :param func: Should take parameters 'page_number' and 'page_size' and return the corresponding Page object.
-        If page_iterator is None, this will be used to create one.
-        :param page_iterator: A page_iterator to be used to generate each successive page.
-        :return: The generator.
-        """
-
-        # if page_iterator is None, use func to create one
-        if page_iterator is None:
-            if func is None:
-                raise Exception("To use 'get_iterator', must provide either a page iterator or a method.")
-            else:
-                page_iterator = cls.get_page_generator(func)
-
-        for page in page_iterator:
-            for item in page.items:
-                yield item
-
-    def get_report_page_iterator(self, start_page=0, page_size=None, **kwargs):
+    def get_report_page_generator(self, start_page=0, page_size=None, **kwargs):
         """
         Creates a generator from the 'get_reports' method that returns each successive page.
         :param start_page: The page to start on.
@@ -593,17 +572,17 @@ class TruStar(object):
         def func(page_number, page_size):
             return self.get_reports(page_number=page_number, page_size=page_size, **kwargs)
 
-        return self.get_page_generator(func, start_page, page_size)
+        return Page.get_page_generator(func, start_page, page_size)
 
-    def get_report_iterator(self, **kwargs):
+    def get_report_generator(self, **kwargs):
         """
         Creates a generator from the 'get_reports' method that returns each successive report.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the 'get_reports' method.
         :return: The generator.
         """
-        return self.get_generator(page_iterator=self.get_report_page_iterator(**kwargs))
+        return Page.get_generator(page_generator=self.get_report_page_generator(**kwargs))
 
-    def get_community_trends_page_iterator(self, start_page=0, page_size=None, **kwargs):
+    def get_community_trends_page_generator(self, start_page=0, page_size=None, **kwargs):
         """
         Creates a generator from the 'get_community_trends' method that returns each successive page.
         :param start_page: The page to start on.
@@ -614,17 +593,17 @@ class TruStar(object):
         def func(page_number, page_size):
             return self.get_community_trends(page_number=page_number, page_size=page_size, **kwargs)
 
-        return self.get_page_generator(func, start_page, page_size)
+        return Page.get_page_generator(func, start_page, page_size)
 
-    def get_community_trends_iterator(self, **kwargs):
+    def get_community_trends_generator(self, **kwargs):
         """
         Creates a generator from the 'get_community_trends_iterator' method that returns each successive report.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the 'get_community_trends_iterator' method.
         :return: The generator.
         """
-        return self.get_generator(page_iterator=self.get_community_trends_page_iterator(**kwargs))
+        return Page.get_generator(page_generator=self.get_community_trends_page_generator(**kwargs))
 
-    def get_related_indicators_page_iterator(self, start_page=0, page_size=None, **kwargs):
+    def get_related_indicators_page_generator(self, start_page=0, page_size=None, **kwargs):
         """
         Creates a generator from the 'get_related_indicators' method that returns each successive page.
         :param start_page: The page to start on.
@@ -635,12 +614,12 @@ class TruStar(object):
         def func(page_number, page_size):
             return self.get_related_indicators(page_number=page_number, page_size=page_size, **kwargs)
 
-        return self.get_page_generator(func, start_page, page_size)
+        return Page.get_page_generator(func, start_page, page_size)
 
-    def get_related_indicators_iterator(self, **kwargs):
+    def get_related_indicators_generator(self, **kwargs):
         """
         Creates a generator from the 'get_generator' method that returns each successive report.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the 'get_generator' method.
         :return: The generator.
         """
-        return self.get_generator(page_iterator=self.get_related_indicators_page_iterator(**kwargs))
+        return Page.get_generator(page_generator=self.get_related_indicators_page_generator(**kwargs))

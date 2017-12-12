@@ -65,8 +65,88 @@ class Page(object):
             'totalElements': self.total_elements
         }
 
+    @staticmethod
+    def get_page_generator(func, start_page=0, page_size=None):
+        """
+        Gets a generator for retrieving pages from a paginated endpoint.
+        :param func: Should take parameters 'page_number' and 'page_size' and return the corresponding Page object.
+        :param start_page: The page to start on.
+        :param page_size: The size of each page.
+        :return: A GeneratorWithLength instance that can be used to generate each successive page.
+        """
+
+        closure_namespace = {'total_elements': None}
+
+        def iterable():
+            page_number = start_page
+            more_pages = True
+            while more_pages:
+                page = func(page_number=page_number, page_size=page_size)
+                closure_namespace['total_elements'] = page.total_elements
+                yield page
+                more_pages = page.has_more_pages()
+                page_number += 1
+
+        def total_elements_getter():
+            if closure_namespace['total_elements'] is None:
+                closure_namespace['total_elements'] = func(page_number=0, page_size=1).total_elements
+            return closure_namespace['total_elements']
+
+        return GeneratorWithLength(iterable=iterable(),
+                                   total_elements_getter=total_elements_getter)
+
+    @classmethod
+    def get_generator(cls, func=None, page_generator=None):
+        """
+        Gets a generator for retrieving all results from a paginated endpoint.  Pass exactly one of 'page_iterator'
+        or 'func'.
+        :param func: Should take parameters 'page_number' and 'page_size' and return the corresponding Page object.
+        If page_iterator is None, this will be used to create one.
+        :param page_generator: A generator to be used to generate each successive page.
+        :return: A GeneratorWithLength instance that can be used to generate each successive element.
+        """
+
+        # if page_iterator is None, use func to create one
+        if page_generator is None:
+            if func is None:
+                raise Exception("To use 'get_iterator', must provide either a page iterator or a method.")
+            else:
+                page_generator = cls.get_page_generator(func)
+
+        def iterable():
+            for page in page_generator:
+                for item in page.items:
+                    yield item
+
+        return GeneratorWithLength(iterable=iterable(),
+                                   total_elements_getter=page_generator.__len__)
+
     def __str__(self):
         return json.dumps(self.to_dict())
 
     def __iter__(self):
         return self.items.__iter__()
+
+
+class GeneratorWithLength(object):
+    """
+    This is a wrapper class for generators that also holds a function that can
+    be used to get the total number of elements the generator will produce.  It
+    is possible that this total number is actually an estimate that will change
+    over time.  Since this class implements __len__, the builtin len() function
+    can be called on its instances.
+    """
+
+    def __init__(self, iterable, total_elements_getter):
+        self.__iterable = iterable
+        self.__total_elements_getter = total_elements_getter
+        self.__total_elements = None
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        return self.__iterable.next()
+
+    def __len__(self):
+        return self.__total_elements_getter()

@@ -25,7 +25,8 @@ class Report(object):
                  external_id=None,
                  external_url=None,
                  is_enclave=True,
-                 enclave_ids=None):
+                 enclave_ids=None,
+                 indicators=None):
 
         # if the report belongs to any enclaves, resolve the list of enclave IDs
         if is_enclave:
@@ -53,6 +54,7 @@ class Report(object):
         self.external_url = external_url
         self.is_enclave = is_enclave
         self.enclave_ids = enclave_ids
+        self.indicators = indicators
 
     def get_distribution_type(self):
         """
@@ -67,7 +69,7 @@ class Report(object):
         """
         :return: A dictionary representation of the report.
         """
-        return {
+        report_dict = {
             'title': self.title,
             'reportBody': self.body,
             'timeBegan': normalize_timestamp(self.time_began),
@@ -75,6 +77,11 @@ class Report(object):
             'distributionType': self.get_distribution_type(),
             'externalTrackingId': self.external_id
         }
+
+        if self.indicators is not None:
+            report_dict['indicators'] = self.indicators
+
+        return report_dict
 
     @classmethod
     def from_dict(cls, report):
@@ -96,7 +103,8 @@ class Report(object):
             time_began=report.get('timeBegan'),
             external_url=report.get('externalUrl'),
             is_enclave=is_enclave,
-            enclave_ids=enclave_ids
+            enclave_ids=enclave_ids,
+            indicators=report.get('indicators')
         )
 
     def __str__(self):

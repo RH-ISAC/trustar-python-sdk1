@@ -41,12 +41,11 @@ search_string = "167.114.35.70,103.255.61.39,miel-maroc.com,malware.exe"
 submit_indicators = "google.com malware.exe 103.255.61.39"
 
 
-def to_seconds(days):
+def to_milliseconds(days):
     """
-    :return: the number of days expressed as seconds. e.g to_seconds(1) -> 86400
+    :return: the number of days expressed as milliseconds. e.g to_milliseconds(1) -> 86400
     """
-
-    return days * 24 * 60 * 60
+    return days * 24 * 60 * 60 * 1000
 
 
 def main():
@@ -54,7 +53,7 @@ def main():
     if len(sys.argv) > 1:
         role = sys.argv[1]
 
-    ts = TruStar(config_role=role)
+    ts = TruStar(config_file="trustar.conf", config_role=role)
 
     # generate random id to use as external_id
     external_id = str(randint(1, 100000))
@@ -64,25 +63,17 @@ def main():
 
     report_guid = None
     current_time = int(time.time()) * 1000
-    yesterday_time = current_time - to_seconds(days=1) * 1000
+    yesterday_time = current_time - to_milliseconds(days=1)
 
     if do_latest_reports:
 
         print("Getting Latest Accessible Incident Reports Since 24 hours ago ...")
         try:
-            # results = ts.get_report_iterator(from_time=yesterday_time, to_time=current_time)
+            reports = ts.get_report_generator(from_time=yesterday_time, to_time=current_time)
 
-            # print(results.get('status'))
-            # print(results.get('pageSize'))
-            # print(results.get('totalPages'))
-            # print(results.get('pageNumber'))
-            # print(results.get('moreResults'))
-            # print(results.get('totalElements'))
-            # print("Got %s results" % (results.get('totalElements')))
+            print("Got %s results" % len(reports))
 
-            # print(json.dumps(results))
-
-            for report in ts.get_report_iterator(from_time=yesterday_time, to_time=current_time):
+            for report in reports:
                 print(report)
             print()
 
@@ -91,16 +82,17 @@ def main():
 
     if do_reports_by_community:
 
-        two_days_ago = current_time - to_seconds(days=2) * 1000
+        two_days_ago = current_time - to_milliseconds(days=2)
 
         print("Getting community only reports for the previous day ...")
         try:
-            report_iterator = ts.get_reports(from_time=two_days_ago, to_time=yesterday_time,
-                                             distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
+            reports = ts.get_report_generator(from_time=two_days_ago,
+                                              to_time=yesterday_time,
+                                              distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
 
-            # print("Got %s results" % (results.get('totalElements')))
+            print("Got %s results" % len(reports))
 
-            for report in report_iterator:
+            for report in reports:
                 print(report)
             print()
 
@@ -109,46 +101,32 @@ def main():
 
     if do_reports_by_enclave:
 
-        a_week_ago = current_time - to_seconds(days=7) * 1000
+        a_week_ago = current_time - to_milliseconds(days=7)
 
         print("Getting enclave only reports for the previous week ...")
         try:
-            results = ts.get_report_iterator(from_time=a_week_ago, to_time=current_time, distribution_type='ENCLAVE',
-                                             enclave_ids=ts.enclave_ids)
+            reports = ts.get_report_generator(from_time=a_week_ago,
+                                              to_time=current_time,
+                                              distribution_type=DISTRIBUTION_TYPE_ENCLAVE,
+                                              enclave_ids=ts.enclave_ids)
 
-            # print("Got %s results" % (results.get('totalElements')))
+            print("Got %s results" % len(reports))
 
-            for result in results:
+            for result in reports:
                 print(result)
             print()
 
         except Exception as e:
             print('Could not get community reports, error: %s' % e)
 
-    if do_reports_mine:
-
-        a_week_ago = current_time - to_seconds(days=7) * 1000
-
-        print("Getting my reports for the previous week ...")
-        try:
-            results = ts.get_report_iterator(from_time=a_week_ago, to_time=current_time)
-
-            # print("Got %s results" % (results.get('totalElements')))
-
-            for result in results:
-                print(result)
-            print()
-
-        except Exception as e:
-            print('Could not get community reports, error: %s' % e)
     if do_correlated:
         print("Querying Accessible Correlated Reports...")
         try:
-            results = ts.get_correlated_reports(search_string)
+            report_ids = ts.get_correlated_reports(search_string)
 
-            print(results)
-            print("%d report(s) correlated with indicators '%s':\n" % (len(results), search_string))
-            print("\n".join(results))
+            print(report_ids)
+            print("%d report(s) correlated with indicators '%s':\n" % (len(report_ids), search_string))
+            print("\n".join(report_ids))
             print()
         except Exception as e:
             print('Could not get correlated reports, error: %s' % e)
@@ -172,12 +150,7 @@ def main():
         print("Get community trends")
 
         try:
-            # results = ts.get_community_trends(indicator_type='other',
-            #                                   from_time=yesterday_time,
-            #                                   to_time=current_time,
-            #                                   page_size=5,
-            #                                   start_page=0)
-            results = ts.get_community_trends_iterator(indicator_type=None, from_time=yesterday_time, to_time=current_time)
+            results = ts.get_community_trends_generator(indicator_type=None, from_time=yesterday_time, to_time=current_time)
             for result in results:
                 print(result)
         except Exception as e:
@@ -185,7 +158,9 @@ def main():
 
     if do_query_indicators:
         try:
-            for indicator in ts.get_related_indicators_iterator(indicators=search_string):
+            indicators = ts.get_related_indicators_generator(indicators=search_string)
+            print("Got %s results" % len(indicators))
+            for indicator in indicators:
                 print(indicator)
         except Exception as e:
             print('Could not get correlated indicators, error: %s' % e)
@@ -199,8 +174,8 @@ def main():
             print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
 
             if 'reportIndicators' in response:
-                print("Extracted the following community indicators: \n%s\n" % json.dumps(
-                    response.get('reportIndicators'), indent=2))
+                print("Extracted the following community indicators: \n%s\n"
+                      % json.dumps(response.get('reportIndicators'), indent=2))
         except Exception as e:
             print('Could not submit community report, error: %s' % e)
 
@@ -209,14 +184,14 @@ def main():
         print("Submit New Enclave Incident Report")
 
         try:
-            enclave_response = ts.submit_report(submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True)
-            print("\tURL: %s\n" % ts.get_report_url(enclave_response.get('reportId')))
+            response = ts.submit_report(submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True)
+            print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
 
-            print(enclave_response)
+            print(response)
 
-            if 'reportIndicators' in enclave_response:
-                print("Extracted the following enclave indicators: \n%s\n" %
-                      json.dumps(enclave_response.get('reportIndicators'), indent=2))
+            if 'reportIndicators' in response:
+                print("Extracted the following enclave indicators: \n%s\n"
+                      % json.dumps(response.get('reportIndicators'), indent=2))
         except Exception as e:
             print('Could not submit enclave report, error: %s' % e)
 
@@ -225,14 +200,14 @@ def main():
         print("Submit New Enclave Incident Report with External ID")
 
         try:
-            submission_response = ts.submit_report(submit_indicators, "Sample SDK Test Report",
-                                                   external_id=external_id,
-                                                   time_began="2017-02-01T01:23:45", enclave=True)
+            response = ts.submit_report(submit_indicators, "Sample SDK Test Report",
+                                        external_id=external_id,
+                                        time_began="2017-02-01T01:23:45", enclave=True)
 
             print("Report Submitted")
-            print("\texternalTrackingId: %s" % submission_response.get('externalTrackingId'))
-            print("\tindicators: %s" % submission_response.get('reportIndicators'))
-            print("\tURL: %s\n" % ts.get_report_url(submission_response.get('reportId')))
+            print("\texternalTrackingId: %s" % response.get('externalTrackingId'))
+            print("\tindicators: %s" % response.get('reportIndicators'))
+            print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
         except Exception as e:
             print('Could not submit report, error: %s' % e)
 
@@ -240,13 +215,13 @@ def main():
     if do_report_details_by_ext_id:
         print("Get Incident Report By External ID")
         try:
-            result = ts.get_report_details(report_id=external_id, id_type="external")
+            report = ts.get_report_details(report_id=external_id, id_type="external")
 
-            print("\ttitle: %s" % result.get('title'))
-            print("\texternalTrackingId: %s" % result.get('externalTrackingId'))
-            print("\tindicators: %s" % result.get('indicators'))
-            print("\tURL: %s\n" % ts.get_report_url(result.get('id')))
-            report_guid = result.get('id')
+            print("\ttitle: %s" % report.title)
+            print("\texternalTrackingId: %s" % report.externalTrackingId)
+            print("\tindicators: %s" % report.indicators)
+            print("\tURL: %s\n" % ts.get_report_url(report.id))
+            report_guid = report.id
         except Exception as e:
             print('Could not get report, error: %s' % e)
 
@@ -256,12 +231,12 @@ def main():
         try:
             title = "Updated Sample Title"
             body = "updated report body: 21.22.23.24"
-            update_response = ts.update_report(report_id=external_id, id_type=Report.ID_TYPE_EXTERNAL, title=title,
-                                               report_body=body)
+            response = ts.update_report(report_id=external_id, id_type=Report.ID_TYPE_EXTERNAL, title=title,
+                                        report_body=body)
 
-            print("\texternalTrackingId: %s" % update_response.get('externalTrackingId'))
-            print("\tindicators: %s" % update_response.get('reportIndicators'))
-            print("\tURL: %s\n" % ts.get_report_url(update_response.get('reportId')))
+            print("\texternalTrackingId: %s" % response.get('externalTrackingId'))
+            print("\tindicators: %s" % response.get('reportIndicators'))
+            print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
         except Exception as e:
             print('Could not update report, error: %s' % e)
 
@@ -270,12 +245,12 @@ def main():
         print("Get Incident Report Details by GUID (TruSTAR internal ID)")
 
         try:
-            result = ts.get_report_details(report_guid, id_type="internal")
+            report = ts.get_report_details(report_guid, id_type="internal")
 
-            print("\ttitle: %s" % result.get('title'))
-            print("\texternalTrackingId: %s" % result.get('externalTrackingId'))
-            print("\tindicators: %s" % result.get('indicators'))
-            print("\tURL: %s\n" % ts.get_report_url(result.get('id')))
+            print("\ttitle: %s" % report.title)
+            print("\texternalTrackingId: %s" % report.externalTrackingId)
+            print("\tindicators: %s" % report.indicators)
+            print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             print('Could not get report, error: %s' % e)
 
@@ -285,12 +260,12 @@ def main():
         try:
             title = "New Sample Title"
             body = "new sample body - 7.8.9.10"
-            update_response = ts.update_report(report_guid, id_type="internal", title=title, report_body=body)
+            response = ts.update_report(report_guid, id_type="internal", title=title, report_body=body)
 
             print("Updated Report using GUID")
-            print("\texternalTrackingId: %s" % update_response.get('externalTrackingId'))
-            print("\tindicators: %s" % update_response.get('reportIndicators'))
-            print("\tURL: %s\n" % ts.get_report_url(update_response.get('reportId')))
+            print("\texternalTrackingId: %s" % response.get('externalTrackingId'))
+            print("\tindicators: %s" % response.get('reportIndicators'))
+            print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
         except Exception as e:
             print('Could not update report, error: %s' % e)
 
@@ -298,12 +273,12 @@ def main():
     if do_report_details_by_guid:
         print("Get Report by GUID (TruSTAR internal ID)")
         try:
-            result = ts.get_report_details(report_guid, id_type="internal")
+            report = ts.get_report_details(report_guid, id_type="internal")
 
-            print("\ttitle: %s" % result['title'])
-            print("\texternalTrackingId: %s" % result.get('externalTrackingId'))
-            print("\tindicators: %s" % result.get('indicators'))
-            print("\tURL: %s\n" % ts.get_report_url(result.get('id')))
+            print("\ttitle: %s" % report.title)
+            print("\texternalTrackingId: %s" % report.external_tracking_id)
+            print("\tindicators: %s" % report.indicators)
+            print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             print('Could not get report, error: %s' % e)
 
@@ -312,13 +287,13 @@ def main():
         print("Release Incident Report by External ID")
         try:
 
-            update_response = ts.update_report(report_id=external_id, id_type='external',
+            response = ts.update_report(report_id=external_id, id_type='external',
                                                distribution_type="COMMUNITY")
 
             print("Report Released using External ID:")
-            print("\texternalTrackingId: %s" % update_response.get('externalTrackingId'))
-            print("\tindicators: %s" % update_response.get('reportIndicators'))
-            print("\tURL: %s\n" % ts.get_report_url(update_response.get('reportId')))
+            print("\texternalTrackingId: %s" % response.get('externalTrackingId'))
+            print("\tindicators: %s" % response.get('reportIndicators'))
+            print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
         except Exception as e:
             print('Could not release report, error: %s' % e)
 
@@ -327,12 +302,12 @@ def main():
         print("Get Incident Report Details by External ID")
 
         try:
-            result = ts.get_report_details(report_id=external_id, id_type="external")
+            report = ts.get_report_details(report_id=external_id, id_type="external")
 
-            print("\ttitle: %s" % result.get('title'))
-            print("\texternalTrackingId: %s" % result.get('externalTrackingId'))
-            print("\tindicators: %s" % result.get('indicators'))
-            print("\tURL: %s\n" % ts.get_report_url(result.get('id')))
+            print("\ttitle: %s" % report.title)
+            print("\texternalTrackingId: %s" % report.external_tracking_id)
+            print("\tindicators: %s" % report.indicators)
+            print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             print('Could not get report, error: %s' % e)
 
@@ -396,12 +371,14 @@ def main():
             print(json.dumps(result, indent=2))
 
             # Search report by tag
-            results = ts.get_reports(from_time=yesterday_time, to_time=current_time, enclave_ids=ts.enclave_ids,
-                                     tag="triage")
-            # print("Got %s results" % (results.get('totalElements')))
+            reports = ts.get_report_generator(from_time=yesterday_time,
+                                              to_time=current_time,
+                                              enclave_ids=ts.enclave_ids,
+                                              tag="triage")
+            print("Got %s results" % len(reports))
 
-            for result in results:
-                print(result)
+            for report in reports:
+                print(report)
             print()
 
         except Exception as e:
