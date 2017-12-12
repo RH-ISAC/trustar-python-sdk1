@@ -1,4 +1,7 @@
-# from .trustar import TruStar
+from __future__ import print_function
+from builtins import object
+from future import standard_library
+
 from .utils import normalize_timestamp
 import json
 

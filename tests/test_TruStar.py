@@ -201,6 +201,36 @@ class TruStarTests(unittest.TestCase):
     def test_get_correlated_reports(self):
         result = self.ts.get_correlated_reports(["evil", "wannacry"])
 
+    def test_get_reports_by_tag(self):
+        enclave_id = self.ts.enclave_ids[0]
+
+        # create and submit report
+        report = Report(title="Report 1",
+                        body="Blah blah blah",
+                        time_began=yesterday_time,
+                        enclave_ids=[enclave_id])
+        result = self.ts.submit_report(report=report)
+        report.id = result['reportId']
+
+        # tag report
+        tag = "some gibberish"
+        result = self.ts.add_enclave_tag(report_id=report.id,
+                                         name=tag,
+                                         enclave_id=enclave_id)
+
+        reports = self.ts.get_report_iterator(tag=tag)
+
+        try:
+            thrown = False
+            self.assertEqual(report.id, reports.next().id)
+            try:
+                reports.next()
+            except StopIteration:
+                thrown = True
+            self.assertTrue(thrown)
+        finally:
+            self.ts.delete_report(report_id=report.id)
+
     def test_page_iterator(self):
         def func(page_size, page_number):
             return self.ts.get_reports(from_time=old_time,

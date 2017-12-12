@@ -1,4 +1,6 @@
 from __future__ import print_function
+from builtins import object
+from future import standard_library
 
 from .report import Report, DISTRIBUTION_TYPE_ENCLAVE
 from .page import Page
@@ -11,8 +13,7 @@ import configparser
 import requests
 import requests.auth
 from requests import HTTPError
-from builtins import object
-from future import standard_library
+
 
 standard_library.install_aliases()
 
@@ -451,7 +452,7 @@ class TruStar(object):
 
         params = {
             'indicators': indicators,
-            'sources': sources,
+            'types': sources,
             'pageNumber': page_number,
             'pageSize': page_size
         }
