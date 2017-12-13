@@ -75,21 +75,37 @@ class Page(object):
         :return: A GeneratorWithLength instance that can be used to generate each successive page.
         """
 
+        # python 2 closures cannot mutate data from outer scope
         closure_namespace = {'total_elements': None}
 
         def iterable():
+
+            # initialize starting values
             page_number = start_page
             more_pages = True
+
+            # continuously request the next page as long as more pages exist
             while more_pages:
+
+                # get next page
                 page = func(page_number=page_number, page_size=page_size)
+                # update total_elements (it is possible for this to change in between requests)
                 closure_namespace['total_elements'] = page.total_elements
+
                 yield page
+
+                # determine whether more pages exist
                 more_pages = page.has_more_pages()
                 page_number += 1
 
         def total_elements_getter():
+            # if value of 'total_elements' is not cached, need to make call to API
             if closure_namespace['total_elements'] is None:
+                # get a page of size 1 (we don't want the actual elements, only the
+                # total count, but page of size 0 is not allowed by API) and cache value
                 closure_namespace['total_elements'] = func(page_number=0, page_size=1).total_elements
+
+            # return cached value
             return closure_namespace['total_elements']
 
         return GeneratorWithLength(iterable=iterable(),
@@ -114,10 +130,13 @@ class Page(object):
                 page_generator = cls.get_page_generator(func)
 
         def iterable():
+            # yield each item in the page one by one;
+            # once it is out, generate the next page
             for page in page_generator:
                 for item in page.items:
                     yield item
 
+        # return a GeneratorWithLength whose __len__ method delegates to that of page_generator
         return GeneratorWithLength(iterable=iterable(),
                                    total_elements_getter=page_generator.__len__)
 
@@ -147,6 +166,9 @@ class GeneratorWithLength(object):
 
     def next(self):
         return self.__iterable.next()
+
+    def __next__(self):
+        return self.__iterable.__next__()
 
     def __len__(self):
         return self.__total_elements_getter()

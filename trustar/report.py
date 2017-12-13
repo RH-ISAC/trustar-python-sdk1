@@ -1,6 +1,8 @@
+# python 2 backwards compatibility
 from __future__ import print_function
 from builtins import object
 from future import standard_library
+from six import string_types
 
 from .utils import normalize_timestamp
 import json
@@ -32,7 +34,7 @@ class Report(object):
         if is_enclave:
 
             # if string, convert comma-separated list into python list
-            if isinstance(enclave_ids, str) or isinstance(enclave_ids, unicode):
+            if isinstance(enclave_ids, string_types):
                 enclave_ids = [x.strip() for x in enclave_ids.split(',')]
 
             # ensure is list

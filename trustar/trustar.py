@@ -1,11 +1,15 @@
+# python 2 backwards compatibility
 from __future__ import print_function
 from builtins import object
 from future import standard_library
+from six import string_types
 
+# package imports
 from .report import Report, DISTRIBUTION_TYPE_ENCLAVE
 from .page import Page
 from .utils import normalize_timestamp
 
+# external imports
 import logging
 import os
 import json
@@ -17,6 +21,7 @@ import requests.auth
 from requests import HTTPError
 
 
+# python 2 backwards compatibility
 standard_library.install_aliases()
 
 logger = logging.getLogger(__name__)
@@ -73,14 +78,14 @@ class TruStar(object):
 
             # ensure that config file has indicated role
             if config_role in roles:
-                config = roles[config_role]
+                config = dict(roles[config_role])
             else:
                 raise KeyError("Could not find role %s" % config_role)
 
             # parse enclave ids
             if 'enclave_ids' in config:
                 # split comma separated list if necessary
-                if isinstance(config['enclave_ids'], str):
+                if isinstance(config['enclave_ids'], string_types):
                     config['enclave_ids'] = config['enclave_ids'].split(',')
                 elif not isinstance(config['enclave_ids'], list):
                     raise Exception("'enclave_ids' must be a list or a comma-separated list")

@@ -1,16 +1,10 @@
-# Created by .ignore support plugin (hsz.mobi)
-# Packages
 *.egg-info
-
 build/
 /dist/
 /.idea/
 /examples/trustar.conf
-# Installer logs
 MANIFEST
-trustar-python.iml
-trustar/TruStar.pyc
-trustar/__init__.pyc
-venv
+*.pyc
+venv*
 .DS_Store
 tests/config.yml
