@@ -13,6 +13,7 @@ from random import randint
 
 from trustar import TruStar, DISTRIBUTION_TYPE_COMMUNITY, DISTRIBUTION_TYPE_ENCLAVE, Report
 
+
 do_latest_reports = True
 do_correlated = True
 do_latest_indicators = True
@@ -49,6 +50,7 @@ def to_milliseconds(days):
 
 
 def main():
+
     role = "trustar"
     if len(sys.argv) > 1:
         role = sys.argv[1]
@@ -218,7 +220,7 @@ def main():
             report = ts.get_report_details(report_id=external_id, id_type="external")
 
             print("\ttitle: %s" % report.title)
-            print("\texternalTrackingId: %s" % report.externalTrackingId)
+            print("\texternalTrackingId: %s" % report.external_id)
             print("\tindicators: %s" % report.indicators)
             print("\tURL: %s\n" % ts.get_report_url(report.id))
             report_guid = report.id
@@ -248,7 +250,7 @@ def main():
             report = ts.get_report_details(report_guid, id_type="internal")
 
             print("\ttitle: %s" % report.title)
-            print("\texternalTrackingId: %s" % report.externalTrackingId)
+            print("\texternalTrackingId: %s" % report.external_id)
             print("\tindicators: %s" % report.indicators)
             print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
@@ -276,7 +278,7 @@ def main():
             report = ts.get_report_details(report_guid, id_type="internal")
 
             print("\ttitle: %s" % report.title)
-            print("\texternalTrackingId: %s" % report.external_tracking_id)
+            print("\texternalTrackingId: %s" % report.external_id)
             print("\tindicators: %s" % report.indicators)
             print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
@@ -305,7 +307,7 @@ def main():
             report = ts.get_report_details(report_id=external_id, id_type="external")
 
             print("\ttitle: %s" % report.title)
-            print("\texternalTrackingId: %s" % report.external_tracking_id)
+            print("\texternalTrackingId: %s" % report.external_id)
             print("\tindicators: %s" % report.indicators)
             print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
@@ -332,9 +334,8 @@ def main():
             print("\tId of new report %s\n" % report_id)
 
             # get back report details, including the enclave it's in
-            response = ts.get_report_details(report_id=report_id)
-            enclave_list = list(response.get('enclaves'))
-            enclave_id = enclave_list.pop(0).get('id')
+            report = ts.get_report_details(report_id=report_id)
+            enclave_id = report.enclave_ids[0]
 
             # add an enclave tag
             response = ts.add_enclave_tag(report_id=report_id, name="triage", enclave_id=enclave_id)

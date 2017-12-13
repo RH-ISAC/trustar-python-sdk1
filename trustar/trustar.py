@@ -35,13 +35,18 @@ class TruStar(object):
     This class is used to interact with the TruStar API.
     """
 
+    # raise exception if any of these config keys are missing
     REQUIRED_KEYS = ['auth', 'base', 'api_key', 'api_secret']
+
+    # allow configs to use different key names for config values
     REMAPPED_KEYS = {
         'auth_endpoint': 'auth',
         'api_endpoint': 'base',
         'user_api_key': 'api_key',
         'user_api_secret': 'api_secret'
     }
+
+    # default config values
     DEFAULTS = {
         'client_type': 'PYTHON_SDK',
         'client_version': CLIENT_VERSION,
@@ -95,7 +100,7 @@ class TruStar(object):
                 # default to empty list
                 config['enclave_ids'] = []
 
-        # remap legacy keys to current keys
+        # remap config keys names
         for k, v in self.REMAPPED_KEYS.items():
             if k in config and v not in config:
                 config[v] = config[k]

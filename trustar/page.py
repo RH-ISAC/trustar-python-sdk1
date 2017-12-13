@@ -1,7 +1,9 @@
+# python 2 backwards compatibility
 from __future__ import print_function
 from builtins import object
 from future import standard_library
 
+# external imports
 import json
 import math
 
