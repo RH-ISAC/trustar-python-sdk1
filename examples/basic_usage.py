@@ -38,8 +38,18 @@ do_reports_by_enclave = True
 do_reports_mine = True
 
 # search_string = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
-search_string = "167.114.35.70,103.255.61.39,miel-maroc.com,malware.exe"
-submit_indicators = "google.com malware.exe 103.255.61.39"
+search_string = ','.join([
+    "167.114.35.70",
+    "103.255.61.39",
+    "miel-maroc.com",
+    "malware.exe"
+])
+
+submit_indicators = ' '.join([
+    "google.com",
+    "malware.exe",
+    "103.255.61.39"
+])
 
 
 def to_milliseconds(days):

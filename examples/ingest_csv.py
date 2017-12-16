@@ -113,42 +113,38 @@ def main():
                     response = ts.submit_report(report_body=staged_report['reportContent'],
                                                 title=staged_report['reportTitle'],
                                                 time_began=staged_report['reportDateTime'], enclave=True)
-                    if 'error' in response:
-                        print("Submission failed with error: %s, %s" % (response['error'], response['message']))
-                        raise Exception
-                    else:
-                        num_submitted += 1
-                        successful = True
+                    num_submitted += 1
+                    successful = True
 
-                        print("Submitted report #%s-%s title %s as TruSTAR IR %s with case ID: %s" % (
-                            num_submitted, attempts,
-                            staged_report['reportTitle'],
-                            response['reportId'],
-                            staged_report['reportCaseId']))
+                    print("Submitted report #%s-%s title %s as TruSTAR IR %s with case ID: %s" % (
+                        num_submitted, attempts,
+                        staged_report['reportTitle'],
+                        response['reportId'],
+                        staged_report['reportCaseId']))
 
-                        print("URL: %s" % ts.get_report_url(response['reportId']))
+                    print("URL: %s" % ts.get_report_url(response['reportId']))
 
-                        # Build CEF output:
-                        # - HTTP_USER_AGENT is the cs1 field
-                        # - example CEF output: CEF:version|vendor|product|device_version|signature|name|severity|cs1=(num_submitted) cs2=(report_url)
-                        config = {'cef.version': '0.5', 'cef.vendor': 'TruSTAR',
-                                  'cef.device_version': '2.0', 'cef.product': 'API',
-                                  'cef': True, 'cef.file': args.cef_output_file}
+                    # Build CEF output:
+                    # - HTTP_USER_AGENT is the cs1 field
+                    # - example CEF output: CEF:version|vendor|product|device_version|signature|name|severity|cs1=(num_submitted) cs2=(report_url)
+                    config = {'cef.version': '0.5', 'cef.vendor': 'TruSTAR',
+                              'cef.device_version': '2.0', 'cef.product': 'API',
+                              'cef': True, 'cef.file': args.cef_output_file}
 
-                        environ = {'REMOTE_ADDR': '127.0.0.1', 'HTTP_HOST': '127.0.0.1',
-                                   'HTTP_USER_AGENT': staged_report['reportTitle']}
+                    environ = {'REMOTE_ADDR': '127.0.0.1', 'HTTP_HOST': '127.0.0.1',
+                               'HTTP_USER_AGENT': staged_report['reportTitle']}
 
-                        log_cef('SUBMISSION', 1, environ, config, signature="INFO",
-                                cs2=staged_report['reportCaseId'],
-                                cs3=ts.get_report_url(response['reportId']))
+                    log_cef('SUBMISSION', 1, environ, config, signature="INFO",
+                            cs2=staged_report['reportCaseId'],
+                            cs3=ts.get_report_url(response['reportId']))
 
-                        ####
-                        # TODO: ADD YOUR CUSTOM POST-PROCESSING CODE FOR THIS SUBMISSION HERE
-                        ####
+                    ####
+                    # TODO: ADD YOUR CUSTOM POST-PROCESSING CODE FOR THIS SUBMISSION HERE
+                    ####
 
-                        if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
-                            print("Indicators:\n %s" % (json.dumps(response['reportIndicators'])))
-                        print()
+                    if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
+                        print("Indicators:\n %s" % (json.dumps(response['reportIndicators'])))
+                    print()
 
                 except Exception as e:
                     traceback.print_exc(file=sys.stdout)

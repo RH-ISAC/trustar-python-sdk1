@@ -40,10 +40,11 @@ def extract_pdf(file_name):
     interpreter = pdfminer.pdfinterp.PDFPageInterpreter(rsrcmgr, device)
 
     # Extract text from pdf file
-    fp = file(file_name, 'rb')
-    for page in PDFPage.get_pages(fp, maxpages=20):
-        interpreter.process_page(page)
-    fp.close()
+    # fp = file(file_name, 'rb')
+    with open(file_name, 'rb') as fp:
+        for page in PDFPage.get_pages(fp, maxpages=20):
+            interpreter.process_page(page)
+    # fp.close()
 
     text = sio.getvalue()
 

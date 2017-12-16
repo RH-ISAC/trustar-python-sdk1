@@ -32,6 +32,9 @@ class Page(object):
         """
         return self.page_number < self.get_total_pages()
 
+    def __len__(self):
+        return len(self.items)
+
     @staticmethod
     def from_dict(page):
         """
