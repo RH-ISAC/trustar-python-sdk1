@@ -89,13 +89,16 @@ class TruStar(object):
 
             # parse enclave ids
             if 'enclave_ids' in config:
+                # if id has all numeric characters, will be parsed as an int, so convert to string
+                if isinstance(config['enclave_ids'], int):
+                    config['enclave_ids'] = str(config['enclave_ids'])
                 # split comma separated list if necessary
                 if isinstance(config['enclave_ids'], string_types):
                     config['enclave_ids'] = config['enclave_ids'].split(',')
                 elif not isinstance(config['enclave_ids'], list):
                     raise Exception("'enclave_ids' must be a list or a comma-separated list")
                 # strip out whitespace
-                config['enclave_ids'] = [x.strip() for x in config['enclave_ids'] if x is not None]
+                config['enclave_ids'] = [str(x).strip() for x in config['enclave_ids'] if x is not None]
             else:
                 # default to empty list
                 config['enclave_ids'] = []
