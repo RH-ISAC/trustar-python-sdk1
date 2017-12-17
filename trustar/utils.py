@@ -1,3 +1,13 @@
+# python 2 backwards compatibility
+from __future__ import print_function
+from builtins import object
+from future import standard_library
+from six import string_types
+
+# package imports
+from .enclave import Enclave
+
+# external imports
 from datetime import datetime
 import dateutil.parser
 import time
@@ -53,3 +63,22 @@ def normalize_timestamp(date_time):
 
     # converts datetime to iso8601
     return datetime_dt.isoformat()
+
+
+def enclaves_from_ids(enclave_ids):
+    """
+    Create enclave objects from a list of ids.
+    :param enclave_ids: A list, or comma-separated list, of enclave guids.
+    :return: A list of Enclave objects.
+    """
+
+    # if string, convert comma-separated list into python list
+    if isinstance(enclave_ids, string_types):
+        enclave_ids = [x.strip() for x in enclave_ids.split(',')]
+
+    # ensure is list
+    if not isinstance(enclave_ids, list):
+        raise ValueError("Enclave IDs must either be a list or a comma-separated string.")
+
+    # create Enclave objects and filter out None values
+    return [Enclave(id=id) for id in enclave_ids if id is not None]

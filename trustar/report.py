@@ -5,7 +5,9 @@ from future import standard_library
 from six import string_types
 
 # package imports
-from .utils import normalize_timestamp
+from . import utils
+from .indicator import Indicator
+from .enclave import Enclave
 
 # external imports
 import json
@@ -31,25 +33,23 @@ class Report(object):
                  external_url=None,
                  is_enclave=True,
                  enclave_ids=None,
+                 enclaves=None,
                  indicators=None):
 
         # if the report belongs to any enclaves, resolve the list of enclave IDs
         if is_enclave:
 
-            # if string, convert comma-separated list into python list
-            if isinstance(enclave_ids, string_types):
-                enclave_ids = [x.strip() for x in enclave_ids.split(',')]
-
-            # ensure is list
-            if not isinstance(enclave_ids, list):
-                raise ValueError("Enclave IDs must either be a list or a comma-separated string.")
+            # if enclaves is None, expect that enclave_ids is populated.
+            # derive Enclave objects from enclave_ids field instead
+            if enclaves is None:
+                if enclave_ids is None:
+                    raise ValueError("If distribution type is ENCLAVE, " +
+                                     "must provide either enclaves or enclave_ids value.")
+                enclaves = utils.enclaves_from_ids(enclave_ids)
 
             # ensure non-empty
-            if len(enclave_ids) == 0:
-                raise ValueError("Enclave report must have one or more enclave IDs.")
-
-            # filter out None values
-            enclave_ids = [i for i in enclave_ids if i is not None]
+            if len(enclaves) == 0:
+                raise ValueError("Enclave report must have one or more enclaves.")
 
         self.id = id
         self.title = title
@@ -58,7 +58,7 @@ class Report(object):
         self.external_id = external_id
         self.external_url = external_url
         self.is_enclave = is_enclave
-        self.enclave_ids = enclave_ids
+        self.enclaves = enclaves
         self.indicators = indicators
 
     def get_distribution_type(self):
@@ -70,6 +70,15 @@ class Report(object):
         else:
             return DISTRIBUTION_TYPE_COMMUNITY
 
+    def get_enclave_ids(self):
+        """
+        :return: Enclave ids if enclaves is not None, else None.
+        """
+        if self.enclaves is not None:
+            return [enclave.id for enclave in self.enclaves]
+        else:
+            return None
+
     def to_dict(self):
         """
         :return: A dictionary representation of the report.
@@ -77,29 +86,46 @@ class Report(object):
         report_dict = {
             'title': self.title,
             'reportBody': self.body,
-            'timeBegan': normalize_timestamp(self.time_began),
+            'timeBegan': utils.normalize_timestamp(self.time_began),
             'externalUrl': self.external_url,
             'distributionType': self.get_distribution_type(),
             'externalTrackingId': self.external_id
         }
 
+        # indicators field might not be present
         if self.indicators is not None:
-            report_dict['indicators'] = self.indicators
+            report_dict['indicators'] = [indicator.to_dict() for indicator in self.indicators]
+
+        # enclaves field might not be present
+        if self.enclaves is not None:
+            report_dict['enclaves'] = [enclave.to_dict() for enclave in self.enclaves]
 
         return report_dict
 
-    @classmethod
-    def from_dict(cls, report):
+    @staticmethod
+    def from_dict(report):
+        """
+        Create a report object from a dictionary.
+        :param report: The dictionary.
+        :return: The report object.
+        """
 
-        is_enclave = report.get('distributionType')
-        if is_enclave is not None:
-            is_enclave = is_enclave.upper() != DISTRIBUTION_TYPE_COMMUNITY
+        # determine distribution type
+        distribution_type = report.get('distributionType')
+        if distribution_type is not None:
+            is_enclave = distribution_type.upper() != DISTRIBUTION_TYPE_COMMUNITY
+        else:
+            is_enclave = None
 
+        # parse enclaves
         enclaves = report.get('enclaves')
         if enclaves is not None:
-            enclave_ids = [enclave['id'] for enclave in enclaves]
-        else:
-            enclave_ids = None
+            enclaves = [Enclave.from_dict(enclave) for enclave in enclaves]
+
+        # parse indicators
+        indicators = report.get('indicators')
+        if indicators is not None:
+            indicators = [Indicator.from_dict(indicator) for indicator in indicators]
 
         return Report(
             id=report.get('id'),
@@ -108,8 +134,9 @@ class Report(object):
             time_began=report.get('timeBegan'),
             external_url=report.get('externalUrl'),
             is_enclave=is_enclave,
-            enclave_ids=enclave_ids,
-            indicators=report.get('indicators')
+            enclave_ids=report.get('enclaveIds'),
+            enclaves=enclaves,
+            indicators=indicators
         )
 
     def __str__(self):

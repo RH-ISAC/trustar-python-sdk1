@@ -7,6 +7,8 @@ from six import string_types
 # package imports
 from .report import Report, DISTRIBUTION_TYPE_ENCLAVE
 from .page import Page
+from .indicator import Indicator
+from .tag import Tag
 from .utils import normalize_timestamp
 
 # external imports
@@ -363,11 +365,20 @@ class TruStar(object):
 
         payload = {
             'incidentReport': report.to_dict(),
-            'enclaveIds': report.enclave_ids
+            'enclaveIds': report.get_enclave_ids()
         }
-
         resp = self.__post("report", data=json.dumps(payload), timeout=60, **kwargs)
-        return resp.json()
+        body = resp.json()
+
+        report.id = body['reportId']
+
+        # parse indicators from response body
+        report.indicators = []
+        for indicator_type, indicators in body['reportIndicators'].items():
+            for value in indicators:
+                report.indicators.append(Indicator(value=value, type=indicator_type))
+
+        return report
 
     def update_report(self, report_id=None, id_type=None, title=None, report_body=None, time_began=None,
                       external_url=None, distribution_type=None, enclave_ids=None, report=None, **kwargs):
@@ -415,7 +426,7 @@ class TruStar(object):
         params = {'idType': id_type}
         payload = {
             'incidentReport': report_dict,
-            'enclaveIds': report.enclave_ids
+            'enclaveIds': report.get_enclave_ids()
         }
 
         resp = self.__put("report/%s" % report_id, data=json.dumps(payload), params=params, **kwargs)
@@ -520,7 +531,7 @@ class TruStar(object):
         """
         params = {'idType': id_type}
         resp = self.__get("reports/%s/enclave-tags" % report_id, params=params, **kwargs)
-        return resp.json()
+        return [Tag.from_dict(tag) for tag in resp.json()]
 
     def add_enclave_tag(self, report_id, name, enclave_id, id_type=None, **kwargs):
         """

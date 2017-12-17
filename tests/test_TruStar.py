@@ -63,8 +63,8 @@ class TruStarTests(unittest.TestCase):
                         body="Blah blah blah",
                         time_began=yesterday_time,
                         enclave_ids=self.ts.enclave_ids)
-        result = self.ts.submit_report(report=report)
-        report.id = result['reportId']
+        report = self.ts.submit_report(report=report)
+        # report.id = result['reportId']
 
         # update report
         report.body = "Bleh bleh bleh"
@@ -155,15 +155,16 @@ class TruStarTests(unittest.TestCase):
                 body=" some words ".join([indicators[count % 2]] + group),
                 enclave_ids=self.ts.enclave_ids
             )
-            result = self.ts.submit_report(report=report)
-            report.id = result['reportId']
+            report = self.ts.submit_report(report=report)
+            # report.id = result['reportId']
             reports.append(report)
 
         ###############
         # GET RELATED #
         ###############
 
-        server_related = list(self.ts.get_related_indicators_generator(indicators=indicators, sources=["incident_report"]))
+        server_related = list(self.ts.get_related_indicators_generator(indicators=indicators,
+                                                                       sources=["incident_report"]))
         related_reports = self.ts.get_correlated_reports(indicators=indicators)
 
         ###########
@@ -203,8 +204,7 @@ class TruStarTests(unittest.TestCase):
                         body="Blah blah blah",
                         time_began=yesterday_time,
                         enclave_ids=[enclave_id])
-        result = self.ts.submit_report(report=report)
-        report.id = result['reportId']
+        report = self.ts.submit_report(report=report)
 
         # tag report
         tag = "some gibberish"
@@ -212,6 +212,7 @@ class TruStarTests(unittest.TestCase):
                                          name=tag,
                                          enclave_id=enclave_id)
 
+        # get all reports with the tag just created
         report_ids = [report.id for report in self.ts.get_report_generator(tag=tag)]
 
         try:

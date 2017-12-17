@@ -1,0 +1,52 @@
+# python 2 backwards compatibility
+from __future__ import print_function
+from builtins import object
+from future import standard_library
+from six import string_types
+
+# package imports
+from . import utils
+
+# external imports
+import json
+
+
+class Tag:
+
+    def __init__(self, name, guid=None, enclave=None, enclave_id=None):
+        self.name = name
+        self.guid = guid
+
+        if enclave is None:
+            if enclave_id is not None:
+                enclaves = utils.enclaves_from_ids([enclave_id])
+                enclave = enclaves[0] if enclaves is not None else None
+            else:
+                enclave = None
+
+        self.enclave = enclave
+
+    @staticmethod
+    def from_dict(tag):
+        """
+        Create a tag object from a dictionary.
+        :param tag: The dictionary.
+        :return: The tag object.
+        """
+        return Tag(name=tag.get('name'),
+                   guid=tag.get('guid'),
+                   enclave=tag.get('enclave'),
+                   enclave_id=tag.get('enclaveId'))
+
+    def to_dict(self):
+        """
+        :return: A dictionary representation of the tag.
+        """
+        return {
+            'name': self.name,
+            'guid': self.guid,
+            'enclave': self.enclave
+        }
+
+    def __str__(self):
+        return json.dumps(self.to_dict())
