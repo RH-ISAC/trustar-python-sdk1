@@ -29,7 +29,7 @@ def normalize_timestamp(date_time):
     datetime_dt = datetime.now()
 
     # get current time in seconds-since-epoch
-    current_time = int(time.time())
+    current_time = int(time.time()) * 1000
 
     try:
         # identify type of timestamp and convert to datetime object
@@ -43,8 +43,9 @@ def normalize_timestamp(date_time):
             if date_time > current_time:
                 raise ValueError("The given time %s is in the future." % date_time)
 
-            datetime_dt = datetime.fromtimestamp(date_time)
-        elif isinstance(date_time, str):
+            return date_time
+
+        if isinstance(date_time, str):
             datetime_dt = dateutil.parser.parse(date_time)
         elif isinstance(date_time, datetime):
             datetime_dt = date_time

@@ -430,7 +430,13 @@ class TruStar(object):
         }
 
         resp = self.__put("report/%s" % report_id, data=json.dumps(payload), params=params, **kwargs)
-        return resp.json()
+
+        body = resp.json()
+        report.id = body.get('reportId')
+        report.indicators = body.get('reportIndicators')
+        report.external_id = body.get('externalTrackingId')
+
+        return report
 
     def delete_report(self, report_id, id_type=None, **kwargs):
         """
@@ -549,7 +555,7 @@ class TruStar(object):
             'enclaveId': enclave_id
         }
         resp = self.__post("reports/%s/enclave-tags" % report_id, params=params, **kwargs)
-        return resp.json()
+        return Tag.from_dict(resp.json())
 
     def delete_enclave_tag(self, report_id, name, enclave_id, id_type=None, **kwargs):
         """
@@ -578,7 +584,7 @@ class TruStar(object):
         """
         params = {'enclaveIds': enclave_ids}
         resp = self.__get("enclave-tags", params=params, **kwargs)
-        return resp.json()
+        return [Tag.from_dict(tag) for tag in resp.json()]
 
 
     ##################

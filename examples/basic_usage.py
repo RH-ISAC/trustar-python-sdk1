@@ -6,6 +6,7 @@ Comprehensive script with various TruSTAR API usage examples
 
 from __future__ import print_function
 
+import logging
 import json
 import sys
 import time
@@ -13,6 +14,8 @@ from random import randint
 
 from trustar import TruStar, DISTRIBUTION_TYPE_COMMUNITY, DISTRIBUTION_TYPE_ENCLAVE, Report
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 do_latest_reports = True
 do_correlated = True
@@ -60,7 +63,6 @@ def to_milliseconds(days):
 
 
 def main():
-
     role = "trustar"
     if len(sys.argv) > 1:
         role = sys.argv[1]
@@ -81,7 +83,9 @@ def main():
 
         print("Getting Latest Accessible Incident Reports Since 24 hours ago ...")
         try:
-            reports = ts.get_report_generator(from_time=yesterday_time, to_time=current_time)
+            reports = ts.get_report_generator(from_time=yesterday_time,
+                                              to_time=current_time,
+                                              distribution_type=DISTRIBUTION_TYPE_ENCLAVE)
 
             print("Got %s results" % len(reports))
 
@@ -90,7 +94,7 @@ def main():
             print()
 
         except Exception as e:
-            print('Could not get latest reports, error: %s' % e)
+            logger.error('Could not get latest reports, error: %s' % e)
 
     if do_reports_by_community:
 
@@ -109,7 +113,7 @@ def main():
             print()
 
         except Exception as e:
-            print('Could not get community reports, error: %s' % e)
+            logger.error('Could not get community reports, error: %s' % e)
 
     if do_reports_by_enclave:
 
@@ -124,12 +128,12 @@ def main():
 
             print("Got %s results" % len(reports))
 
-            for result in reports:
-                print(result)
+            for report in reports:
+                print(report)
             print()
 
         except Exception as e:
-            print('Could not get community reports, error: %s' % e)
+            logger.error('Could not get community reports, error: %s' % e)
 
     if do_correlated:
         print("Querying Accessible Correlated Reports...")
@@ -141,7 +145,7 @@ def main():
             print("\n".join(report_ids))
             print()
         except Exception as e:
-            print('Could not get correlated reports, error: %s' % e)
+            logger.error('Could not get correlated reports, error: %s' % e)
 
     # if do_latest_indicators:
     #     print("Get Latest Indicators (first 100)")
@@ -162,11 +166,13 @@ def main():
         print("Get community trends")
 
         try:
-            results = ts.get_community_trends_generator(indicator_type=None, from_time=yesterday_time, to_time=current_time)
-            for result in results:
-                print(result)
+            indicators = ts.get_community_trends_generator(indicator_type=None,
+                                                           from_time=yesterday_time,
+                                                           to_time=current_time)
+            for indicator in indicators:
+                print(indicator)
         except Exception as e:
-            print('Could not get community trends, error: %s' % e)
+            logger.error('Could not get community trends, error: %s' % e)
 
     if do_query_indicators:
         try:
@@ -175,53 +181,53 @@ def main():
             for indicator in indicators:
                 print(indicator)
         except Exception as e:
-            print('Could not get correlated indicators, error: %s' % e)
+            logger.error('Could not get correlated indicators, error: %s' % e)
 
     # Submit simple test report to community
     if do_comm_submissions:
         print("Submit New Community Incident Report")
         try:
-            response = ts.submit_report(submit_indicators, "COMMUNITY API SUBMISSION TEST",
-                                        time_began="2017-02-01T01:23:45")
-            print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
+            report = ts.submit_report(submit_indicators, "COMMUNITY API SUBMISSION TEST",
+                                      time_began="2017-02-01T01:23:45")
+            print("\tURL: %s\n" % ts.get_report_url(report.id))
 
-            if 'reportIndicators' in response:
+            if report.indicators is not None:
                 print("Extracted the following community indicators: \n%s\n"
-                      % json.dumps(response.get('reportIndicators'), indent=2))
+                      % json.dumps([indicator.to_dict() for indicator in report.indicators], indent=2))
         except Exception as e:
-            print('Could not submit community report, error: %s' % e)
+            logger.error('Could not submit community report, error: %s' % e)
 
     # Submit simple test report to your enclave
     if do_enclave_submissions:
         print("Submit New Enclave Incident Report")
 
         try:
-            response = ts.submit_report(submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True)
-            print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
+            report = ts.submit_report(submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True)
+            print("\tURL: %s\n" % ts.get_report_url(report.id))
 
-            print(response)
+            print(report)
 
-            if 'reportIndicators' in response:
+            if report.indicators is not None:
                 print("Extracted the following enclave indicators: \n%s\n"
-                      % json.dumps(response.get('reportIndicators'), indent=2))
+                      % json.dumps([indicator.to_dict() for indicator in report.indicators], indent=2))
         except Exception as e:
-            print('Could not submit enclave report, error: %s' % e)
+            logger.error('Could not submit enclave report, error: %s' % e)
 
     # Submit a test report and retrieve it
     if do_submit_report:
         print("Submit New Enclave Incident Report with External ID")
 
         try:
-            response = ts.submit_report(submit_indicators, "Sample SDK Test Report",
-                                        external_id=external_id,
-                                        time_began="2017-02-01T01:23:45", enclave=True)
+            report = ts.submit_report(submit_indicators, "Sample SDK Test Report",
+                                      external_id=external_id,
+                                      time_began="2017-02-01T01:23:45", enclave=True)
 
             print("Report Submitted")
-            print("\texternalTrackingId: %s" % response.get('externalTrackingId'))
-            print("\tindicators: %s" % response.get('reportIndicators'))
-            print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
+            print("\texternalTrackingId: %s" % report.external_id)
+            print("\tindicators: %s" % report.indicators)
+            print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
-            print('Could not submit report, error: %s' % e)
+            logger.error('Could not submit report, error: %s' % e)
 
     # Get test report previously submitted
     if do_report_details_by_ext_id:
@@ -235,7 +241,7 @@ def main():
             print("\tURL: %s\n" % ts.get_report_url(report.id))
             report_guid = report.id
         except Exception as e:
-            print('Could not get report, error: %s' % e)
+            logger.error('Could not get report, error: %s' % e)
 
     # Update a test report and test with get report
     if do_update_report_by_ext_id:
@@ -243,14 +249,14 @@ def main():
         try:
             title = "Updated Sample Title"
             body = "updated report body: 21.22.23.24"
-            response = ts.update_report(report_id=external_id, id_type=Report.ID_TYPE_EXTERNAL, title=title,
-                                        report_body=body)
+            report = ts.update_report(report_id=external_id, id_type=Report.ID_TYPE_EXTERNAL, title=title,
+                                      report_body=body)
 
-            print("\texternalTrackingId: %s" % response.get('externalTrackingId'))
-            print("\tindicators: %s" % response.get('reportIndicators'))
-            print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
+            print("\texternalTrackingId: %s" % report.external_id)
+            print("\tindicators: %s" % report.indicators)
+            print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
-            print('Could not update report, error: %s' % e)
+            logger.error('Could not update report, error: %s' % e)
 
     # Get test report previously submitted
     if do_report_details_by_guid:
@@ -264,7 +270,7 @@ def main():
             print("\tindicators: %s" % report.indicators)
             print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
-            print('Could not get report, error: %s' % e)
+            logger.error('Could not get report, error: %s' % e)
 
     # Update a test report and test with get report
     if do_update_report_by_guid:
@@ -272,14 +278,14 @@ def main():
         try:
             title = "New Sample Title"
             body = "new sample body - 7.8.9.10"
-            response = ts.update_report(report_guid, id_type="internal", title=title, report_body=body)
+            report = ts.update_report(report_guid, id_type="internal", title=title, report_body=body)
 
             print("Updated Report using GUID")
-            print("\texternalTrackingId: %s" % response.get('externalTrackingId'))
-            print("\tindicators: %s" % response.get('reportIndicators'))
-            print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
+            print("\texternalTrackingId: %s" % report.external_id)
+            print("\tindicators: %s" % report.indicators)
+            print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
-            print('Could not update report, error: %s' % e)
+            logger.error('Could not update report, error: %s' % e)
 
     # Get test report previously submitted
     if do_report_details_by_guid:
@@ -292,22 +298,22 @@ def main():
             print("\tindicators: %s" % report.indicators)
             print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
-            print('Could not get report, error: %s' % e)
+            logger.error('Could not get report, error: %s' % e)
 
     # Release report to community
     if do_release_report_by_ext_id:
         print("Release Incident Report by External ID")
         try:
 
-            response = ts.update_report(report_id=external_id, id_type='external',
-                                               distribution_type="COMMUNITY")
+            report = ts.update_report(report_id=external_id, id_type='external',
+                                      distribution_type="COMMUNITY")
 
             print("Report Released using External ID:")
-            print("\texternalTrackingId: %s" % response.get('externalTrackingId'))
-            print("\tindicators: %s" % response.get('reportIndicators'))
-            print("\tURL: %s\n" % ts.get_report_url(response.get('reportId')))
+            print("\texternalTrackingId: %s" % report.external_id)
+            print("\tindicators: %s" % report.indicators)
+            print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
-            print('Could not release report, error: %s' % e)
+            logger.error('Could not release report, error: %s' % e)
 
     # Get test report previously submitted
     if do_report_details_by_ext_id_2:
@@ -321,17 +327,17 @@ def main():
             print("\tindicators: %s" % report.indicators)
             print("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
-            print('Could not get report, error: %s' % e)
+            logger.error('Could not get report, error: %s' % e)
 
     # Delete test report previously submitted
     if do_delete_report_by_ext_id:
         print("Delete Incident Report by External ID")
         try:
-            response = ts.delete_report(report_id=external_id, id_type="external")
+            ts.delete_report(report_id=external_id, id_type="external")
             print("Report Deleted using External ID\n")
 
         except Exception as e:
-            print('Could not delete report, error: %s' % e)
+            logger.error('Could not delete report, error: %s' % e)
 
     # Add an enclave tag to a newly created report
     if do_add_enclave_tag:
@@ -339,47 +345,46 @@ def main():
 
         try:
             # submit report
-            response = ts.submit_report(submit_indicators, "Enclave report with tag", enclave=True)
-            report_id = response.get('reportId')
-            print("\tId of new report %s\n" % report_id)
+            report = ts.submit_report(submit_indicators, "Enclave report with tag", enclave=True)
+            print("\tId of new report %s\n" % report.id)
 
             # get back report details, including the enclave it's in
-            report = ts.get_report_details(report_id=report_id)
-            enclave_id = report.enclave_ids[0]
+            report = ts.get_report_details(report_id=report.id)
+            enclave_id = report.get_enclave_ids()[0]
 
             # add an enclave tag
-            response = ts.add_enclave_tag(report_id=report_id, name="triage", enclave_id=enclave_id)
+            tag = ts.add_enclave_tag(report_id=report.id, name="triage", enclave_id=enclave_id)
             # print the added enclave tag
-            print(response)
-            print("\tId of new enclave tag %s\n" % response.get('guid'))
+            print(tag)
+            print("\tId of new enclave tag %s\n" % tag.id)
 
             # add another enclave tag
-            response = ts.add_enclave_tag(report_id=report_id, name="resolved", enclave_id=enclave_id)
+            tag = ts.add_enclave_tag(report_id=report.id, name="resolved", enclave_id=enclave_id)
             # print the added enclave tag
-            print(response)
-            print("\tId of new enclave tag %s\n" % response.get('guid'))
+            print(tag)
+            print("\tId of new enclave tag %s\n" % tag.id)
 
             # Get enclave tag info
             if do_get_enclave_tags:
                 print("Get enclave tags for report")
-                response = ts.get_enclave_tags(report_id)
-                print("\tEnclave tags for report %s\n" % report_id)
-                print(json.dumps(response, indent=2))
+                tags = ts.get_enclave_tags(report.id)
+                print("\tEnclave tags for report %s\n" % report.id)
+                print(json.dumps([tag.to_dict() for tag in tags], indent=2))
 
             # delete enclave tag by name
             if do_delete_enclave_tag:
                 print("Delete enclave tag from report")
-                response = ts.delete_enclave_tag(report_id, name="triage", enclave_id=enclave_id)
-                print("\tDeleted enclave tag for report %s\n" % report_id)
+                response = ts.delete_enclave_tag(report.id, name="triage", enclave_id=enclave_id)
+                print("\tDeleted enclave tag for report %s\n" % report.id)
                 print(response)
 
             # add it back
-            ts.add_enclave_tag(report_id=report_id, name="triage", enclave_id=enclave_id)
+            ts.add_enclave_tag(report_id=report.id, name="triage", enclave_id=enclave_id)
 
             # List all enclave tags
-            result = ts.get_all_enclave_tags(enclave_ids=ts.enclave_ids)
+            tags = ts.get_all_enclave_tags(enclave_ids=ts.enclave_ids)
             print("List of enclave tags for enclave %s\n" % enclave_id)
-            print(json.dumps(result, indent=2))
+            print(json.dumps([tag.to_dict() for tag in tags], indent=2))
 
             # Search report by tag
             reports = ts.get_report_generator(from_time=yesterday_time,
@@ -393,7 +398,7 @@ def main():
             print()
 
         except Exception as e:
-            print('Could not handle enclave tag operation, error: %s' % e)
+            logger.error('Could not handle enclave tag operation, error: %s' % e)
 
 
 if __name__ == '__main__':

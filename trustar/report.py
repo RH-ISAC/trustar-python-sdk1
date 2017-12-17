@@ -51,6 +51,8 @@ class Report(object):
             if len(enclaves) == 0:
                 raise ValueError("Enclave report must have one or more enclaves.")
 
+        time_began = utils.normalize_timestamp(time_began)
+
         self.id = id
         self.title = title
         self.body = body
@@ -86,7 +88,7 @@ class Report(object):
         report_dict = {
             'title': self.title,
             'reportBody': self.body,
-            'timeBegan': utils.normalize_timestamp(self.time_began),
+            'timeBegan': self.time_began,
             'externalUrl': self.external_url,
             'distributionType': self.get_distribution_type(),
             'externalTrackingId': self.external_id

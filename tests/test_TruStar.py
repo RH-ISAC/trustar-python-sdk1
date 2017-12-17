@@ -64,7 +64,6 @@ class TruStarTests(unittest.TestCase):
                         time_began=yesterday_time,
                         enclave_ids=self.ts.enclave_ids)
         report = self.ts.submit_report(report=report)
-        # report.id = result['reportId']
 
         # update report
         report.body = "Bleh bleh bleh"
@@ -156,7 +155,6 @@ class TruStarTests(unittest.TestCase):
                 enclave_ids=self.ts.enclave_ids
             )
             report = self.ts.submit_report(report=report)
-            # report.id = result['reportId']
             reports.append(report)
 
         ###############

@@ -13,9 +13,9 @@ import json
 
 class Tag:
 
-    def __init__(self, name, guid=None, enclave=None, enclave_id=None):
+    def __init__(self, name, id=None, enclave=None, enclave_id=None):
         self.name = name
-        self.guid = guid
+        self.id = id
 
         if enclave is None:
             if enclave_id is not None:
@@ -34,7 +34,7 @@ class Tag:
         :return: The tag object.
         """
         return Tag(name=tag.get('name'),
-                   guid=tag.get('guid'),
+                   id=tag.get('guid'),
                    enclave=tag.get('enclave'),
                    enclave_id=tag.get('enclaveId'))
 
@@ -44,8 +44,8 @@ class Tag:
         """
         return {
             'name': self.name,
-            'guid': self.guid,
-            'enclave': self.enclave
+            'id': self.id,
+            'enclave': self.enclave.to_dict()
         }
 
     def __str__(self):
