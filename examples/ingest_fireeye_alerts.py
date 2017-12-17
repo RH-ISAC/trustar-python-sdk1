@@ -177,21 +177,23 @@ def main(inputfile):
     if do_enclave_submissions:
         for staged_report in all_reports:
             start_time = time.time()
-            response = ts.submit_report(report_body=staged_report['reportContent'],
-                                        title=staged_report['reportTitle'], time_began=staged_report['reportDateTime'],
-                                        enclave=True)
-            print(response)
-            if 'error' in response:
-                print("Submission failed with error: {}, {}".format(response['error'], response['message']))
-                raise Exception
-            else:
-                end_time = time.time()
-                delta_time = end_time - start_time
-                print("Submitted report title {} as TruSTAR IR {}".format(staged_report['reportTitle'],
-                                                                          response['reportId']) + " Time:" + str(
-                    delta_time))
-            if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
-                print("Extracted the following indicators: {}".format(json.dumps(response['reportIndicators'])))
+            try:
+                report = ts.submit_report(report_body=staged_report['reportContent'],
+                                            title=staged_report['reportTitle'], time_began=staged_report['reportDateTime'],
+                                            enclave=True)
+                print(report)
+            except Exception as e:
+                print("Submission failed with error: {}".format(str(e)))
+                raise
+
+            end_time = time.time()
+            delta_time = end_time - start_time
+            print("Submitted report title {} as TruSTAR IR {}".format(report.title, report.id) +
+                  " Time: " + str(delta_time))
+
+            if report.indicators is not None:
+                print("Extracted the following indicators: {}"
+                      .format(json.dumps([indicator.to_dict() for indicator in report.indicators], indent=2)))
 
             print()
             time.sleep(3)

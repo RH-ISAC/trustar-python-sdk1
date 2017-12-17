@@ -15,6 +15,7 @@ import argparse
 import os
 import time
 import logging
+import json
 import pdfminer.pdfinterp
 from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import TextConverter
@@ -130,7 +131,7 @@ def main():
 
                         if report.indicators is not None:
                             print("Extracted the following indicators: {}"
-                                  .format([x.to_dict() for x in report.indicators]))
+                                  .format(json.dumps([x.to_dict() for x in report.indicators], indent=2)))
                         else:
                             print("No indicators returned from  report id {0}".format(report.id))
                     except Exception as e:

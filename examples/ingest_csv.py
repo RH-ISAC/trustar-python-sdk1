@@ -140,7 +140,8 @@ def main():
                     ####
 
                     if report.indicators is not None:
-                        print("Indicators:\n %s" % json.dumps([indicator.to_dict() for indicator in report.indicators]))
+                        print("Indicators:\n %s" %
+                              json.dumps([indicator.to_dict() for indicator in report.indicators], indent=2))
                     print()
 
                 except Exception as e:
