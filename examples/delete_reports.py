@@ -18,6 +18,7 @@ to_time = datetime.now() - timedelta(days=1)
 from_time = int(time.mktime(from_time.timetuple())) * 1000
 to_time = int(time.mktime(to_time.timetuple())) * 1000
 
+count = 0
 reports = None
 while reports is None or len(reports) > 0:
     reports = ts.get_reports(from_time=from_time,
@@ -27,3 +28,6 @@ while reports is None or len(reports) > 0:
     for report in reports:
         print("deleting report %s" % report.id)
         ts.delete_report(report_id=report.id)
+        count += 1
+
+print("\nDeleted %d reports." % count)
