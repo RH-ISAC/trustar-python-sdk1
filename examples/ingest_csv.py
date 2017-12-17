@@ -12,7 +12,7 @@ from cef import log_cef
 import pandas as pd
 from builtins import range
 
-from trustar import TruStar
+from trustar import TruStar, Report
 
 import argparse
 import json
@@ -66,7 +66,6 @@ def main():
         current_title = ''
         current_datetime = None
         current_case_id = 0
-        current_report = {}
 
         for key in df:
             # ignore empty cells, which are float64 NaNs
@@ -94,12 +93,12 @@ def main():
             if key == args.caseid_col:
                 current_case_id = str(df[key][report_num])
 
-        current_report['reportTitle'] = current_title
-        current_report['reportDateTime'] = current_datetime
-        current_report['reportContent'] = current_content
-        current_report['reportCaseId'] = current_case_id
+        report = Report(title=current_title,
+                        time_began=current_datetime,
+                        body=current_content,
+                        external_id=current_case_id)
 
-        all_reports.append(current_report)
+        all_reports.append(report)
 
     if do_enclave_submissions:
         num_submitted = 0
@@ -110,19 +109,17 @@ def main():
             while not successful and attempts < 5:
                 attempts += 1
                 try:
-                    response = ts.submit_report(report_body=staged_report['reportContent'],
-                                                title=staged_report['reportTitle'],
-                                                time_began=staged_report['reportDateTime'], enclave=True)
+                    report = ts.submit_report(report=staged_report, enclave=True)
                     num_submitted += 1
                     successful = True
 
                     print("Submitted report #%s-%s title %s as TruSTAR IR %s with case ID: %s" % (
                         num_submitted, attempts,
-                        staged_report['reportTitle'],
-                        response['reportId'],
-                        staged_report['reportCaseId']))
+                        report.title,
+                        report.id,
+                        report.external_id))
 
-                    print("URL: %s" % ts.get_report_url(response['reportId']))
+                    print("URL: %s" % ts.get_report_url(report.id))
 
                     # Build CEF output:
                     # - HTTP_USER_AGENT is the cs1 field
@@ -132,18 +129,18 @@ def main():
                               'cef': True, 'cef.file': args.cef_output_file}
 
                     environ = {'REMOTE_ADDR': '127.0.0.1', 'HTTP_HOST': '127.0.0.1',
-                               'HTTP_USER_AGENT': staged_report['reportTitle']}
+                               'HTTP_USER_AGENT': report.title}
 
                     log_cef('SUBMISSION', 1, environ, config, signature="INFO",
-                            cs2=staged_report['reportCaseId'],
-                            cs3=ts.get_report_url(response['reportId']))
+                            cs2=report.external_id,
+                            cs3=ts.get_report_url(report.id))
 
                     ####
                     # TODO: ADD YOUR CUSTOM POST-PROCESSING CODE FOR THIS SUBMISSION HERE
                     ####
 
-                    if 'reportIndicators' in response and len(response['reportIndicators']) > 0:
-                        print("Indicators:\n %s" % (json.dumps(response['reportIndicators'])))
+                    if report.indicators is not None:
+                        print("Indicators:\n %s" % json.dumps([indicator.to_dict() for indicator in report.indicators]))
                     print()
 
                 except Exception as e:
