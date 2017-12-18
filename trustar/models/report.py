@@ -5,9 +5,9 @@ from future import standard_library
 from six import string_types
 
 # package imports
-from . import utils
-from .indicator import Indicator
-from .enclave import Enclave
+from .. import normalize_timestamp, enclaves_from_ids
+from . import Indicator
+from . import Enclave
 
 # external imports
 import json
@@ -45,13 +45,13 @@ class Report(object):
                 if enclave_ids is None:
                     raise ValueError("If distribution type is ENCLAVE, " +
                                      "must provide either enclaves or enclave_ids value.")
-                enclaves = utils.enclaves_from_ids(enclave_ids)
+                enclaves = enclaves_from_ids(enclave_ids)
 
             # ensure non-empty
             if len(enclaves) == 0:
                 raise ValueError("Enclave report must have one or more enclaves.")
 
-        time_began = utils.normalize_timestamp(time_began)
+        time_began = normalize_timestamp(time_began)
 
         self.id = id
         self.title = title

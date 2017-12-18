@@ -1,19 +1,18 @@
 # python 2 backwards compatibility
 from __future__ import print_function
-from builtins import object
-from future import standard_library
-from six import string_types
 
-# package imports
-from .enclave import Enclave
-
+import logging
+import time
 # external imports
 from datetime import datetime
+
 import dateutil.parser
-import time
-import logging
-from tzlocal import get_localzone
 import pytz
+from six import string_types
+from tzlocal import get_localzone
+
+# package imports
+from . import Enclave
 
 logger = logging.getLogger(__name__)
 

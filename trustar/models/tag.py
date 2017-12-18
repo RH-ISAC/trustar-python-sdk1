@@ -5,7 +5,7 @@ from future import standard_library
 from six import string_types
 
 # package imports
-from . import utils
+from .. import enclaves_from_ids
 
 # external imports
 import json
@@ -19,7 +19,7 @@ class Tag:
 
         if enclave is None:
             if enclave_id is not None:
-                enclaves = utils.enclaves_from_ids([enclave_id])
+                enclaves = enclaves_from_ids([enclave_id])
                 enclave = enclaves[0] if enclaves is not None else None
             else:
                 enclave = None

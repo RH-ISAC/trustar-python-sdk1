@@ -4,9 +4,6 @@ from builtins import object
 from future import standard_library
 from six import string_types
 
-# package imports
-from .utils import normalize_timestamp
-
 # external imports
 import json
 

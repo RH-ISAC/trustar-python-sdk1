@@ -4,24 +4,20 @@ from builtins import object
 from future import standard_library
 from six import string_types
 
-# package imports
-from .report import Report, DISTRIBUTION_TYPE_ENCLAVE
-from .page import Page
-from .indicator import Indicator
-from .tag import Tag
-from .utils import normalize_timestamp
-
 # external imports
-import logging
-import os
 import json
-import yaml
+import logging
 from datetime import datetime
 import configparser
+import os
 import requests
 import requests.auth
+import yaml
 from requests import HTTPError
 
+# package imports
+from . import Indicator, Page, Tag, Report, DISTRIBUTION_TYPE_ENCLAVE
+from . import normalize_timestamp
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
