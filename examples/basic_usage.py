@@ -187,8 +187,11 @@ def main():
     if do_comm_submissions:
         logger.info("Submit New Community Incident Report")
         try:
-            report = ts.submit_report(submit_indicators, "COMMUNITY API SUBMISSION TEST",
-                                      time_began="2017-02-01T01:23:45")
+            report = Report(title="COMMUNITY API SUBMISSION TEST",
+                            body=submit_indicators,
+                            time_began="2017-02-01T01:23:45",
+                            is_enclave=False)
+            report = ts.submit_report(report)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
 
             if report.indicators is not None:
@@ -202,7 +205,11 @@ def main():
         logger.info("Submit New Enclave Incident Report")
 
         try:
-            report = ts.submit_report(submit_indicators, "ENCLAVE API SUBMISSION TEST ", enclave=True)
+            report = Report(title="ENCLAVE API SUBMISSION TEST ",
+                            body=submit_indicators,
+                            time_began="2017-02-01T01:23:45",
+                            enclave_ids=ts.enclave_ids)
+            report = ts.submit_report(report)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
 
             logger.info(report)
@@ -218,13 +225,17 @@ def main():
         logger.info("Submit New Enclave Incident Report with External ID")
 
         try:
-            report = ts.submit_report(submit_indicators, "Sample SDK Test Report",
-                                      external_id=external_id,
-                                      time_began="2017-02-01T01:23:45", enclave=True)
+            report = Report(title="Sample SDK Test Report",
+                            body=submit_indicators,
+                            time_began="2017-02-01T01:23:45",
+                            is_enclave=True,
+                            enclave_ids=ts.enclave_ids,
+                            external_id=external_id)
+            report = ts.submit_report(report)
 
             logger.info("Report Submitted")
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
+            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not submit report, error: %s' % e)
@@ -233,11 +244,11 @@ def main():
     if do_report_details_by_ext_id:
         logger.info("Get Incident Report By External ID")
         try:
-            report = ts.get_report_details(report_id=external_id, id_type="external")
+            report = ts.get_report_details(report_id=external_id, id_type=Report.ID_TYPE_EXTERNAL)
 
             logger.info("\ttitle: %s" % report.title)
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
+            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
             report_guid = report.id
         except Exception as e:
@@ -247,13 +258,14 @@ def main():
     if do_update_report_by_ext_id:
         logger.info("Update Incident Report By External ID")
         try:
-            title = "Updated Sample Title"
-            body = "updated report body: 21.22.23.24"
-            report = ts.update_report(report_id=external_id, id_type=Report.ID_TYPE_EXTERNAL, title=title,
-                                      report_body=body)
+            report = Report(title="Updated Sample Title",
+                            body="updated report body: 21.22.23.24",
+                            external_id=external_id,
+                            enclave_ids=ts.enclave_ids)
+            report = ts.update_report(report)
 
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
+            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not update report, error: %s' % e)
@@ -263,11 +275,11 @@ def main():
         logger.info("Get Incident Report Details by GUID (TruSTAR internal ID)")
 
         try:
-            report = ts.get_report_details(report_guid, id_type="internal")
+            report = ts.get_report_details(report_guid)
 
             logger.info("\ttitle: %s" % report.title)
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
+            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
@@ -276,13 +288,15 @@ def main():
     if do_update_report_by_guid:
         logger.info("Update Incident Report by GUID (TruSTAR internal ID)")
         try:
-            title = "New Sample Title"
-            body = "new sample body - 7.8.9.10"
-            report = ts.update_report(report_guid, id_type="internal", title=title, report_body=body)
+            report = Report(id=report_guid,
+                            title="New Sample Title",
+                            body="new sample body - 7.8.9.10",
+                            enclave_ids=ts.enclave_ids)
+            report = ts.update_report(report)
 
             logger.info("Updated Report using GUID")
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
+            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not update report, error: %s' % e)
@@ -291,11 +305,11 @@ def main():
     if do_report_details_by_guid:
         logger.info("Get Report by GUID (TruSTAR internal ID)")
         try:
-            report = ts.get_report_details(report_guid, id_type="internal")
+            report = ts.get_report_details(report_guid)
 
             logger.info("\ttitle: %s" % report.title)
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
+            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
@@ -304,13 +318,13 @@ def main():
     if do_release_report_by_ext_id:
         logger.info("Release Incident Report by External ID")
         try:
-
-            report = ts.update_report(report_id=external_id, id_type='external',
-                                      distribution_type="COMMUNITY")
+            report = Report(external_id=external_id,
+                            is_enclave=False)
+            report = ts.update_report(report)
 
             logger.info("Report Released using External ID:")
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
+            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not release report, error: %s' % e)
@@ -320,11 +334,11 @@ def main():
         logger.info("Get Incident Report Details by External ID")
 
         try:
-            report = ts.get_report_details(report_id=external_id, id_type="external")
+            report = ts.get_report_details(report_id=external_id, id_type=Report.ID_TYPE_EXTERNAL)
 
             logger.info("\ttitle: %s" % report.title)
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
+            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
@@ -333,7 +347,7 @@ def main():
     if do_delete_report_by_ext_id:
         logger.info("Delete Incident Report by External ID")
         try:
-            ts.delete_report(report_id=external_id, id_type="external")
+            ts.delete_report(report_id=external_id, id_type=Report.ID_TYPE_EXTERNAL)
             logger.info("Report Deleted using External ID\n")
 
         except Exception as e:
@@ -345,7 +359,11 @@ def main():
 
         try:
             # submit report
-            report = ts.submit_report(submit_indicators, "Enclave report with tag", enclave=True)
+            report = Report(title="Enclave report with tag",
+                            body=submit_indicators,
+                            is_enclave=True,
+                            enclave_ids=ts.enclave_ids)
+            report = ts.submit_report(report)
             logger.info("\tId of new report %s\n" % report.id)
 
             # get back report details, including the enclave it's in

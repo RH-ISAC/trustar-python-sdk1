@@ -20,8 +20,8 @@ class Report(object):
     Models an incident report.
     """
 
-    ID_TYPE_INTERNAL = "INTERNAL"
-    ID_TYPE_EXTERNAL = "EXTERNAL"
+    ID_TYPE_INTERNAL = "internal"
+    ID_TYPE_EXTERNAL = "external"
 
     def __init__(self,
                  id=None,
@@ -79,6 +79,12 @@ class Report(object):
             return [enclave.id for enclave in self.enclaves]
         else:
             return None
+
+    def set_enclave_ids(self, enclave_ids):
+        """
+        Overwrites all of the report's enclaves with a new set of enclaves.
+        :param enclave_ids: The IDs of the enclaves.
+        """
 
     def to_dict(self):
         """
