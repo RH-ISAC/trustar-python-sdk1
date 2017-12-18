@@ -5,7 +5,7 @@ from future import standard_library
 from six import string_types
 
 # package imports
-from .. import enclaves_from_ids
+from ..utils import enclaves_from_ids
 
 # external imports
 import json

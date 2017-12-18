@@ -13,10 +13,11 @@ class Indicator:
     Models an indicator of compromise.
     """
 
-    def __init__(self, value, type, priority_level=None):
+    def __init__(self, value, type, priority_level=None, correlation_count=None):
         self.value = value
         self.type = type
         self.priority_level = priority_level
+        self.correlation_count = correlation_count
 
     @staticmethod
     def from_dict(indicator):
@@ -26,8 +27,9 @@ class Indicator:
         :return: The indicator object.
         """
         return Indicator(value=indicator.get('value'),
-                         type=indicator.get('type'),
-                         priority_level=indicator.get('priorityLevel'))
+                         type=indicator.get('indicatorType'),
+                         priority_level=indicator.get('priorityLevel'),
+                         correlation_count=indicator.get('correlationCount'))
 
     def to_dict(self):
         """
@@ -36,7 +38,8 @@ class Indicator:
         return {
             'value': self.value,
             'type': self.type,
-            'priority_level': self.priority_level
+            'priorityLevel': self.priority_level,
+            'correlationCount': self.correlation_count
         }
 
     def __str__(self):

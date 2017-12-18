@@ -16,8 +16,8 @@ import yaml
 from requests import HTTPError
 
 # package imports
-from . import Indicator, Page, Tag, Report, DISTRIBUTION_TYPE_ENCLAVE
-from . import normalize_timestamp
+from .models import Indicator, Page, Tag, Report, DISTRIBUTION_TYPE_ENCLAVE
+from .utils import normalize_timestamp
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
@@ -287,8 +287,8 @@ class TruStar(object):
         resp = self.__get("report/%s" % report_id, params=params, **kwargs)
         return Report.from_dict(resp.json())
 
-    def get_reports(self, distribution_type=None, enclave_ids=None, tag=None,
-                    from_time=None, to_time=None, page_number=None, page_size=None, **kwargs):
+    def get_reports_page(self, distribution_type=None, enclave_ids=None, tag=None,
+                         from_time=None, to_time=None, page_number=None, page_size=None, **kwargs):
         """
         Retrieves reports filtering by time window, distribution type, and enclave association.
 
@@ -445,7 +445,7 @@ class TruStar(object):
         resp = self.__delete("report/%s" % report_id, params=params, **kwargs)
         return resp
 
-    def get_correlated_reports(self, indicators, **kwargs):
+    def get_correlated_report_ids(self, indicators, **kwargs):
         """
         Retrieves all TruSTAR reports that contain the searched indicator. You can specify multiple indicators
         separated by commas
@@ -461,7 +461,8 @@ class TruStar(object):
     ### Indicator Endpoints ###
     ###########################
 
-    def get_community_trends(self, indicator_type=None, from_time=None, to_time=None, page_size=None, page_number=None, **kwargs):
+    def get_community_trends_page(self, indicator_type=None, from_time=None, to_time=None,
+                                  page_size=None, page_number=None, **kwargs):
         """
         Find community trending indicators.
         :param indicator_type: the type of indicators.  If None, will get all types of indicators except for MALWARE and CVEs.
@@ -480,10 +481,16 @@ class TruStar(object):
             'pageSize': page_size,
             'pageNumber': page_number
         }
-        resp = self.__get("indicators/community-trending", params=params, **kwargs)
-        return Page.from_dict(resp.json())
 
-    def get_related_indicators(self, indicators=None, sources=None, page_size=None, page_number=None, **kwargs):
+        resp = self.__get("indicators/community-trending", params=params, **kwargs)
+        page = Page.from_dict(resp.json())
+
+        # parse items in response as indicators
+        page.items = [Indicator.from_dict(item) for item in page.items]
+
+        return page
+
+    def get_related_indicators_page(self, indicators=None, sources=None, page_size=None, page_number=None, **kwargs):
         """
         Finds all reports that contain the indicators and returns correlated indicators from those reports.
         :param indicators: list of indicators to search for
@@ -500,8 +507,14 @@ class TruStar(object):
             'pageNumber': page_number,
             'pageSize': page_size
         }
+
         resp = self.__get("indicators/related", params=params, **kwargs)
-        return Page.from_dict(resp.json())
+        page = Page.from_dict(resp.json())
+
+        # parse items in response as indicators
+        page.items = [Indicator.from_dict(item) for item in page.items]
+
+        return page
 
     def get_related_external_indicators(self, indicators=None, sources=None, **kwargs):
         """
@@ -587,7 +600,7 @@ class TruStar(object):
     ### Generators ###
     ##################
 
-    def get_report_page_generator(self, start_page=0, page_size=None, **kwargs):
+    def __get_reports_page_generator(self, start_page=0, page_size=None, **kwargs):
         """
         Creates a generator from the 'get_reports' method that returns each successive page.
         :param start_page: The page to start on.
@@ -596,19 +609,19 @@ class TruStar(object):
         :return: The generator.
         """
         def func(page_number, page_size):
-            return self.get_reports(page_number=page_number, page_size=page_size, **kwargs)
+            return self.get_reports_page(page_number=page_number, page_size=page_size, **kwargs)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_report_generator(self, **kwargs):
+    def get_reports(self, **kwargs):
         """
         Creates a generator from the 'get_reports' method that returns each successive report.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the 'get_reports' method.
         :return: The generator.
         """
-        return Page.get_generator(page_generator=self.get_report_page_generator(**kwargs))
+        return Page.get_generator(page_generator=self.__get_reports_page_generator(**kwargs))
 
-    def get_community_trends_page_generator(self, start_page=0, page_size=None, **kwargs):
+    def __get_community_trends_page_generator(self, start_page=0, page_size=None, **kwargs):
         """
         Creates a generator from the 'get_community_trends' method that returns each successive page.
         :param start_page: The page to start on.
@@ -617,19 +630,19 @@ class TruStar(object):
         :return: The generator.
         """
         def func(page_number, page_size):
-            return self.get_community_trends(page_number=page_number, page_size=page_size, **kwargs)
+            return self.__get_community_trends_page(page_number=page_number, page_size=page_size, **kwargs)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_community_trends_generator(self, **kwargs):
+    def get_community_trends(self, **kwargs):
         """
         Creates a generator from the 'get_community_trends_iterator' method that returns each successive report.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the 'get_community_trends_iterator' method.
         :return: The generator.
         """
-        return Page.get_generator(page_generator=self.get_community_trends_page_generator(**kwargs))
+        return Page.get_generator(page_generator=self.__get_community_trends_page_generator(**kwargs))
 
-    def get_related_indicators_page_generator(self, start_page=0, page_size=None, **kwargs):
+    def __get_related_indicators_page_generator(self, start_page=0, page_size=None, **kwargs):
         """
         Creates a generator from the 'get_related_indicators' method that returns each successive page.
         :param start_page: The page to start on.
@@ -638,14 +651,14 @@ class TruStar(object):
         :return: The generator.
         """
         def func(page_number, page_size):
-            return self.get_related_indicators(page_number=page_number, page_size=page_size, **kwargs)
+            return self.get_related_indicators_page(page_number=page_number, page_size=page_size, **kwargs)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_related_indicators_generator(self, **kwargs):
+    def get_related_indicators(self, **kwargs):
         """
         Creates a generator from the 'get_generator' method that returns each successive report.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the 'get_generator' method.
         :return: The generator.
         """
-        return Page.get_generator(page_generator=self.get_related_indicators_page_generator(**kwargs))
+        return Page.get_generator(page_generator=self.__get_related_indicators_page_generator(**kwargs))

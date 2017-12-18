@@ -49,9 +49,9 @@ class TruStarTests(unittest.TestCase):
         """
 
         for from_time in [yesterday_time, old_time]:
-            reports = self.ts.get_reports(from_time=from_time,
-                                          to_time=current_time,
-                                          distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
+            reports = self.ts.get_reports_page(from_time=from_time,
+                                               to_time=current_time,
+                                               distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
             print(reports)
 
     def test_submit_report(self):
@@ -101,21 +101,21 @@ class TruStarTests(unittest.TestCase):
 
         # get results for all types and sum total elements for all except CVE and MALWARE
         for indicator_type in INDICATOR_TYPES + [None]:
-            result = self.ts.get_community_trends(indicator_type=indicator_type)
+            result = self.ts.get_community_trends_page(indicator_type=indicator_type)
 
             if indicator_type is not None:
                 if indicator_type not in ['CVE', 'MALWARE']:
                     totals.append(result.total_elements)
 
                 # ensure only indicators of correct type received
-                for item in result:
-                    self.assertEqual(item['indicatorType'], indicator_type)
+                for indicator in result:
+                    self.assertEqual(indicator.type, indicator_type)
 
             else:
                 # check that no indicator type produces expected total number of elements
                 self.assertEqual(sum(totals), result.total_elements)
 
-            correlation_counts = [item['correlationCount'] for item in result]
+            correlation_counts = [indicator.correlation_count for indicator in result]
             for i in range(len(correlation_counts) - 1):
                 self.assertTrue(correlation_counts[i] >= correlation_counts[i+1])
 
@@ -161,9 +161,9 @@ class TruStarTests(unittest.TestCase):
         # GET RELATED #
         ###############
 
-        server_related = list(self.ts.get_related_indicators_generator(indicators=indicators,
-                                                                       sources=["incident_report"]))
-        related_reports = self.ts.get_correlated_reports(indicators=indicators)
+        server_related = list(self.ts.get_related_indicators(indicators=indicators,
+                                                             sources=["incident_report"]))
+        related_reports = self.ts.get_correlated_report_ids(indicators=indicators)
 
         ###########
         # CLEANUP #
@@ -176,20 +176,20 @@ class TruStarTests(unittest.TestCase):
         # ASSERT #
         ##########
 
-        server_indicator_values = set([ind['value'].lower() for ind in server_related])
+        server_indicator_values = set([ind.value.lower() for ind in server_related])
         for indicator in related:
             self.assertTrue(indicator.lower() in server_indicator_values)
 
     def test_get_related_indicators(self):
-        result = self.ts.get_related_indicators(indicators=["evil", "1.2.3.4", "wannacry"],
-                                                sources=["osint", "incident_report"])
+        result = self.ts.get_related_indicators_page(indicators=["evil", "1.2.3.4", "wannacry"],
+                                                     sources=["osint", "incident_report"])
 
     def test_get_external_related_indicators(self):
         result = self.ts.get_related_external_indicators(indicators=["evil", "1.2.3.4", "wannacry"],
                                                          sources=["facebook", "crowdstrike"])
 
     def test_get_correlated_reports(self):
-        result = self.ts.get_correlated_reports(["evil", "wannacry"])
+        result = self.ts.get_correlated_report_ids(["evil", "wannacry"])
 
     def test_get_reports_by_tag(self):
         """
@@ -211,7 +211,7 @@ class TruStarTests(unittest.TestCase):
                                          enclave_id=enclave_id)
 
         # get all reports with the tag just created
-        report_ids = [report.id for report in self.ts.get_report_generator(tag=tag)]
+        report_ids = [report.id for report in self.ts.get_reports(tag=tag)]
 
         try:
             # assert that only the report submitted earlier was found
@@ -227,11 +227,11 @@ class TruStarTests(unittest.TestCase):
         Test that the get_page_generator function works
         """
         def func(page_size, page_number):
-            return self.ts.get_reports(from_time=old_time,
-                                       to_time=current_time,
-                                       distribution_type=DISTRIBUTION_TYPE_COMMUNITY,
-                                       page_number=page_number,
-                                       page_size=page_size)
+            return self.ts.get_reports_page(from_time=old_time,
+                                            to_time=current_time,
+                                            distribution_type=DISTRIBUTION_TYPE_COMMUNITY,
+                                            page_number=page_number,
+                                            page_size=page_size)
 
         page_generator = Page.get_page_generator(func)
 
@@ -252,11 +252,11 @@ class TruStarTests(unittest.TestCase):
         Test that the get_generator function works
         """
         def func(page_size, page_number):
-            return self.ts.get_reports(from_time=old_time,
-                                       to_time=current_time,
-                                       distribution_type=DISTRIBUTION_TYPE_COMMUNITY,
-                                       page_number=page_number,
-                                       page_size=page_size)
+            return self.ts.get_reports_page(from_time=old_time,
+                                            to_time=current_time,
+                                            distribution_type=DISTRIBUTION_TYPE_COMMUNITY,
+                                            page_number=page_number,
+                                            page_size=page_size)
 
         generator = Page.get_generator(func)
 
@@ -272,9 +272,9 @@ class TruStarTests(unittest.TestCase):
         """
         Test that the report generator works.
         """
-        reports = self.ts.get_report_generator(from_time=old_time,
-                                               to_time=current_time,
-                                               distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
+        reports = self.ts.get_reports(from_time=old_time,
+                                      to_time=current_time,
+                                      distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
         total = len(reports)
 
         count = 0

@@ -12,7 +12,7 @@ from six import string_types
 from tzlocal import get_localzone
 
 # package imports
-from . import Enclave
+from .models import Enclave
 
 logger = logging.getLogger(__name__)
 

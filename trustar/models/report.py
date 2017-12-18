@@ -5,9 +5,8 @@ from future import standard_library
 from six import string_types
 
 # package imports
-from .. import normalize_timestamp, enclaves_from_ids
-from . import Indicator
-from . import Enclave
+from ..utils import normalize_timestamp, enclaves_from_ids
+from . import Indicator, Enclave
 
 # external imports
 import json

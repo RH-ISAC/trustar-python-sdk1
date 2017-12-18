@@ -21,10 +21,10 @@ to_time = int(time.mktime(to_time.timetuple())) * 1000
 count = 0
 reports = None
 while reports is None or len(reports) > 0:
-    reports = ts.get_reports(from_time=from_time,
-                             to_time=to_time,
-                             distribution_type="ENCLAVE",
-                             enclave_ids=ts.enclave_ids)
+    reports = ts.get_reports_page(from_time=from_time,
+                                  to_time=to_time,
+                                  distribution_type="ENCLAVE",
+                                  enclave_ids=ts.enclave_ids)
     for report in reports:
         print("deleting report %s" % report.id)
         ts.delete_report(report_id=report.id)
