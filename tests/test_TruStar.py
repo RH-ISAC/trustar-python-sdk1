@@ -13,6 +13,11 @@ old_time = current_time - DAY * 365 * 3
 
 
 def generate_ip(start_range=100):
+    """
+    Generates a random IP where each.
+    :param start_range: The lowest possible value for each octet.
+    :return: The random IP address.
+    """
     return ".".join(map(str, (random.randint(start_range, 255) for _ in range(4))))
 
 
@@ -26,7 +31,6 @@ class TruStarTests(unittest.TestCase):
         """
         Test that we can get all reports fitting some filters.
         """
-
         for from_time in [yesterday_time, old_time]:
             reports = self.ts.get_reports_page(from_time=from_time,
                                                to_time=current_time,

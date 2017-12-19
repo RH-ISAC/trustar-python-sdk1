@@ -20,7 +20,7 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from cStringIO import StringIO
-from trustar import TruStar, get_logger
+from trustar import TruStar, Report, get_logger
 
 logger = get_logger(__name__)
 
@@ -122,7 +122,11 @@ def main():
                     # response_json = ts.submit_report(token, report_body, "COMMUNITY: " + file)
                     logger.info("Report {}".format(report_body))
                     try:
-                        report = ts.submit_report(report_body, "ENCLAVE: " + source_file, enclave=True)
+                        report = Report(title="ENCLAVE: %s" % source_file,
+                                        body=report_body,
+                                        is_enclave=True,
+                                        enclave_ids=ts.enclave_ids)
+                        report = ts.submit_report(report)
                         logger.info("SUCCESSFULLY SUBMITTED REPORT, " +
                                     "TRUSTAR REPORT as Incident Report ID %s" % report.id)
                         pf.write("%s\n" % source_file)

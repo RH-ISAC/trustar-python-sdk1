@@ -85,24 +85,30 @@ def enclaves_from_ids(enclave_ids):
 
 
 def get_logger(name=None):
-
-    log = logging.getLogger(name)
+    """
+    Configures a logger to log to STDOUT or STDERR based on the logging level of the message.
+    :param name: The name of the logger.
+    :return: The logger.
+    """
 
     class InfoFilter(logging.Filter):
         def filter(self, rec):
             return rec.levelno <= logging.INFO
 
-    log.setLevel(logging.DEBUG)
-
+    # configure STDOUT handler
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     stdout_handler.setLevel(logging.INFO)
     stdout_handler.addFilter(InfoFilter())
 
+    # configure STDERR handler
     stderr_handler = logging.StreamHandler(sys.stderr)
     stderr_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     stderr_handler.setLevel(logging.WARN)
 
+    # configure logger
+    log = logging.getLogger(name)
+    log.setLevel(logging.DEBUG)
     log.addHandler(stdout_handler)
     log.addHandler(stderr_handler)
 

@@ -12,7 +12,7 @@ import time
 
 import pandas as pd
 
-from trustar import TruStar
+from trustar import TruStar, Report
 
 # Set to false to submit to community
 do_enclave_submissions = True
@@ -161,7 +161,8 @@ def main(inputfile):
 
     all_reports = []
     for alert in filtered_data:
-        title = str(alert['displayId']) + ' ' + str(alert['message'].encode('utf-8'))
+
+        # construct report body
         content = ""
         for key in alert:
             type_value = type(alert[key])
@@ -170,17 +171,20 @@ def main(inputfile):
                 content += key + ': ' + str(alert[key]).replace('u\'', '\'') + '\n'
             else:
                 content += key + ': ' + str(alert[key].encode('ascii', 'ignore')) + '\n'
-        created_time = str(alert['createDate'])
-        current_report = {'reportTitle': title, 'reportContent': content, 'reportDateTime': created_time}
+
+        # construct and append report
+        current_report = Report(title=str(alert['displayId']) + ' ' + str(alert['message'].encode('utf-8')),
+                                body=content,
+                                time_began=str(alert['createDate']),
+                                is_enclave=True,
+                                enclave_ids=ts.enclave_ids)
         all_reports.append(current_report)
 
     if do_enclave_submissions:
         for staged_report in all_reports:
             start_time = time.time()
             try:
-                report = ts.submit_report(report_body=staged_report['reportContent'],
-                                            title=staged_report['reportTitle'], time_began=staged_report['reportDateTime'],
-                                            enclave=True)
+                report = ts.submit_report(report=staged_report)
                 print(report)
             except Exception as e:
                 print("Submission failed with error: {}".format(str(e)))
