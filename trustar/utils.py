@@ -21,9 +21,11 @@ def normalize_timestamp(date_time):
     """
     Attempt to convert a string timestamp in to a TruSTAR compatible format for submission.
     Will return current time with UTC time zone if None
-    :param date_time: int that is epoch time, or string/datetime object containing date, time, and ideally timezone
-    examples of supported timestamp formats: 1487890914, 1487890914000, "2017-02-23T23:01:54",
-    "2017-02-23T23:01:54+0000"
+    :param date_time: int that is seconds or milliseconds since epoch, or string/datetime object containing date, time,
+    and (ideally) timezone.
+    Examples of supported timestamp formats: 1487890914, 1487890914000, "2017-02-23T23:01:54", "2017-02-23T23:01:54+0000"
+    :return If input is an int, will return milliseconds since epoch.  Otherwise, will return a normalized isoformat
+    timestamp.
     """
     datetime_dt = datetime.now()
 

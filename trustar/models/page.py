@@ -12,6 +12,16 @@ class Page(object):
     """
     This class models a page of items that would be found in the body of a response from an
     endpoint that uses pagination.
+
+    Attributes:
+        :ivar items: The list of items of the page; i.e. a list of indicators, reports, etc.
+        :ivar page_number: The number of the page out of all total pages, indexed from 0.  i.e. if there are
+        4 total pages of size 25, then page 0 will contain the first 25 elements, page 1 will contain the next 25, etc.
+        :ivar page_size: The size of the page that was request.  Note that, if this is the last page, then this might
+        not equal len(items).  For instance, if pages of size 25 were requested, there are 107 total elements, and
+        this is the last page, then page_size will be 25 even though the page only contains 7 elements.
+        :ivar total_elements: The total number of elements on the server, e.g. the total number of elements across all
+        pages.  Note that it is possible for this value to change between pages, since data can change between queries.
     """
 
     def __init__(self, items=None, page_number=None, page_size=None, total_elements=None):
@@ -50,7 +60,7 @@ class Page(object):
 
     def to_dict(self):
         """
-        Convert a Page to a dictionary.
+        Convert this Page to a dictionary.
         :return: The resulting dictionary
         """
 

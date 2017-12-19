@@ -11,7 +11,44 @@ import json
 class Indicator:
     """
     Models an indicator of compromise.
+
+    Attributes:
+        :ivar value: The indicator value; i.e. "www.evil.com"
+        :ivar type: The type of indicator; i.e. "URL"
+        :ivar priority_level: The priority level of the indicator
+        :ivar correlation_count: The number of other indicators that are correlated with this indicator.
+
+        :cvar TYPES: A list of all valid indicator types.
+        :cvar PRIORITY_LEVELS: A list of all possible priority levels.
     """
+
+    TYPES = [
+        'IP',
+        'CIDR_BLOCK',
+        'URL',
+        'EMAIL_ADDRESS',
+        'MD5',
+        'SHA1',
+        'SHA256',
+        'MALWARE',
+        'SOFTWARE',
+        'REGISTRY_KEY',
+        'CVE',
+        'BITCOIN_ADDRESS',
+        'DOMAIN',
+        'FQDN',
+        'PERSON',
+        'LOCATION',
+        'ORGANIZATION',
+        'DATE',
+    ]
+
+    PRIORITY_LEVELS = [
+        "NOT_FOUND",
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+    ]
 
     def __init__(self, value, type, priority_level=None, correlation_count=None):
         self.value = value

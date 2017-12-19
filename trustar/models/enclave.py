@@ -9,8 +9,20 @@ import json
 
 
 class Enclave:
+    """
+    Models an enclave.
+
+    Attributes:
+        :ivar id: The guid of the enclave.
+        :ivar name: The name of the enclave.
+    """
 
     def __init__(self, id, name=None):
+        """
+        Constructs an Enclave object.
+        :param id: The guid of the enclave.
+        :param name: The name of the enclave.
+        """
         self.id = id
         self.name = name
 

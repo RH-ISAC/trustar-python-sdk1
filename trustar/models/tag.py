@@ -12,8 +12,24 @@ import json
 
 
 class Tag:
+    """
+    Models a tag.
+
+    Attributes:
+        :ivar name: The name of the tag, i.e. "malicious"
+        :ivar id: The guid of the tag.
+        :ivar enclave: The Enclave object representing the enclave that the tag belongs to.
+    """
 
     def __init__(self, name, id=None, enclave=None, enclave_id=None):
+        """
+        Constructs a tag object.
+        :param name: The name of the tag, i.e. "malicious"
+        :param id: The guid of the tag.
+        :param enclave: The Enclave object representing the enclave that the tag belongs to.
+        :param enclave_id: The ID of the enclave the tag belongs to.  This should only be used if the "enclaves"
+        parameter is None, in which case this will be used to create the Enclave object.
+        """
         self.name = name
         self.id = id
 

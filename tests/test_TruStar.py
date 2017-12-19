@@ -11,27 +11,6 @@ current_time = int(time.time()) * 1000
 yesterday_time = current_time - DAY
 old_time = current_time - DAY * 365 * 3
 
-INDICATOR_TYPES = [
-    'IP',
-    'CIDR_BLOCK',
-    'URL',
-    'EMAIL_ADDRESS',
-    'MD5',
-    'SHA1',
-    'SHA256',
-    'MALWARE',
-    'SOFTWARE',
-    'REGISTRY_KEY',
-    'CVE',
-    'BITCOIN_ADDRESS',
-    'DOMAIN',
-    'FQDN',
-    'PERSON',
-    'LOCATION',
-    'ORGANIZATION',
-    'DATE',
-]
-
 
 def generate_ip(start_range=100):
     return ".".join(map(str, (random.randint(start_range, 255) for _ in range(4))))
@@ -100,7 +79,7 @@ class TruStarTests(unittest.TestCase):
         totals = []
 
         # get results for all types and sum total elements for all except CVE and MALWARE
-        for indicator_type in INDICATOR_TYPES + [None]:
+        for indicator_type in Indicator.TYPES + [None]:
             result = self.ts.get_community_trends_page(indicator_type=indicator_type)
 
             if indicator_type is not None:
