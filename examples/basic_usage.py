@@ -81,14 +81,29 @@ def main():
 
         logger.info("Getting Latest Accessible Incident Reports Since 24 hours ago ...")
         try:
-            reports = ts.get_reports(from_time=yesterday_time,
-                                     to_time=current_time,
-                                     is_enclave=True)
+            page_number = 0
 
-            logger.info("Got %s results" % len(reports))
+            # get each successive page of reports
+            while page_number == 0 or page.has_more_pages():
 
-            for report in reports:
-                logger.info(report)
+                # get next page of reports
+                page = ts.get_reports_page(from_time=yesterday_time,
+                                           to_time=current_time,
+                                           is_enclave=True,
+                                           page_number=page_number,
+                                           page_size=5)
+
+                if page_number == 0:
+                    logger.info("Found %s total reports." % page.total_elements)
+
+                logger.info("Retrieved page %d of %d total pages." % (page.page_number, page.get_total_pages()))
+
+                # print each report in the page
+                for report in page.items:
+                    logger.info(report)
+
+                page_number += 1
+
             logger.info("")
 
         except Exception as e:

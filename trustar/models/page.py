@@ -34,7 +34,7 @@ class Page(object):
         """
         :return: The total number of pages on the server.
         """
-        return math.ceil(self.total_elements / self.page_size)
+        return math.ceil(float(self.total_elements) / float(self.page_size))
 
     def has_more_pages(self):
         """
