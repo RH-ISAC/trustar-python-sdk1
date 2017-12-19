@@ -6,7 +6,6 @@ from six import string_types
 
 # external imports
 import json
-import logging
 from datetime import datetime
 import configparser
 import os
@@ -17,12 +16,12 @@ from requests import HTTPError
 
 # package imports
 from .models import Indicator, Page, Tag, Report
-from .utils import normalize_timestamp
+from .utils import normalize_timestamp, get_logger
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 CLIENT_VERSION = "0.3.0"

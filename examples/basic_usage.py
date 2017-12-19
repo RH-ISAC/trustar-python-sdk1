@@ -6,16 +6,14 @@ Comprehensive script with various TruSTAR API usage examples
 
 from __future__ import print_function
 
-import logging
 import json
 import sys
 import time
 from random import randint
 
-from trustar import TruStar, Report
+from trustar import TruStar, Report, get_logger
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 do_latest_reports = True
 do_correlated = True

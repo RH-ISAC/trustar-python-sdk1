@@ -1,20 +1,18 @@
 # python 2 backwards compatibility
 from __future__ import print_function
+from six import string_types
 
+# external imports
+import sys
 import logging
 import time
-# external imports
 from datetime import datetime
-
 import dateutil.parser
 import pytz
-from six import string_types
 from tzlocal import get_localzone
 
 # package imports
 from .models import Enclave
-
-logger = logging.getLogger(__name__)
 
 
 def normalize_timestamp(date_time):
@@ -84,3 +82,31 @@ def enclaves_from_ids(enclave_ids):
 
     # create Enclave objects and filter out None values
     return [Enclave(id=id) for id in enclave_ids if id is not None]
+
+
+def get_logger(name=None):
+
+    log = logging.getLogger(name)
+
+    class InfoFilter(logging.Filter):
+        def filter(self, rec):
+            return rec.levelno <= logging.INFO
+
+    log.setLevel(logging.DEBUG)
+
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    stdout_handler.setLevel(logging.INFO)
+    stdout_handler.addFilter(InfoFilter())
+
+    stderr_handler = logging.StreamHandler(sys.stderr)
+    stderr_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    stderr_handler.setLevel(logging.WARN)
+
+    log.addHandler(stdout_handler)
+    log.addHandler(stderr_handler)
+
+    return log
+
+
+logger = get_logger(__name__)
