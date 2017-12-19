@@ -1,5 +1,5 @@
 from .enclave import Enclave
 from .indicator import Indicator
 from .page import Page
-from .report import Report, DISTRIBUTION_TYPE_ENCLAVE, DISTRIBUTION_TYPE_COMMUNITY
+from .report import Report
 from .tag import Tag

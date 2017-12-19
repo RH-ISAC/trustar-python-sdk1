@@ -16,7 +16,7 @@ import yaml
 from requests import HTTPError
 
 # package imports
-from .models import Indicator, Page, Tag, Report, DISTRIBUTION_TYPE_ENCLAVE
+from .models import Indicator, Page, Tag, Report
 from .utils import normalize_timestamp
 
 # python 2 backwards compatibility
@@ -287,12 +287,12 @@ class TruStar(object):
         resp = self.__get("report/%s" % report_id, params=params, **kwargs)
         return Report.from_dict(resp.json())
 
-    def get_reports_page(self, distribution_type=None, enclave_ids=None, tag=None,
+    def get_reports_page(self, is_enclave=None, enclave_ids=None, tag=None,
                          from_time=None, to_time=None, page_number=None, page_size=None, **kwargs):
         """
         Retrieves reports filtering by time window, distribution type, and enclave association.
 
-        :param distribution_type: Optional, restrict reports to specific distribution type
+        :param is_enclave: Optional, restrict reports to specific distribution type
         (by default all accessible reports are returned). Possible values are: 'COMMUNITY' and 'ENCLAVE'
         :param enclave_ids: Optional comma separated list of enclave ids, restrict reports to specific enclaves
         (by default reports from all enclaves are returned)
@@ -305,6 +305,12 @@ class TruStar(object):
         :param kwargs: Any extra keyword arguments.  These will be forwarded to requests.request.
         :return a page of Report objects
         """
+
+        distribution_type = None
+        if is_enclave == True:
+            distribution_type = Report.DISTRIBUTION_TYPE_ENCLAVE
+        elif is_enclave == False:
+            distribution_type = Report.DISTRIBUTION_TYPE_COMMUNITY
 
         params = {
             'from': from_time,

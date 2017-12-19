@@ -51,7 +51,7 @@ class TruStarTests(unittest.TestCase):
         for from_time in [yesterday_time, old_time]:
             reports = self.ts.get_reports_page(from_time=from_time,
                                                to_time=current_time,
-                                               distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
+                                               is_enclave=False)
             print(reports)
 
     def test_submit_report(self):
@@ -229,7 +229,7 @@ class TruStarTests(unittest.TestCase):
         def func(page_size, page_number):
             return self.ts.get_reports_page(from_time=old_time,
                                             to_time=current_time,
-                                            distribution_type=DISTRIBUTION_TYPE_COMMUNITY,
+                                            is_enclave=False,
                                             page_number=page_number,
                                             page_size=page_size)
 
@@ -254,7 +254,7 @@ class TruStarTests(unittest.TestCase):
         def func(page_size, page_number):
             return self.ts.get_reports_page(from_time=old_time,
                                             to_time=current_time,
-                                            distribution_type=DISTRIBUTION_TYPE_COMMUNITY,
+                                            is_enclave=False,
                                             page_number=page_number,
                                             page_size=page_size)
 
@@ -274,7 +274,7 @@ class TruStarTests(unittest.TestCase):
         """
         reports = self.ts.get_reports(from_time=old_time,
                                       to_time=current_time,
-                                      distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
+                                      is_enclave=False)
         total = len(reports)
 
         count = 0

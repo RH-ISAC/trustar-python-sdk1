@@ -12,7 +12,7 @@ import sys
 import time
 from random import randint
 
-from trustar import TruStar, DISTRIBUTION_TYPE_COMMUNITY, DISTRIBUTION_TYPE_ENCLAVE, Report
+from trustar import TruStar, Report
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ def main():
         try:
             reports = ts.get_reports(from_time=yesterday_time,
                                      to_time=current_time,
-                                     distribution_type=DISTRIBUTION_TYPE_ENCLAVE)
+                                     is_enclave=True)
 
             logger.info("Got %s results" % len(reports))
 
@@ -104,7 +104,7 @@ def main():
         try:
             reports = ts.get_reports(from_time=two_days_ago,
                                      to_time=yesterday_time,
-                                     distribution_type=DISTRIBUTION_TYPE_COMMUNITY)
+                                     is_enclave=False)
 
             logger.info("Got %s results" % len(reports))
 
@@ -123,7 +123,7 @@ def main():
         try:
             reports = ts.get_reports(from_time=a_week_ago,
                                      to_time=current_time,
-                                     distribution_type=DISTRIBUTION_TYPE_ENCLAVE,
+                                     is_enclave=True,
                                      enclave_ids=ts.enclave_ids)
 
             logger.info("Got %s results" % len(reports))

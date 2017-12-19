@@ -11,17 +11,32 @@ from . import Indicator, Enclave
 # external imports
 import json
 
-DISTRIBUTION_TYPE_ENCLAVE = "ENCLAVE"
-DISTRIBUTION_TYPE_COMMUNITY = "COMMUNITY"
-
 
 class Report(object):
     """
     Models an incident report.
+
+    Attributes:
+        :ivar id: the report guid
+        :ivar title: the report title
+        :ivar body: the report body
+        :ivar time_began: the time that the incident began; either an integer (milliseconds since epoch)
+        or an isoformat datetime string
+        :ivar external_id: An external tracking id.  For instance, if the report is a copy of a
+        corresponding report in some external system, this should contain its id in that system.
+        :ivar external_url: A URL to the report in an external system (if one exists).
+        :ivar is_enclave: A boolean representing whether the distribution type of the report is ENCLAVE or COMMUNITY.
+        :ivar enclaves: A list of Enclave objects representing the enclaves that the report belongs to.
+        :ivar indicators: A list of Indicator objects representing the indicators extracted from the report.
+        Should be None if the report has not yet been submitted.  This property should not be edited directly; it should
+        only be set internally, after a report has been submitted or updated.
     """
 
     ID_TYPE_INTERNAL = "internal"
     ID_TYPE_EXTERNAL = "external"
+
+    DISTRIBUTION_TYPE_ENCLAVE = "ENCLAVE"
+    DISTRIBUTION_TYPE_COMMUNITY = "COMMUNITY"
 
     def __init__(self,
                  id=None,
@@ -34,6 +49,25 @@ class Report(object):
                  enclave_ids=None,
                  enclaves=None,
                  indicators=None):
+        """
+        Constructs a Report object.
+        :param id: the report guid
+        :param title: the report title
+        :param body: the report body
+        :param time_began:the time that the incident began; either an integer (milliseconds since epoch)
+        or an isoformat datetime string
+        :param external_id: An external tracking id.  For instance, if the report is a copy of a
+        corresponding report in some external system, this should contain its id in that system.
+        :param external_url: A URL to the report in an external system (if one exists).
+        :param is_enclave: A boolean representing whether the distribution type of the report is ENCLAVE or COMMUNITY.
+        :param enclave_ids: A list of guids of the enclaves that the report belongs to.  If "enclaves" parameter is not
+        used, then Enclave objects will be constructed from this parameter instead.
+        :param enclaves: A list of Enclave objects representing the enclaves that the report belongs to.  If this is
+        None, and is_enclave is True, then the "enclave_ids" parameter should be used.
+        :param indicators: A list of Indicator objects that were extracted from the report.  This parameter should only
+        be used internally after a report has been submitted or updated.  Users should not directly create a report with
+        indicators already attached.
+        """
 
         # if the report belongs to any enclaves, resolve the list of enclave IDs
         if is_enclave:
@@ -62,14 +96,14 @@ class Report(object):
         self.enclaves = enclaves
         self.indicators = indicators
 
-    def get_distribution_type(self):
+    def __get_distribution_type(self):
         """
         :return: A string indicating whether the report belongs to an enclave or not.
         """
         if self.is_enclave:
-            return DISTRIBUTION_TYPE_ENCLAVE
+            return self.DISTRIBUTION_TYPE_ENCLAVE
         else:
-            return DISTRIBUTION_TYPE_COMMUNITY
+            return self.DISTRIBUTION_TYPE_COMMUNITY
 
     def get_enclave_ids(self):
         """
@@ -95,7 +129,7 @@ class Report(object):
             'reportBody': self.body,
             'timeBegan': self.time_began,
             'externalUrl': self.external_url,
-            'distributionType': self.get_distribution_type(),
+            'distributionType': self.__get_distribution_type(),
             'externalTrackingId': self.external_id
         }
 
@@ -109,8 +143,8 @@ class Report(object):
 
         return report_dict
 
-    @staticmethod
-    def from_dict(report):
+    @classmethod
+    def from_dict(cls, report):
         """
         Create a report object from a dictionary.
         :param report: The dictionary.
@@ -120,7 +154,7 @@ class Report(object):
         # determine distribution type
         distribution_type = report.get('distributionType')
         if distribution_type is not None:
-            is_enclave = distribution_type.upper() != DISTRIBUTION_TYPE_COMMUNITY
+            is_enclave = distribution_type.upper() != cls.DISTRIBUTION_TYPE_COMMUNITY
         else:
             is_enclave = None
 
@@ -134,17 +168,15 @@ class Report(object):
         if indicators is not None:
             indicators = [Indicator.from_dict(indicator) for indicator in indicators]
 
-        return Report(
-            id=report.get('id'),
-            title=report.get('title'),
-            body=report.get('reportBody'),
-            time_began=report.get('timeBegan'),
-            external_url=report.get('externalUrl'),
-            is_enclave=is_enclave,
-            enclave_ids=report.get('enclaveIds'),
-            enclaves=enclaves,
-            indicators=indicators
-        )
+        return Report(id=report.get('id'),
+                      title=report.get('title'),
+                      body=report.get('reportBody'),
+                      time_began=report.get('timeBegan'),
+                      external_url=report.get('externalUrl'),
+                      is_enclave=is_enclave,
+                      enclave_ids=report.get('enclaveIds'),
+                      enclaves=enclaves,
+                      indicators=indicators)
 
     def __str__(self):
         return json.dumps(self.to_dict())
