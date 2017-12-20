@@ -12,9 +12,8 @@ class Enclave:
     """
     Models an enclave.
 
-    Attributes:
-        :ivar id: The guid of the enclave.
-        :ivar name: The name of the enclave.
+    :ivar id: The guid of the enclave.
+    :ivar name: The name of the enclave.
     """
 
     def __init__(self, id, name=None):

@@ -15,10 +15,9 @@ class Tag:
     """
     Models a tag.
 
-    Attributes:
-        :ivar name: The name of the tag, i.e. "malicious"
-        :ivar id: The guid of the tag.
-        :ivar enclave: The Enclave object representing the enclave that the tag belongs to.
+    :ivar name: The name of the tag, i.e. "malicious"
+    :ivar id: The guid of the tag.
+    :ivar enclave: The Enclave object representing the enclave that the tag belongs to.
     """
 
     def __init__(self, name, id=None, enclave=None, enclave_id=None):

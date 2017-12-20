@@ -12,14 +12,13 @@ class Indicator:
     """
     Models an indicator of compromise.
 
-    Attributes:
-        :ivar value: The indicator value; i.e. "www.evil.com"
-        :ivar type: The type of indicator; i.e. "URL"
-        :ivar priority_level: The priority level of the indicator
-        :ivar correlation_count: The number of other indicators that are correlated with this indicator.
+    :ivar value: The indicator value; i.e. "www.evil.com"
+    :ivar type: The type of indicator; i.e. "URL"
+    :ivar priority_level: The priority level of the indicator
+    :ivar correlation_count: The number of other indicators that are correlated with this indicator.
 
-        :cvar TYPES: A list of all valid indicator types.
-        :cvar PRIORITY_LEVELS: A list of all possible priority levels.
+    :cvar TYPES: A list of all valid indicator types.
+    :cvar PRIORITY_LEVELS: A list of all possible priority levels.
     """
 
     TYPES = [

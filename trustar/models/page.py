@@ -13,15 +13,14 @@ class Page(object):
     This class models a page of items that would be found in the body of a response from an
     endpoint that uses pagination.
 
-    Attributes:
-        :ivar items: The list of items of the page; i.e. a list of indicators, reports, etc.
-        :ivar page_number: The number of the page out of all total pages, indexed from 0.  i.e. if there are
-        4 total pages of size 25, then page 0 will contain the first 25 elements, page 1 will contain the next 25, etc.
-        :ivar page_size: The size of the page that was request.  Note that, if this is the last page, then this might
-        not equal len(items).  For instance, if pages of size 25 were requested, there are 107 total elements, and
-        this is the last page, then page_size will be 25 even though the page only contains 7 elements.
-        :ivar total_elements: The total number of elements on the server, e.g. the total number of elements across all
-        pages.  Note that it is possible for this value to change between pages, since data can change between queries.
+    :ivar items: The list of items of the page; i.e. a list of indicators, reports, etc.
+    :ivar page_number: The number of the page out of all total pages, indexed from 0.  i.e. if there are
+    4 total pages of size 25, then page 0 will contain the first 25 elements, page 1 will contain the next 25, etc.
+    :ivar page_size: The size of the page that was request.  Note that, if this is the last page, then this might
+    not equal len(items).  For instance, if pages of size 25 were requested, there are 107 total elements, and
+    this is the last page, then page_size will be 25 even though the page only contains 7 elements.
+    :ivar total_elements: The total number of elements on the server, e.g. the total number of elements across all
+    pages.  Note that it is possible for this value to change between pages, since data can change between queries.
     """
 
     def __init__(self, items=None, page_number=None, page_size=None, total_elements=None):
@@ -49,6 +48,7 @@ class Page(object):
     def from_dict(page):
         """
         Instantiate a Page from a dictionary.
+
         :param page: The dictionary.  A dictionary formed from the response body of a paginated
         endpoint will have the correct format.
         :return: The resulting Page object.
@@ -61,6 +61,7 @@ class Page(object):
     def to_dict(self):
         """
         Convert this Page to a dictionary.
+
         :return: The resulting dictionary
         """
 
@@ -84,6 +85,7 @@ class Page(object):
     def get_page_generator(func, start_page=0, page_size=None):
         """
         Gets a generator for retrieving pages from a paginated endpoint.
+
         :param func: Should take parameters 'page_number' and 'page_size' and return the corresponding Page object.
         :param start_page: The page to start on.
         :param page_size: The size of each page.
@@ -131,6 +133,7 @@ class Page(object):
         """
         Gets a generator for retrieving all results from a paginated endpoint.  Pass exactly one of 'page_iterator'
         or 'func'.
+
         :param func: Should take parameters 'page_number' and 'page_size' and return the corresponding Page object.
         If page_iterator is None, this will be used to create one.
         :param page_generator: A generator to be used to generate each successive page.
