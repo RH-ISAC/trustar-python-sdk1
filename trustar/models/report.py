@@ -107,7 +107,7 @@ class Report(object):
 
     def get_enclave_ids(self):
         """
-        :return: enclave guids if ``enclaves`` is not ``None``, otherwise ``None``.
+        :return: The IDs of the enclaves if ``enclaves`` is not ``None``, otherwise ``None``.
         """
         if self.enclaves is not None:
             return [enclave.id for enclave in self.enclaves]
@@ -147,7 +147,9 @@ class Report(object):
     @classmethod
     def from_dict(cls, report):
         """
-        Create a report object from a dictionary.
+        Create a report object from a dictionary.  This method is intended for internal use, to construct a
+        :class:`Report` object from the body of a response json.  It expects the keys of the dictionary to match those
+        of the json that would be found in a response to an API call such as ``GET /report/{id}``.
 
         :param report: The dictionary.
         :return: The report object.

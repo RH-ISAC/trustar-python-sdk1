@@ -300,7 +300,7 @@ class TruStar(object):
         :param str id_type: Indicates whether ID is internal or external.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
 
-        :return: The retrieved :class:`~trustar.models.report.Report` object.
+        :return: The retrieved |Report| object.
         """
 
         params = {'idType': id_type}
@@ -323,7 +323,7 @@ class TruStar(object):
         :param str tag: name of tag to filter reports by.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
 
-        :return: A :class:`~trustar.models.page.Page` of :class:`~trustar.models.report.Report` objects.
+        :return: A |Page| of |Report| objects.
         """
 
         distribution_type = None
@@ -352,10 +352,15 @@ class TruStar(object):
 
     def submit_report(self, report, **kwargs):
         """
-        Wraps supplied text as a JSON-formatted TruSTAR Incident Report and submits it to TruSTAR Station
-        By default, this submits to the TruSTAR community. To submit to your enclave(s), set enclave parameter to True,
-        and ensure that the target enclaves' ids are specified in the config file field enclave_ids.
-        :param report: a Report object.  If present, other parameters will be ignored.
+        Submits a report.
+
+        * If ``report.is_enclave`` is ``True``, then the report will be submitted to the enclaves
+          identified by ``report.enclaves``; if that field is ``None``, then the enclave IDs registered with this
+          |TruStar| object will be used.
+        * If ``report.time_began`` is ``None``, then the current time will be used.
+
+        :param report: The |Report| object that was submitted, with the ``id`` and ``indicators`` fields updated based
+            on values from the response.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         """
 
@@ -390,10 +395,13 @@ class TruStar(object):
 
     def update_report(self, report, **kwargs):
         """
-        Updates report with the given id, overwrites any fields that are provided
-        :param report: A report object with the values that should be updated.  If the id field is None,
-        then the external_id field will be used instead to identify the report.
+        Updates the report identified by the ``report.id`` field; if this field does not exist, then
+            ``report.external_id`` will be used if it exists.  Any other fields on ``report`` that are not ``None``
+            will overwrite values on the report on Station.
+
+        :param report: A |Report| object with the updated values.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: The |Report| object with any updated values returned in the response.
         """
 
         if report.id is not None:
@@ -431,10 +439,12 @@ class TruStar(object):
 
     def delete_report(self, report_id, id_type=None, **kwargs):
         """
-        Deletes the report for the given id
-        :param report_id: Incident Report ID
-        :param id_type: indicates if ID is internal report guid or external ID provided by the user
+        Deletes the report with the given id.
+
+        :param report_id: the ID of the report to delete
+        :param id_type: indicates whether the ID is internal or an external ID provided by the user
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: the response object
         """
         params = {'idType': id_type}
         resp = self.__delete("report/%s" % report_id, params=params, **kwargs)
@@ -442,10 +452,11 @@ class TruStar(object):
 
     def get_correlated_report_ids(self, indicators, **kwargs):
         """
-        Retrieves all TruSTAR reports that contain the searched indicator. You can specify multiple indicators
-        separated by commas
+        Retrieves all TruSTAR reports that contain the searched indicator.
+
         :param indicators: A list of indicator values to retrieve correlated reports for.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: The list of IDs of reports that correlated.
         """
         params = {'indicators': indicators}
         resp = self.__get("reports/correlate", params=params, **kwargs)
@@ -460,13 +471,15 @@ class TruStar(object):
                                   page_size=None, page_number=None, **kwargs):
         """
         Find community trending indicators.
-        :param indicator_type: the type of indicators.  If None, will get all types of indicators except for MALWARE and CVEs.
-        :param from_time: Optional start of time window (Unix timestamp - milliseconds since epoch)
-        :param to_time: Optional end of time window (Unix timestamp - milliseconds since epoch)
-        :param page_size: # of results on returned page
+
+        :param indicator_type: A type of indicator to filter by.  If ``None``, will get all types of indicators except
+            for MALWARE and CVEs (this convention is for parity with the corresponding view on the Dashboard).
+        :param from_time: start of time window in milliseconds since epoch
+        :param to_time: end of time window in milliseconds since epoch
+        :param page_size: number of results per page
         :param page_number: page to start returning results on
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
-        :return: json response of the result
+        :return: A |Page| of |Indicator| objects.
         """
 
         params = {
@@ -487,13 +500,14 @@ class TruStar(object):
 
     def get_related_indicators_page(self, indicators=None, sources=None, page_size=None, page_number=None, **kwargs):
         """
-        Finds all reports that contain the indicators and returns correlated indicators from those reports.
+        Finds all reports that contain any of the given indicators and returns correlated indicators from those reports.
+
         :param indicators: list of indicator values to search for
         :param sources: list of sources to search.  Options are: INCIDENT_REPORT, EXTERNAL_INTELLIGENCE, and ORION_FEED.
-        :param page_size: # of results on returned page
+        :param page_size: number of results per page
         :param page_number: page to start returning results on
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
-        :return: json response of the result
+        :return: A |Page| of |Report| objects.
         """
 
         params = {
@@ -513,10 +527,13 @@ class TruStar(object):
 
     def get_related_external_indicators(self, indicators=None, sources=None, **kwargs):
         """
-        Finds all reports that contain the indicators and returns correlated indicators from those reports.
+        Searches external systems for indicators that correlate with the given list of indicators.
+
         :param indicators: list of indicator values to search for
-        :param sources: list of sources to search
+        :param sources: list of sources to search (check your Managed Integrations for a list of possible values)
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: A dictionary where each key is one of the sources queries and each value is a dictionary containing
+            the information returned from that external source.
         """
 
         params = {
@@ -533,26 +550,30 @@ class TruStar(object):
 
     def get_enclave_tags(self, report_id, id_type=None, **kwargs):
         """
-        Retrieves the enclave tags present in a specific report
-        :param report_id: Incident Report ID
-        :param id_type: Optional, indicates if ID is internal report guid or external ID provided by the user
-        (default Internal)
+        Retrieves all enclave tags present in a specific report.
+
+        :param report_id: the ID of the report
+        :param id_type: indicates whether the ID internal or an external ID provided by the user
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: A list of  |Tag| objects.
         """
+
         params = {'idType': id_type}
         resp = self.__get("reports/%s/enclave-tags" % report_id, params=params, **kwargs)
         return [Tag.from_dict(tag) for tag in resp.json()]
 
     def add_enclave_tag(self, report_id, name, enclave_id, id_type=None, **kwargs):
         """
-        Adds a tag to a specific report, in a specific enclave
-        :param report_id: Incident Report ID
-        :param name: name of the tag to be added
+        Adds a tag to a specific report, for a specific enclave.
+
+        :param report_id: The ID of the report
+        :param name: The name of the tag to be added
         :param enclave_id: id of the enclave where the tag will be added
-        :param id_type: Optional, indicates if ID is internal report guid or external ID provided by the user
-        (default Internal)
+        :param id_type: indicates whether the ID internal or an external ID provided by the user
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: A |Tag| object representing the tag that was created.
         """
+
         params = {
             'idType': id_type,
             'name': name,
@@ -563,14 +584,16 @@ class TruStar(object):
 
     def delete_enclave_tag(self, report_id, name, enclave_id, id_type=None, **kwargs):
         """
-        Deletes a tag from a specific report, in a specific enclave
-        :param report_id: Incident Report ID
-        :param name: name of the tag to be deleted
-        :param enclave_id: id of the enclave where the tag will be deleted
-        :param id_type: Optional, indicates if ID is internal report guid or external ID provided by the user
-        (default Internal)
+        Deletes a tag from a specific report, in a specific enclave.
+
+        :param report_id: The ID of the report
+        :param name: The name of the tag to be deleted
+        :param enclave_id: id of the enclave where the tag will be added
+        :param id_type: indicates whether the ID internal or an external ID provided by the user
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: The response body.
         """
+
         params = {
             'idType': id_type,
             'name': name,
@@ -581,11 +604,14 @@ class TruStar(object):
 
     def get_all_enclave_tags(self, enclave_ids=None, **kwargs):
         """
-        Retrieves all tags present in the enclaves passed as parameter. If the enclave list is empty, the
-        tags returned include all tags for enclaves the user has access to
-        :param enclave_ids: Optional comma separated list of enclave ids
+        Retrieves all tags present in the given enclaves. If the enclave list is empty, the tags returned include all
+        tags for all enclaves the user has access to.
+
+        :param enclave_ids: list of enclave IDs
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: The list of |Tag| objects.
         """
+
         params = {'enclaveIds': enclave_ids}
         resp = self.__get("enclave-tags", params=params, **kwargs)
         return [Tag.from_dict(tag) for tag in resp.json()]
@@ -597,12 +623,15 @@ class TruStar(object):
 
     def __get_reports_page_generator(self, start_page=0, page_size=None, **kwargs):
         """
-        Creates a generator from the 'get_reports' method that returns each successive page.
+        Creates a generator from the |get_reports_page| method that returns each successive page.
+
         :param start_page: The page to start on.
         :param page_size: The size of each page.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the 'get_reports' method.
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the |get_reports_page|
+            method.
         :return: The generator.
         """
+
         def func(page_number, page_size):
             return self.get_reports_page(page_number=page_number, page_size=page_size, **kwargs)
 
@@ -610,20 +639,26 @@ class TruStar(object):
 
     def get_reports(self, **kwargs):
         """
-        Creates a generator from the 'get_reports' method that returns each successive report.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the 'get_reports' method.
+        Creates a generator from the |get_reports_page| method that returns each successive report.
+
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the |get_reports_page|
+            method.
         :return: The generator.
         """
+
         return Page.get_generator(page_generator=self.__get_reports_page_generator(**kwargs))
 
     def __get_community_trends_page_generator(self, start_page=0, page_size=None, **kwargs):
         """
-        Creates a generator from the 'get_community_trends' method that returns each successive page.
+        Creates a generator from the |get_community_trends_page| method that returns each successive page.
+
         :param start_page: The page to start on.
         :param page_size: The size of each page.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the 'get_community_trends' method.
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the
+            |get_community_trends_page| method.
         :return: The generator.
         """
+
         def func(page_number, page_size):
             return self.get_community_trends_page(page_number=page_number, page_size=page_size, **kwargs)
 
@@ -631,20 +666,27 @@ class TruStar(object):
 
     def get_community_trends(self, **kwargs):
         """
-        Creates a generator from the 'get_community_trends_iterator' method that returns each successive report.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the 'get_community_trends_iterator' method.
+        Creates a generator from the |get_community_trends_page| method that returns
+        each successive report.
+
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the
+            |get_community_trends_page| method.
         :return: The generator.
         """
         return Page.get_generator(page_generator=self.__get_community_trends_page_generator(**kwargs))
 
     def __get_related_indicators_page_generator(self, start_page=0, page_size=None, **kwargs):
         """
-        Creates a generator from the 'get_related_indicators' method that returns each successive page.
+        Creates a generator from the |get_related_indicators_page| method that returns each
+        successive page.
+
         :param start_page: The page to start on.
         :param page_size: The size of each page.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the 'get_related_indicators' method.
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the
+            |get_related_indicators_page| method.
         :return: The generator.
         """
+
         def func(page_number, page_size):
             return self.get_related_indicators_page(page_number=page_number, page_size=page_size, **kwargs)
 
@@ -652,8 +694,12 @@ class TruStar(object):
 
     def get_related_indicators(self, **kwargs):
         """
-        Creates a generator from the 'get_generator' method that returns each successive report.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the 'get_generator' method.
+        Creates a generator from the |get_related_indicators_page| method that returns
+        each successive report.
+
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the
+            |get_related_indicators_page| method.
         :return: The generator.
         """
+
         return Page.get_generator(page_generator=self.__get_related_indicators_page_generator(**kwargs))
