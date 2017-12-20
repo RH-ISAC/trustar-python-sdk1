@@ -121,10 +121,13 @@ class Report(object):
         :param enclave_ids: The IDs of the enclaves.
         """
 
+        self.enclaves = [Enclave(id=id) for id in enclave_ids]
+
     def to_dict(self):
         """
         :return: A dictionary representation of the report.
         """
+
         report_dict = {
             'title': self.title,
             'reportBody': self.body,
