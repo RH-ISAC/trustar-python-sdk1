@@ -22,6 +22,7 @@ class Enclave:
         :param id: The guid of the enclave.
         :param name: The name of the enclave.
         """
+
         self.id = id
         self.name = name
 
@@ -32,6 +33,7 @@ class Enclave:
         :param enclave: The dictionary.
         :return: The enclave object.
         """
+
         return Enclave(id=enclave['id'],
                        name=enclave['name'])
 
@@ -39,6 +41,7 @@ class Enclave:
         """
         :return: A dictionary representation of the enclave.
         """
+
         d = {'id': self.id}
 
         if self.name is not None:
@@ -48,3 +51,6 @@ class Enclave:
 
     def __str__(self):
         return json.dumps(self.to_dict())
+
+    def __repr__(self):
+        return str(self)

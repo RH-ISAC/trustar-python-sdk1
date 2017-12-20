@@ -64,11 +64,18 @@ class Tag:
         :return: A dictionary representation of the tag.
         """
 
-        return {
+        d = {
             'name': self.name,
-            'id': self.id,
-            'enclave': self.enclave.to_dict()
+            'id': self.id
         }
+
+        if self.enclave is not None:
+            d['enclave'] = self.enclave.to_dict()
+
+        return d
 
     def __str__(self):
         return json.dumps(self.to_dict())
+
+    def __repr__(self):
+        return str(self)

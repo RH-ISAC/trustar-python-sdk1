@@ -100,6 +100,7 @@ class Report(object):
         """
         :return: A string indicating whether the report belongs to an enclave or not.
         """
+
         if self.is_enclave:
             return self.DISTRIBUTION_TYPE_ENCLAVE
         else:
@@ -109,6 +110,7 @@ class Report(object):
         """
         :return: The IDs of the enclaves if ``enclaves`` is not ``None``, otherwise ``None``.
         """
+
         if self.enclaves is not None:
             return [enclave.id for enclave in self.enclaves]
         else:
@@ -187,3 +189,6 @@ class Report(object):
 
     def __str__(self):
         return json.dumps(self.to_dict())
+
+    def __repr__(self):
+        return str(self)

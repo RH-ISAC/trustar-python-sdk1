@@ -161,6 +161,9 @@ class Page(object):
     def __str__(self):
         return json.dumps(self.to_dict())
 
+    def __repr__(self):
+        return str(self)
+
     def __iter__(self):
         return self.items.__iter__()
 
