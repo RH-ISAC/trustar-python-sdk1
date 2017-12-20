@@ -1,18 +1,16 @@
 # python 2 backwards compatibility
 from __future__ import print_function
-from builtins import object
+from builtins import object, super
 from future import standard_library
 from six import string_types
 
 # package imports
 from ..utils import normalize_timestamp, enclaves_from_ids
 from . import Indicator, Enclave
-
-# external imports
-import json
+from .base import ModelBase
 
 
-class Report(object):
+class Report(ModelBase):
     """
     Models an incident report.
 
@@ -125,10 +123,13 @@ class Report(object):
 
         self.enclaves = [Enclave(id=id) for id in enclave_ids]
 
-    def to_dict(self):
+    def to_dict(self, remove_nones=False):
         """
         :return: A dictionary representation of the report.
         """
+
+        if remove_nones:
+            return super().to_dict(remove_nones=True)
 
         report_dict = {
             'title': self.title,
@@ -141,11 +142,11 @@ class Report(object):
 
         # indicators field might not be present
         if self.indicators is not None:
-            report_dict['indicators'] = [indicator.to_dict() for indicator in self.indicators]
+            report_dict['indicators'] = [indicator.to_dict(remove_nones=remove_nones) for indicator in self.indicators]
 
         # enclaves field might not be present
         if self.enclaves is not None:
-            report_dict['enclaves'] = [enclave.to_dict() for enclave in self.enclaves]
+            report_dict['enclaves'] = [enclave.to_dict(remove_nones=remove_nones) for enclave in self.enclaves]
 
         return report_dict
 
@@ -186,9 +187,3 @@ class Report(object):
                       enclave_ids=report.get('enclaveIds'),
                       enclaves=enclaves,
                       indicators=indicators)
-
-    def __str__(self):
-        return json.dumps(self.to_dict())
-
-    def __repr__(self):
-        return str(self)

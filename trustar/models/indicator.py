@@ -1,14 +1,14 @@
 # python 2 backwards compatibility
 from __future__ import print_function
-from builtins import object
+from builtins import object, super
 from future import standard_library
 from six import string_types
 
-# external imports
-import json
+# package imports
+from .base import ModelBase
 
 
-class Indicator:
+class Indicator(ModelBase):
     """
     Models an indicator of compromise.
 
@@ -59,27 +59,27 @@ class Indicator:
     def from_dict(indicator):
         """
         Create an indicator object from a dictionary.
+
         :param indicator: The dictionary.
         :return: The indicator object.
         """
+
         return Indicator(value=indicator.get('value'),
                          type=indicator.get('indicatorType'),
                          priority_level=indicator.get('priorityLevel'),
                          correlation_count=indicator.get('correlationCount'))
 
-    def to_dict(self):
+    def to_dict(self, remove_nones=False):
         """
         :return: A dictionary representation of the indicator.
         """
+
+        if remove_nones:
+            return super().to_dict(remove_nones=True)
+
         return {
             'value': self.value,
             'type': self.type,
             'priorityLevel': self.priority_level,
             'correlationCount': self.correlation_count
         }
-
-    def __str__(self):
-        return json.dumps(self.to_dict())
-
-    def __repr__(self):
-        return str(self)

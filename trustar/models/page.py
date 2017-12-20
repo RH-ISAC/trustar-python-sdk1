@@ -3,12 +3,14 @@ from __future__ import print_function
 from builtins import object
 from future import standard_library
 
+# package imports
+from .base import ModelBase
+
 # external imports
-import json
 import math
 
 
-class Page(object):
+class Page(ModelBase):
     """
     This class models a page of items that would be found in the body of a response from an
     endpoint that uses pagination.
@@ -58,19 +60,22 @@ class Page(object):
                     page_size=page['pageSize'],
                     total_elements=page['totalElements'])
 
-    def to_dict(self):
+    def to_dict(self, remove_nones=False):
         """
         Convert this Page to a dictionary.
 
         :return: The resulting dictionary
         """
 
+        if remove_nones:
+            return super().to_dict(remove_nones=True)
+
         items = []
 
         # attempt to replace each item with its dictionary representation if possible
         for item in self.items:
             if hasattr(item, 'to_dict'):
-                items.append(item.to_dict())
+                items.append(item.to_dict(remove_nones=remove_nones))
             else:
                 items.append(item)
 
@@ -157,12 +162,6 @@ class Page(object):
         # return a GeneratorWithLength whose __len__ method delegates to that of page_generator
         return GeneratorWithLength(iterable=iterable(),
                                    total_elements_getter=page_generator.__len__)
-
-    def __str__(self):
-        return json.dumps(self.to_dict())
-
-    def __repr__(self):
-        return str(self)
 
     def __iter__(self):
         return self.items.__iter__()

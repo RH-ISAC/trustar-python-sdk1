@@ -1,14 +1,14 @@
 # python 2 backwards compatibility
 from __future__ import print_function
-from builtins import object
+from builtins import object, super
 from future import standard_library
 from six import string_types
 
-# external imports
-import json
+# package imports
+from .base import ModelBase
 
 
-class Enclave:
+class Enclave(ModelBase):
     """
     Models an enclave.
 
@@ -37,20 +37,15 @@ class Enclave:
         return Enclave(id=enclave['id'],
                        name=enclave['name'])
 
-    def to_dict(self):
+    def to_dict(self, remove_nones=False):
         """
         :return: A dictionary representation of the enclave.
         """
 
-        d = {'id': self.id}
+        if remove_nones:
+            return super().to_dict(remove_nones=True)
 
-        if self.name is not None:
-            d['name'] = self.name
-
-        return d
-
-    def __str__(self):
-        return json.dumps(self.to_dict())
-
-    def __repr__(self):
-        return str(self)
+        return {
+            'id': self.id,
+            'name': self.name
+        }

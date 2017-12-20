@@ -6,12 +6,10 @@ from six import string_types
 
 # package imports
 from ..utils import enclaves_from_ids
-
-# external imports
-import json
+from .base import ModelBase
 
 
-class Tag:
+class Tag(ModelBase):
     """
     Models a tag.
 
@@ -59,10 +57,13 @@ class Tag:
                    enclave=tag.get('enclave'),
                    enclave_id=tag.get('enclaveId'))
 
-    def to_dict(self):
+    def to_dict(self, remove_nones=False):
         """
         :return: A dictionary representation of the tag.
         """
+
+        if remove_nones:
+            return super().to_dict(remove_nones=True)
 
         d = {
             'name': self.name,
@@ -70,12 +71,6 @@ class Tag:
         }
 
         if self.enclave is not None:
-            d['enclave'] = self.enclave.to_dict()
+            d['enclave'] = self.enclave.to_dict(remove_nones=remove_nones)
 
         return d
-
-    def __str__(self):
-        return json.dumps(self.to_dict())
-
-    def __repr__(self):
-        return str(self)

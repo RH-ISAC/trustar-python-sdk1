@@ -208,8 +208,7 @@ def main():
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
 
             if report.indicators is not None:
-                logger.info("Extracted the following community indicators: \n%s\n"
-                      % json.dumps([indicator.to_dict() for indicator in report.indicators], indent=2))
+                logger.info("Extracted the following community indicators: \n%s\n" % report.indicators)
         except Exception as e:
             logger.error('Could not submit community report, error: %s' % e)
 
@@ -228,8 +227,7 @@ def main():
             logger.info(report)
 
             if report.indicators is not None:
-                logger.info("Extracted the following enclave indicators: \n%s\n"
-                      % json.dumps([indicator.to_dict() for indicator in report.indicators], indent=2))
+                logger.info("Extracted the following enclave indicators: \n%s\n" % report.indicators)
         except Exception as e:
             logger.error('Could not submit enclave report, error: %s' % e)
 
@@ -248,7 +246,7 @@ def main():
 
             logger.info("Report Submitted")
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
+            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not submit report, error: %s' % e)
@@ -261,7 +259,7 @@ def main():
 
             logger.info("\ttitle: %s" % report.title)
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
+            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
             report_guid = report.id
         except Exception as e:
@@ -278,7 +276,7 @@ def main():
             report = ts.update_report(report)
 
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
+            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not update report, error: %s' % e)
@@ -292,7 +290,7 @@ def main():
 
             logger.info("\ttitle: %s" % report.title)
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
+            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
@@ -309,7 +307,7 @@ def main():
 
             logger.info("Updated Report using GUID")
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
+            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not update report, error: %s' % e)
@@ -322,7 +320,7 @@ def main():
 
             logger.info("\ttitle: %s" % report.title)
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
+            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
@@ -337,7 +335,7 @@ def main():
 
             logger.info("Report Released using External ID:")
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
+            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not release report, error: %s' % e)
@@ -351,7 +349,7 @@ def main():
 
             logger.info("\ttitle: %s" % report.title)
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % [ind.to_dict() for ind in report.indicators])
+            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
@@ -400,7 +398,7 @@ def main():
                 logger.info("Get enclave tags for report")
                 tags = ts.get_enclave_tags(report.id)
                 logger.info("\tEnclave tags for report %s\n" % report.id)
-                logger.info(json.dumps([tag.to_dict() for tag in tags], indent=2))
+                logger.info(tags)
 
             # delete enclave tag by name
             if do_delete_enclave_tag:
@@ -415,7 +413,7 @@ def main():
             # List all enclave tags
             tags = ts.get_all_enclave_tags(enclave_ids=ts.enclave_ids)
             logger.info("List of enclave tags for enclave %s\n" % enclave_id)
-            logger.info(json.dumps([tag.to_dict() for tag in tags], indent=2))
+            logger.info(tags)
 
             # Search report by tag
             reports = ts.get_reports(from_time=yesterday_time,
