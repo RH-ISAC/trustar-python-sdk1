@@ -125,6 +125,9 @@ class Report(ModelBase):
 
     def to_dict(self, remove_nones=False):
         """
+        Creates a dictionary representation of the object.
+
+        :param remove_nones: Whether ``None`` values should be filtered out of the dictionary.  Defaults to ``False``.
         :return: A dictionary representation of the report.
         """
 
