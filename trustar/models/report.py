@@ -132,24 +132,28 @@ class Report(ModelBase):
         """
 
         if remove_nones:
-            return super().to_dict(remove_nones=True)
-
-        report_dict = {
-            'title': self.title,
-            'reportBody': self.body,
-            'timeBegan': self.time_began,
-            'externalUrl': self.external_url,
-            'distributionType': self.__get_distribution_type(),
-            'externalTrackingId': self.external_id
-        }
+            report_dict = super().to_dict(remove_nones=True)
+        else:
+            report_dict = {
+                'title': self.title,
+                'reportBody': self.body,
+                'timeBegan': self.time_began,
+                'externalUrl': self.external_url,
+                'distributionType': self.__get_distribution_type(),
+                'externalTrackingId': self.external_id
+            }
 
         # indicators field might not be present
         if self.indicators is not None:
             report_dict['indicators'] = [indicator.to_dict(remove_nones=remove_nones) for indicator in self.indicators]
+        elif not remove_nones:
+            self.indicators = None
 
         # enclaves field might not be present
         if self.enclaves is not None:
             report_dict['enclaves'] = [enclave.to_dict(remove_nones=remove_nones) for enclave in self.enclaves]
+        elif not remove_nones:
+            report_dict['enclaves'] = None
 
         return report_dict
 

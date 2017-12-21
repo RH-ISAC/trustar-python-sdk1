@@ -6,7 +6,6 @@ Comprehensive script with various TruSTAR API usage examples
 
 from __future__ import print_function
 
-import json
 import sys
 import time
 from random import randint
@@ -15,28 +14,28 @@ from trustar import TruStar, Report, get_logger
 
 logger = get_logger(__name__)
 
-do_latest_reports = True
-do_correlated = True
-do_latest_indicators = True
-do_community_trends = True
-do_query_indicators = True
-do_comm_submissions = True
-do_enclave_submissions = True
+do_latest_reports = False
+do_correlated = False
+do_latest_indicators = False
+do_community_trends = False
+do_query_indicators = False
+do_comm_submissions = False
+do_enclave_submissions = False
 
-do_submit_report = True
-do_report_details_by_ext_id = True
-do_update_report_by_ext_id = True
-do_report_details_by_guid = True
-do_update_report_by_guid = True
-do_release_report_by_ext_id = True
-do_report_details_by_ext_id_2 = True
-do_delete_report_by_ext_id = True
-do_add_enclave_tag = True
-do_delete_enclave_tag = True
-do_get_enclave_tags = True
-do_reports_by_community = True
+do_submit_report = False
+do_report_details_by_ext_id = False
+do_update_report_by_ext_id = False
+do_report_details_by_guid = False
+do_update_report_by_guid = False
+do_release_report_by_ext_id = False
+do_report_details_by_ext_id_2 = False
+do_delete_report_by_ext_id = False
+do_add_enclave_tag = False
+do_delete_enclave_tag = False
+do_get_enclave_tags = False
+do_reports_by_community = False
 do_reports_by_enclave = True
-do_reports_mine = True
+do_reports_mine = False
 
 # search_string = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
 search_string = ','.join([

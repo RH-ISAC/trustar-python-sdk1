@@ -33,7 +33,7 @@ class TruStar(object):
     """
 
     # raise exception if any of these config keys are missing
-    REQUIRED_KEYS = ['auth', 'base', 'api_key', 'api_secret']
+    REQUIRED_KEYS = ['api_key', 'api_secret']
 
     # allow configs to use different key names for config values
     REMAPPED_KEYS = {
@@ -45,6 +45,8 @@ class TruStar(object):
 
     # default config values
     DEFAULTS = {
+        'auth': 'https://api.trustar.co/oauth/token',
+        'base': 'https://api.trustar.co/api/1.3-beta',
         'client_type': 'PYTHON_SDK',
         'client_version': CLIENT_VERSION,
         'client_metatag': None,
@@ -55,6 +57,31 @@ class TruStar(object):
         """
         Constructs and configures the instance.  Initially attempts to use ``config``; if it is ``None``,
         then attempts to use ``config_file`` instead.
+
+        The only required config keys are ``user_api_key`` and ``user_api_secret``.  To obtain these values, login to
+        TruSTAR Station in your browser and visit the **API** tab under **SETTINGS** to generate an API key and secret.
+
+        The other available keys, and their defaults, are listed below:
+
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | key                     | required  | default                                          | description                                            |
+        +=========================+===========+==================================================+========================================================+
+        | ``user_api_key``        | Yes       | ``True``                                         | API key                                                |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | ``user_api_secret``     | Yes       | ``True``                                         | API secret                                             |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | ``auth_endpoint``       | No        | ``"https://api.trustar.co/oauth/token"``         | the URL used to obtain OAuth2 tokens                   |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | ``api_endpoint``        | No        | ``"https://api.trustar.co/api/1.3-beta"``        | the base URL used for making API calls                 |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | ``verify``              | No        | ``True``                                         | whether to use SSL verification                        |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | ``client_type``         | No        | ``"Python_SDK"``                                 | the name of the client being used                      |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | ``client_version``      | No        | ``"0.3.1"``                                      | the version of the client being used                   |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | ``client_metatag``      | No        | ``None``                                         | any additional information (ex. email address of user) |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
 
         :param str config_file: Path to configuration file (conf, json, or yaml).
         :param str config_role: The section in the configuration file to use.
@@ -109,11 +136,12 @@ class TruStar(object):
         # set properties from config dict
         for key, val in config.items():
             if val is None:
+                # override None with default value
+                if key in TruStar.DEFAULTS:
+                    config[key] = TruStar.DEFAULTS[key]
                 # ensure required properties are present
                 if val in TruStar.REQUIRED_KEYS:
                     raise Exception("Missing config value for %s" % key)
-                elif val in TruStar.DEFAULTS:
-                    config[key] = TruStar.DEFAULTS[key]
 
         # set properties
         self.auth = config.get('auth')
@@ -274,6 +302,11 @@ class TruStar(object):
         Ping the API.
 
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+
+        Example:
+
+        >>> ts.ping()
+        pong
         """
 
         return self.__get("ping", **kwargs).content.decode('utf-8').strip('\n')
@@ -283,6 +316,11 @@ class TruStar(object):
         Get the version number of the API.
 
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+
+        Example:
+
+        >>> ts.get_version()
+        1.3-beta
         """
 
         return self.__get("version", **kwargs).content.decode('utf-8').strip('\n')
@@ -362,6 +400,19 @@ class TruStar(object):
         :param report: The |Report| object that was submitted, with the ``id`` and ``indicators`` fields updated based
             on values from the response.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+
+        Example:
+
+        >>> report = Report(title="Suspicious Activity",
+        >>>                 body="We have been receiving suspicious requests from 169.178.68.63.",
+        >>>                 enclave_ids=["602d4795-31cd-44f9-a85d-f33cb869145a"])
+        >>> report = ts.submit_report(report)
+        >>> print(report.id)
+        ac6a0d17-7350-4410-bc57-9699521db992
+        >>> print(report.title)
+        Suspicious Activity
+        >>> print(report.indicators[0].value)
+        169.178.68.63
         """
 
         # make distribution type default to "enclave"
@@ -396,12 +447,22 @@ class TruStar(object):
     def update_report(self, report, **kwargs):
         """
         Updates the report identified by the ``report.id`` field; if this field does not exist, then
-            ``report.external_id`` will be used if it exists.  Any other fields on ``report`` that are not ``None``
-            will overwrite values on the report on Station.
+        ``report.external_id`` will be used if it exists.  Any other fields on ``report`` that are not ``None``
+        will overwrite values on the report on Station.
 
         :param report: A |Report| object with the updated values.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The |Report| object with any updated values returned in the response.
+
+        Example:
+
+        >>> report = ts.get_report_details(report_id)
+        >>> print(report.title)
+        Old Title
+        >>> report.title = "Changed title"
+        >>> updated_report = ts.update_report(report)
+        >>> print(updated_report.title)
+        Changed Title
         """
 
         if report.id is not None:

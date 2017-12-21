@@ -66,14 +66,16 @@ class Tag(ModelBase):
         """
 
         if remove_nones:
-            return super().to_dict(remove_nones=True)
-
-        d = {
-            'name': self.name,
-            'id': self.id
-        }
+            d = super().to_dict(remove_nones=True)
+        else:
+            d = {
+                'name': self.name,
+                'id': self.id
+            }
 
         if self.enclave is not None:
             d['enclave'] = self.enclave.to_dict(remove_nones=remove_nones)
+        elif not remove_nones:
+            d['enclave'] = None
 
         return d
