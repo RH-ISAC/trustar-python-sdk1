@@ -244,6 +244,7 @@ class TruStar(object):
 
         :param str path: The path of the request, i.e. the piece of the URL after the base URL.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: The response object.
         """
 
         return self.__request("GET", path, **kwargs)
@@ -254,6 +255,7 @@ class TruStar(object):
 
         :param str path: The path of the request, i.e. the piece of the URL after the base URL.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: The response object.
         """
 
         return self.__request("PUT", path, **kwargs)
@@ -264,6 +266,7 @@ class TruStar(object):
 
         :param str path: The path of the request, i.e. the piece of the URL after the base URL.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: The response object.
         """
 
         return self.__request("POST", path, **kwargs)
@@ -274,13 +277,14 @@ class TruStar(object):
 
         :param str path: The path of the request, i.e. the piece of the URL after the base URL.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: The response object.
         """
 
         return self.__request("DELETE", path, **kwargs)
 
     def get_report_url(self, report_id):
         """
-        Build direct URL to report graph in Station User Interface from its ID.
+        Build a direct URL to a report's graph in the Station User Interface from the report's ID.
 
         :param str report_id: the guid of the report
         :return: the URL
@@ -339,6 +343,30 @@ class TruStar(object):
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
 
         :return: The retrieved |Report| object.
+
+        Example:
+
+        >>> report = ts.get_report_details(report_id)
+        >>> print(report)
+        {
+          "reportBody": "Employee reported suspect email.  We had multiple reports of suspicious email overnight ...",
+          "title": "Phishing Incident",
+          "enclaves": ["ac6a0d17-7350-4410-bc57-9699521db992"],
+          "distributionType": "ENCLAVE",
+          "timeBegan": 1479941278000,
+          "indicators": [
+            {
+              "type": "IP",
+              "value": "89.108.83.45"
+            },
+            {
+              "type": "IP",
+              "value": "185.143.241.126"
+            },
+            ...
+          ]
+        }
+
         """
 
         params = {'idType': id_type}
@@ -362,6 +390,11 @@ class TruStar(object):
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
 
         :return: A |Page| of |Report| objects.
+
+        Example:
+
+        >>> reports
+
         """
 
         distribution_type = None
@@ -506,19 +539,33 @@ class TruStar(object):
         :param id_type: indicates whether the ID is internal or an external ID provided by the user
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: the response object
+
+        Example:
+
+        >>> response = ts.delete_report(report_id)
+        >>> print(response.content)
+        OK
         """
+
         params = {'idType': id_type}
         resp = self.__delete("reports/%s" % report_id, params=params, **kwargs)
         return resp
 
     def get_correlated_report_ids(self, indicators, **kwargs):
         """
-        Retrieves all TruSTAR reports that contain the searched indicator.
+        Retrieves a list of the IDs of all TruSTAR reports that contain the searched indicator.
 
         :param indicators: A list of indicator values to retrieve correlated reports for.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The list of IDs of reports that correlated.
+
+        Example:
+
+        >>> report_ids = ts.get_correlated_report_ids(["wannacry", "www.evil.com"])
+        >>> print(report_ids)
+        ["e3bc6921-e2c8-42eb-829e-eea8da2d3f36", "4d04804f-ff82-4a0b-8586-c42aef2f6f73"]
         """
+
         params = {'indicators': indicators}
         resp = self.__get("reports/correlate", params=params, **kwargs)
         return resp.json()
