@@ -27,6 +27,14 @@ class TruStarTests(unittest.TestCase):
     def setUpClass(cls):
         cls.ts = TruStar(config_file='config.yml', config_role='dev')
 
+    def test_ping(self):
+        pong = self.ts.ping()
+        self.assertTrue(len(pong) > 0)
+
+    def test_version(self):
+        version = self.ts.get_version()
+        self.assertEqual(version, "1.3-beta")
+
     def test_get_reports(self):
         """
         Test that we can get all reports fitting some filters.

@@ -342,7 +342,7 @@ class TruStar(object):
         """
 
         params = {'idType': id_type}
-        resp = self.__get("report/%s" % report_id, params=params, **kwargs)
+        resp = self.__get("reports/%s" % report_id, params=params, **kwargs)
         return Report.from_dict(resp.json())
 
     def get_reports_page(self, is_enclave=None, enclave_ids=None, tag=None,
@@ -430,7 +430,7 @@ class TruStar(object):
             'incidentReport': report.to_dict(),
             'enclaveIds': report.get_enclave_ids()
         }
-        resp = self.__post("report", data=json.dumps(payload), timeout=60, **kwargs)
+        resp = self.__post("reports", data=json.dumps(payload), timeout=60, **kwargs)
         body = resp.json()
 
         # get report id from response body
@@ -483,7 +483,7 @@ class TruStar(object):
             'enclaveIds': report.get_enclave_ids()
         }
 
-        resp = self.__put("report/%s" % report_id, data=json.dumps(payload), params=params, **kwargs)
+        resp = self.__put("reports/%s" % report_id, data=json.dumps(payload), params=params, **kwargs)
         body = resp.json()
 
         # set IDs from response body
@@ -508,7 +508,7 @@ class TruStar(object):
         :return: the response object
         """
         params = {'idType': id_type}
-        resp = self.__delete("report/%s" % report_id, params=params, **kwargs)
+        resp = self.__delete("reports/%s" % report_id, params=params, **kwargs)
         return resp
 
     def get_correlated_report_ids(self, indicators, **kwargs):

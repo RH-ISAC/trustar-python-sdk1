@@ -1,6 +1,6 @@
 # python 2 backwards compatibility
 from __future__ import print_function
-from builtins import object
+from builtins import object, super
 from future import standard_library
 
 # package imports
