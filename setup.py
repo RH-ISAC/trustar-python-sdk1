@@ -1,4 +1,4 @@
-# git tag 0.3.1 -m "Bump version" && git push --tags origin master
+# git tag 0.3.2 -m "Bump version" && git push --tags origin master
 # python setup.py sdist
 # twine upload --skip-existing dist/*
 
@@ -7,7 +7,7 @@ from distutils.core import setup
 setup(
     name='trustar',
     packages=['trustar', 'trustar.models'],
-    version='0.3.1',
+    version='0.3.2',
     author='TruSTAR Technology, Inc.',
     author_email='support@trustar.co',
     url='https://github.com/trustar/trustar-python',
