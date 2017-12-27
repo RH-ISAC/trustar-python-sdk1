@@ -23,7 +23,8 @@ class ModelBase(object):
 
         if remove_nones:
             return {k: v for k, v in self.to_dict().items() if v is not None}
-        raise NotImplementedError()
+        else:
+            raise NotImplementedError()
 
     def __str__(self):
         """
