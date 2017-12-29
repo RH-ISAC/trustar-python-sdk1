@@ -384,11 +384,11 @@ class TruStar(object):
             reports are returned).
         :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific
             enclaves (optional - by default reports from all enclaves are returned)
+        :param str tag: name of tag to filter reports by.
         :param int from_time: start of time window in milliseconds since epoch (optional)
         :param int to_time: end of time window in milliseconds since epoch (optional)
         :param int page_number: the page number to get.
         :param int page_size: the size of the page to be returned.
-        :param str tag: name of tag to filter reports by.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
 
         :return: A |Page| of |Report| objects.
@@ -738,37 +738,59 @@ class TruStar(object):
     ### Generators ###
     ##################
 
-    def __get_reports_page_generator(self, start_page=0, page_size=None, **kwargs):
+    def __get_reports_page_generator(self, is_enclave=None, enclave_ids=None, tag=None, from_time=None, to_time=None,
+                                     start_page=0, page_size=None, **kwargs):
         """
         Creates a generator from the |get_reports_page| method that returns each successive page.
 
+        :param boolean is_enclave: restrict reports to specific distribution type (optional - by default all accessible
+            reports are returned).
+        :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific
+            enclaves (optional - by default reports from all enclaves are returned)
+        :param str tag: name of tag to filter reports by.\
+        :param int from_time: start of time window in milliseconds since epoch (optional)
+        :param int to_time: end of time window in milliseconds since epoch (optional)
         :param start_page: The page to start on.
         :param page_size: The size of each page.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the |get_reports_page|
-            method.
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+
         :return: The generator.
         """
 
         def func(page_number, page_size):
-            return self.get_reports_page(page_number=page_number, page_size=page_size, **kwargs)
+            return self.get_reports_page(is_enclave, enclave_ids, tag, from_time, to_time,
+                                         page_number, page_size, **kwargs)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_reports(self, **kwargs):
+    def get_reports(self, is_enclave=None, enclave_ids=None, tag=None, from_time=None, to_time=None, **kwargs):
         """
-        Creates a generator from the |get_reports_page| method that returns each successive report.
+        Uses the |get_reports_page| method to create a generator that returns each successive report.
 
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the |get_reports_page|
-            method.
+        :param boolean is_enclave: restrict reports to specific distribution type (optional - by default all accessible
+            reports are returned).
+        :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific
+            enclaves (optional - by default reports from all enclaves are returned)
+        :param str tag: name of tag to filter reports by.
+        :param int from_time: start of time window in milliseconds since epoch (optional)
+        :param int to_time: end of time window in milliseconds since epoch (optional)
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self.__get_reports_page_generator(**kwargs))
+        return Page.get_generator(page_generator=self.__get_reports_page_generator(is_enclave, enclave_ids, tag,
+                                                                                   from_time, to_time, **kwargs))
 
-    def __get_community_trends_page_generator(self, start_page=0, page_size=None, **kwargs):
+    def __get_community_trends_page_generator(self, indicator_type=None, from_time=None, to_time=None,
+                                              start_page=0, page_size=None, **kwargs):
         """
         Creates a generator from the |get_community_trends_page| method that returns each successive page.
 
+        :param indicator_type: A type of indicator to filter by.  If ``None``, will get all types of indicators except
+            for MALWARE and CVEs (this convention is for parity with the corresponding view on the Dashboard).
+        :param from_time: start of time window in milliseconds since epoch
+        :param to_time: end of time window in milliseconds since epoch
         :param start_page: The page to start on.
         :param page_size: The size of each page.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the
@@ -777,26 +799,34 @@ class TruStar(object):
         """
 
         def func(page_number, page_size):
-            return self.get_community_trends_page(page_number=page_number, page_size=page_size, **kwargs)
+            return self.get_community_trends_page(indicator_type, from_time, to_time,
+                                                  page_number=page_number, page_size=page_size, **kwargs)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_community_trends(self, **kwargs):
+    def get_community_trends(self, indicator_type=None, from_time=None, to_time=None, **kwargs):
         """
-        Creates a generator from the |get_community_trends_page| method that returns
-        each successive report.
+        Uses the |get_community_trends_page| method to create a generator that returns each successive report.
 
+        :param indicator_type: A type of indicator to filter by.  If ``None``, will get all types of indicators except
+            for MALWARE and CVEs (this convention is for parity with the corresponding view on the Dashboard).
+        :param from_time: start of time window in milliseconds since epoch
+        :param to_time: end of time window in milliseconds since epoch
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the
             |get_community_trends_page| method.
         :return: The generator.
         """
-        return Page.get_generator(page_generator=self.__get_community_trends_page_generator(**kwargs))
 
-    def __get_related_indicators_page_generator(self, start_page=0, page_size=None, **kwargs):
+        return Page.get_generator(page_generator=self.__get_community_trends_page_generator(indicator_type, from_time,
+                                                                                            to_time, **kwargs))
+
+    def __get_related_indicators_page_generator(self, indicators=None, sources=None, start_page=0, page_size=None, **kwargs):
         """
         Creates a generator from the |get_related_indicators_page| method that returns each
         successive page.
 
+        :param indicators: list of indicator values to search for
+        :param sources: list of sources to search.  Options are: INCIDENT_REPORT, EXTERNAL_INTELLIGENCE, and ORION_FEED.
         :param start_page: The page to start on.
         :param page_size: The size of each page.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the
@@ -805,18 +835,21 @@ class TruStar(object):
         """
 
         def func(page_number, page_size):
-            return self.get_related_indicators_page(page_number=page_number, page_size=page_size, **kwargs)
+            return self.get_related_indicators_page(indicators, sources, page_number=page_number,
+                                                    page_size=page_size, **kwargs)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_related_indicators(self, **kwargs):
+    def get_related_indicators(self, indicators=None, sources=None, **kwargs):
         """
-        Creates a generator from the |get_related_indicators_page| method that returns
-        each successive report.
+        Uses the |get_related_indicators_page| method to create a generator that returns each successive report.
 
+        :param indicators: list of indicator values to search for
+        :param sources: list of sources to search.  Options are: INCIDENT_REPORT, EXTERNAL_INTELLIGENCE, and ORION_FEED.
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to the
             |get_related_indicators_page| method.
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self.__get_related_indicators_page_generator(**kwargs))
+        return Page.get_generator(page_generator=self.__get_related_indicators_page_generator(indicators, sources,
+                                                                                              **kwargs))
