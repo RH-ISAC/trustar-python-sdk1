@@ -19,6 +19,7 @@ class Enclave(ModelBase):
     def __init__(self, id, name=None):
         """
         Constructs an Enclave object.
+
         :param id: The guid of the enclave.
         :param name: The name of the enclave.
         """
@@ -30,6 +31,7 @@ class Enclave(ModelBase):
     def from_dict(enclave):
         """
         Create a enclave object from a dictionary.
+
         :param enclave: The dictionary.
         :return: The enclave object.
         """
