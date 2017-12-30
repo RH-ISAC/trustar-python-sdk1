@@ -395,22 +395,26 @@ class TruStar(object):
 
         Example:
 
-        >>> page = ts.get_reports_page(is_enclave=True, enclave_ids=ts.enclave_ids, tag="malicious",
-        >>>                            from_time=1495695711000, to_time=1514185311000, page_number=1, page_size=5)
+        >>> page = ts.get_reports_page(is_enclave=True, tag="malicious",
+        >>>                            from_time=1495695711000, to_time=1514185311000,
+        >>>                            page_number=1, page_size=5)
         >>> print([report.id for report in page])
         ['661583cb-a6a7-4cbd-8a90-01578fa4da89', 'da131660-2708-4c8a-926e-f91fb5dbbc62', '2e3400d6-fa37-4a8c-bc2f-155aaa02ae5a', '38064828-d3db-4fff-8ab8-e0e3b304ff44', 'dbf26104-cee5-4ca4-bdbf-a01d0178c007']
         >>> print(len(page))
         5
-        >>> print(page[0])
-
 
         """
 
         distribution_type = None
+
+        # explicitly compare to True and False to distinguish from None (which is treated as False in a conditional)
         if is_enclave == True:
             distribution_type = Report.DISTRIBUTION_TYPE_ENCLAVE
         elif is_enclave == False:
             distribution_type = Report.DISTRIBUTION_TYPE_COMMUNITY
+
+        if enclave_ids is None:
+            enclave_ids = self.enclave_ids
 
         params = {
             'from': from_time,
@@ -461,9 +465,13 @@ class TruStar(object):
         if report.is_enclave is None:
             report.is_enclave = True
 
-        # use configured enclave_ids by default
-        if report.is_enclave and report.enclaves is None:
-            report.set_enclave_ids(self.enclave_ids)
+        if report.enclaves is None:
+            # use configured enclave_ids by default if distribution type is ENCLAVE
+            if report.is_enclave:
+                report.set_enclave_ids(self.enclave_ids)
+            # if distribution type is COMMUNITY, API still expects non-null list of enclaves
+            else:
+                report.enclaves = []
 
         if report.time_began is None:
             report.time_began = datetime.now()
