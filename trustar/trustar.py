@@ -98,7 +98,7 @@ class TruStar(object):
 
             # read config file depending on filetype, parse into dictionary
             ext = os.path.splitext(config_file)[-1]
-            if ext == '.conf':
+            if ext in ['.conf', '.ini']:
                 config_parser = configparser.RawConfigParser()
                 config_parser.read(config_file)
                 roles = dict(config_parser)
