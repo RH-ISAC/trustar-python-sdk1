@@ -382,8 +382,8 @@ class TruStar(object):
 
         :param boolean is_enclave: restrict reports to specific distribution type (optional - by default all accessible
             reports are returned).
-        :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific
-            enclaves (optional - by default reports from all enclaves are returned)
+        :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific enclaves (optional - by
+            default reports from all of user's enclaves are returned)
         :param str tag: name of tag to filter reports by.
         :param int from_time: start of time window in milliseconds since epoch (optional)
         :param int to_time: end of time window in milliseconds since epoch (optional)
@@ -524,7 +524,7 @@ class TruStar(object):
         else:
             raise Exception("Cannot update report without either an ID or an external ID.")
 
-        # not allowed to update value of 'externalTrackingId', so remove it
+        # not allowed to update value of 'reportId', so remove it
         report_dict = {k: v for k, v in report.to_dict().items() if k != 'reportId'}
 
         params = {'idType': id_type}
@@ -586,6 +586,34 @@ class TruStar(object):
         params = {'indicators': indicators}
         resp = self.__get("reports/correlate", params=params, **kwargs)
         return resp.json()
+
+    def search_reports_page(self, search_term, enclave_ids=None, page_size=None, page_number=None, **kwargs):
+        """
+        Search for reports containing a search term.
+
+        :param str search_term: The term to search for.
+        :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific enclaves (optional - by
+            default reports from all of user's enclaves are returned)
+        :param int page_number: the page number to get.
+        :param int page_size: the size of the page to be returned.
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: a |Page| of |Report| objects.
+        """
+
+        params = {
+            'searchTerm': search_term,
+            'enclaveIds': enclave_ids,
+            'pageSize': page_size,
+            'pageNumber': page_number
+        }
+
+        resp = self.__get("reports/search", params=params, **kwargs)
+        page = Page.from_dict(resp.json())
+
+        # parse items in response as indicators
+        page.items = [Report.from_dict(item) for item in page.items]
+
+        return page
 
 
     ###########################
@@ -667,6 +695,34 @@ class TruStar(object):
         }
         resp = self.__get("indicators/external/related", params=params, **kwargs)
         return resp.json()
+
+    def search_indicators_page(self, search_term, enclave_ids=None, page_size=None, page_number=None, **kwargs):
+        """
+        Search for indicators containing a search term.
+
+        :param str search_term: The term to search for.
+        :param list(str) enclave_ids: list of enclave ids used to restrict to indicators found in reports in specific
+            enclaves (optional - by default reports from all of the user's enclaves are used)
+        :param int page_number: the page number to get.
+        :param int page_size: the size of the page to be returned.
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: a |Page| of |Report| objects.
+        """
+
+        params = {
+            'searchTerm': search_term,
+            'enclaveIds': enclave_ids,
+            'pageSize': page_size,
+            'pageNumber': page_number
+        }
+
+        resp = self.__get("indicators/search", params=params, **kwargs)
+        page = Page.from_dict(resp.json())
+
+        # parse items in response as indicators
+        page.items = [Indicator.from_dict(item) for item in page.items]
+
+        return page
 
 
     #####################
@@ -807,8 +863,7 @@ class TruStar(object):
         """
 
         def func(page_number, page_size):
-            return self.get_community_trends_page(indicator_type, from_time, to_time,
-                                                  page_number=page_number, page_size=page_size, **kwargs)
+            return self.get_community_trends_page(indicator_type, from_time, to_time, page_size, page_number, **kwargs)
 
         return Page.get_page_generator(func, start_page, page_size)
 
@@ -843,8 +898,7 @@ class TruStar(object):
         """
 
         def func(page_number, page_size):
-            return self.get_related_indicators_page(indicators, sources, page_number=page_number,
-                                                    page_size=page_size, **kwargs)
+            return self.get_related_indicators_page(indicators, sources, page_size, page_number, **kwargs)
 
         return Page.get_page_generator(func, start_page, page_size)
 
@@ -861,3 +915,67 @@ class TruStar(object):
 
         return Page.get_generator(page_generator=self.__get_related_indicators_page_generator(indicators, sources,
                                                                                               **kwargs))
+
+    def __search_reports_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None, **kwargs):
+        """
+        Creates a generator from the |search_reports_page| method that returns each successive page.
+
+        :param str search_term: The term to search for.
+        :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific enclaves (optional - by
+            default reports from all of user's enclaves are returned)
+        :param int start_page: The page to start on.
+        :param page_size: The size of each page.
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: the generator
+        """
+
+        def func(page_number, page_size):
+            return self.search_reports_page(search_term, enclave_ids, page_size, page_number, **kwargs)
+
+        return Page.get_page_generator(func, start_page, page_size)
+
+    def search_reports(self, search_term, enclave_ids=None, **kwargs):
+        """
+        Uses the |search_reports_page| method to create a generator that returns each successive report.
+
+        :param str search_term: The term to search for.
+        :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific enclaves (optional - by
+            default reports from all of user's enclaves are returned)
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: The generator.
+        """
+
+        return Page.get_generator(page_generator=self.__search_reports_page_generator(search_term, enclave_ids,
+                                                                                      **kwargs))
+
+    def __search_indicators_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None, **kwargs):
+        """
+        Creates a generator from the |search_indicators_page| method that returns each successive page.
+
+        :param str search_term: The term to search for.
+        :param list(str) enclave_ids: list of enclave ids used to restrict indicators to specific enclaves (optional - by
+            default indicators from all of user's enclaves are returned)
+        :param int start_page: The page to start on.
+        :param page_size: The size of each page.
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: the generator
+        """
+
+        def func(page_number, page_size):
+            return self.search_indicators_page(search_term, enclave_ids, page_size, page_number, **kwargs)
+
+        return Page.get_page_generator(func, start_page, page_size)
+
+    def search_indicators(self, search_term, enclave_ids=None, **kwargs):
+        """
+        Uses the |search_indicators_page| method to create a generator that returns each successive indicator.
+
+        :param str search_term: The term to search for.
+        :param list(str) enclave_ids: list of enclave ids used to restrict indicators to specific enclaves (optional - by
+            default indicators from all of user's enclaves are returned)
+        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
+        :return: The generator.
+        """
+
+        return Page.get_generator(page_generator=self.__search_indicators_page_generator(search_term, enclave_ids,
+                                                                                      **kwargs))

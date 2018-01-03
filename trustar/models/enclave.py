@@ -47,7 +47,6 @@ class Enclave(ModelBase):
         :return: A dictionary representation of the enclave.
         """
 
-
         if remove_nones:
             return super().to_dict(remove_nones=True)
 

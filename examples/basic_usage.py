@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 do_latest_reports = True
 do_correlated = True
-do_latest_indicators = True
+do_get_indicators = True
 do_community_trends = True
 do_query_indicators = True
 do_comm_submissions = True
@@ -36,6 +36,8 @@ do_get_enclave_tags = True
 do_reports_by_community = True
 do_reports_by_enclave = True
 do_reports_mine = True
+do_search_reports = True
+do_search_indicators = True
 
 # search_string = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
 search_string = ','.join([
@@ -159,21 +161,6 @@ def main():
             logger.info("")
         except Exception as e:
             logger.error('Could not get correlated reports, error: %s' % e)
-
-    # if do_latest_indicators:
-    #     logger.info("Get Latest Indicators (first 100)")
-    #
-    #     try:
-    #         results = ts.query_latest_indicators(source='INCIDENT_REPORT', indicator_types='ALL',
-    #                                              interval_size=24,
-    #                                              limit=100)
-    #         if 'indicators' in results:
-    #             for ioc_type, value in results['indicators'].items():
-    #                 if len(value) > 0:
-    #                     logger.info("\t%s:  %s" % (ioc_type, ','.join(value)))
-    #             logger.info("")
-    #     except Exception as e:
-    #         logger.info('Could not get latest indicators, error: %s' % e)
 
     if do_community_trends:
         logger.info("Get community trends")
@@ -428,6 +415,36 @@ def main():
 
         except Exception as e:
             logger.error('Could not handle enclave tag operation, error: %s' % e)
+
+    # search for reports containing term "abc"
+    if do_search_reports:
+
+        try:
+            logger.info("Searching reports:")
+
+            reports = ts.search_reports("abc")
+            for report in reports:
+                logger.info(report)
+
+            logger.info("")
+
+        except Exception as e:
+            logger.error("Could not search reports, error: %s" % e)
+
+    # search for indicators matching pattern "ab*c"
+    if do_search_indicators:
+
+        try:
+            logger.info("Searching indicators:")
+
+            indicators = ts.search_indicators("a*c")
+            for indicator in indicators:
+                logger.info(indicator)
+
+            logger.info("")
+
+        except Exception as e:
+            logger.error("Could not search indicators, error: %s" % e)
 
 
 if __name__ == '__main__':
