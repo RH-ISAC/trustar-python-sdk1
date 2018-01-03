@@ -106,10 +106,10 @@ def main():
 
                 page_number += 1
 
-            logger.info("")
-
         except Exception as e:
             logger.error('Could not get latest reports, error: %s' % e)
+
+        print('')
 
     if do_reports_by_community:
 
@@ -125,10 +125,11 @@ def main():
 
             for report in reports:
                 logger.info(report)
-            logger.info("")
 
         except Exception as e:
             logger.error('Could not get community reports, error: %s' % e)
+
+        print('')
 
     if do_reports_by_enclave:
 
@@ -145,10 +146,11 @@ def main():
 
             for report in reports:
                 logger.info(report)
-            logger.info("")
 
         except Exception as e:
             logger.error('Could not get community reports, error: %s' % e)
+
+        print('')
 
     if do_correlated:
         logger.info("Querying Accessible Correlated Reports...")
@@ -158,12 +160,27 @@ def main():
             logger.info(report_ids)
             logger.info("%d report(s) correlated with indicators '%s':\n" % (len(report_ids), search_string))
             logger.info("\n".join(report_ids))
-            logger.info("")
         except Exception as e:
             logger.error('Could not get correlated reports, error: %s' % e)
 
+        print('')
+
+    if do_get_indicators:
+        logger.info("Getting indicators...")
+
+        try:
+            indicators = ts.get_indicators()
+            logger.info("Found %d indicators." % len(indicators))
+            for indicator in indicators:
+                logger.info(indicator)
+
+        except Exception as e:
+            logger.error('Could not get indicators, error: %s' % e)
+
+        print('')
+
     if do_community_trends:
-        logger.info("Get community trends")
+        logger.info("Get community trends...")
 
         try:
             indicators = ts.get_community_trends(indicator_type=None,
@@ -173,6 +190,8 @@ def main():
                 logger.info(indicator)
         except Exception as e:
             logger.error('Could not get community trends, error: %s' % e)
+
+        print('')
 
     if do_query_indicators:
         try:
@@ -199,6 +218,8 @@ def main():
         except Exception as e:
             logger.error('Could not submit community report, error: %s' % e)
 
+        print('')
+
     # Submit simple test report to your enclave
     if do_enclave_submissions:
         logger.info("Submit New Enclave Incident Report")
@@ -217,6 +238,8 @@ def main():
                 logger.info("Extracted the following enclave indicators: \n%s\n" % report.indicators)
         except Exception as e:
             logger.error('Could not submit enclave report, error: %s' % e)
+
+        print('')
 
     # Submit a test report and retrieve it
     if do_submit_report:
@@ -238,6 +261,8 @@ def main():
         except Exception as e:
             logger.error('Could not submit report, error: %s' % e)
 
+        print('')
+
     # Get test report previously submitted
     if do_report_details_by_ext_id:
         logger.info("Get Incident Report By External ID")
@@ -251,6 +276,8 @@ def main():
             report_guid = report.id
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
+
+        print('')
 
     # Update a test report and test with get report
     if do_update_report_by_ext_id:
@@ -268,6 +295,8 @@ def main():
         except Exception as e:
             logger.error('Could not update report, error: %s' % e)
 
+        print('')
+
     # Get test report previously submitted
     if do_report_details_by_guid:
         logger.info("Get Incident Report Details by GUID (TruSTAR internal ID)")
@@ -281,6 +310,8 @@ def main():
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
+
+        print('')
 
     # Update a test report and test with get report
     if do_update_report_by_guid:
@@ -299,6 +330,8 @@ def main():
         except Exception as e:
             logger.error('Could not update report, error: %s' % e)
 
+        print('')
+
     # Get test report previously submitted
     if do_report_details_by_guid:
         logger.info("Get Report by GUID (TruSTAR internal ID)")
@@ -311,6 +344,8 @@ def main():
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
+
+        print('')
 
     # Release report to community
     if do_release_report_by_ext_id:
@@ -327,6 +362,8 @@ def main():
         except Exception as e:
             logger.error('Could not release report, error: %s' % e)
 
+        print('')
+
     # Get test report previously submitted
     if do_report_details_by_ext_id_2:
         logger.info("Get Incident Report Details by External ID")
@@ -341,6 +378,8 @@ def main():
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
 
+        print('')
+
     # Delete test report previously submitted
     if do_delete_report_by_ext_id:
         logger.info("Delete Incident Report by External ID")
@@ -350,6 +389,8 @@ def main():
 
         except Exception as e:
             logger.error('Could not delete report, error: %s' % e)
+
+        print('')
 
     # Add an enclave tag to a newly created report
     if do_add_enclave_tag:
@@ -411,10 +452,11 @@ def main():
 
             for report in reports:
                 logger.info(report)
-            logger.info("")
 
         except Exception as e:
             logger.error('Could not handle enclave tag operation, error: %s' % e)
+
+        print('')
 
     # search for reports containing term "abc"
     if do_search_reports:
@@ -426,12 +468,12 @@ def main():
             for report in reports:
                 logger.info(report)
 
-            logger.info("")
-
         except Exception as e:
             logger.error("Could not search reports, error: %s" % e)
 
-    # search for indicators matching pattern "ab*c"
+        print('')
+
+    # search for indicators matching pattern "a*c"
     if do_search_indicators:
 
         try:
@@ -441,10 +483,10 @@ def main():
             for indicator in indicators:
                 logger.info(indicator)
 
-            logger.info("")
-
         except Exception as e:
             logger.error("Could not search indicators, error: %s" % e)
+
+        print('')
 
 
 if __name__ == '__main__':
