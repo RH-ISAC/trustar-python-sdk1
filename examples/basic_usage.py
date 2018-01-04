@@ -169,7 +169,7 @@ def main():
         logger.info("Getting indicators...")
 
         try:
-            indicators = ts.get_indicators()
+            indicators = ts.get_indicators(types=['URL', 'IP'])
             logger.info("Found %d indicators." % len(indicators))
             for indicator in indicators:
                 logger.info(indicator)

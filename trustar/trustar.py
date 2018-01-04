@@ -620,12 +620,11 @@ class TruStar(object):
     ### Indicator Endpoints ###
     ###########################
 
-    def get_indicators_page(self, indicator_type=None, from_time=None, to_time=None, page_size=None, page_number=None,
-                            **kwargs):
+    def get_indicators_page(self, types=None, from_time=None, to_time=None, page_size=None, page_number=None, **kwargs):
         """
         Find indicators based on a collection of filters.
 
-        :param indicator_type: A type of indicator to filter by.  If ``None``, will get all types of indicators.
+        :param types: A type or list of types of indicators to filter by.  If ``None``, will get all types of indicators
         :param from_time: start of time window in milliseconds since epoch
         :param to_time: end of time window in milliseconds since epoch
         :param page_size: number of results per page
@@ -635,7 +634,7 @@ class TruStar(object):
         """
 
         params = {
-            'type': indicator_type,
+            'types': types,
             'from': from_time,
             'to': to_time,
             'pageSize': page_size,
@@ -874,13 +873,12 @@ class TruStar(object):
         return Page.get_generator(page_generator=self.__get_reports_page_generator(is_enclave, enclave_ids, tag,
                                                                                    from_time, to_time, **kwargs))
 
-    def __get_indicators_page_generator(self, indicator_type=None, from_time=None, to_time=None,
+    def __get_indicators_page_generator(self, types=None, from_time=None, to_time=None,
                                               start_page=0, page_size=None, **kwargs):
         """
         Creates a generator from the |get_indicators_page| method that returns each successive page.
 
-        :param indicator_type: A type of indicator to filter by.  If ``None``, will get all types of indicators except
-            for MALWARE and CVEs (this convention is for parity with the corresponding view on the Dashboard).
+        :param types: A type or list of types of indicators to filter by.  If ``None``, will get all types of indicators
         :param from_time: start of time window in milliseconds since epoch
         :param to_time: end of time window in milliseconds since epoch
         :param start_page: The page to start on.
@@ -890,23 +888,22 @@ class TruStar(object):
         """
 
         def func(page_number, page_size):
-            return self.get_indicators_page(indicator_type, from_time, to_time, page_size, page_number, **kwargs)
+            return self.get_indicators_page(types, from_time, to_time, page_size, page_number, **kwargs)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_indicators(self, indicator_type=None, from_time=None, to_time=None, **kwargs):
+    def get_indicators(self, types=None, from_time=None, to_time=None, **kwargs):
         """
         Uses the |get_indicators_page| method to create a generator that returns each successive indicator.
 
-        :param indicator_type: A type of indicator to filter by.  If ``None``, will get all types of indicators except
-            for MALWARE and CVEs (this convention is for parity with the corresponding view on the Dashboard).
+        :param types: A type or list of types of indicators to filter by.  If ``None``, will get all types of indicators
         :param from_time: start of time window in milliseconds since epoch
         :param to_time: end of time window in milliseconds since epoch
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self.__get_indicators_page_generator(indicator_type, from_time,
+        return Page.get_generator(page_generator=self.__get_indicators_page_generator(types, from_time,
                                                                                       to_time, **kwargs))
 
     def __get_community_trends_page_generator(self, indicator_type=None, from_time=None, to_time=None,
