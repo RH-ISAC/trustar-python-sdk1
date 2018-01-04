@@ -213,6 +213,38 @@ class TruStarTests(unittest.TestCase):
             for id in report_ids:
                 self.ts.delete_report(report_id=id)
 
+    def test_get_indicators(self):
+
+        indicators = self.ts.get_indicators()
+        total = len(indicators)
+
+        count = 0
+        for indicator in indicators:
+            count += 1
+
+        self.assertEqual(total, count)
+
+    def test_search_indicators(self):
+
+        indicators = self.ts.search_indicators("a*c")
+        total = len(indicators)
+
+        count = 0
+        for indicator in indicators:
+            count += 1
+
+        self.assertEqual(total, count)
+
+    def test_search_reports(self):
+        reports = self.ts.search_reports("a*c")
+        total = len(reports)
+
+        count = 0
+        for report in reports:
+            count += 1
+
+        self.assertEqual(total, count)
+
     def test_page_generator(self):
         """
         Test that the get_page_generator function works

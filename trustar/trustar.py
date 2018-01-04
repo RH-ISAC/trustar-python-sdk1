@@ -620,11 +620,15 @@ class TruStar(object):
     ### Indicator Endpoints ###
     ###########################
 
-    def get_indicators_page(self, types=None, from_time=None, to_time=None, page_size=None, page_number=None, **kwargs):
+    def get_indicators_page(self, types=None, source=None, is_enclave=None, enclave_ids=None,
+                            from_time=None, to_time=None, page_size=None, page_number=None, **kwargs):
         """
         Find indicators based on a collection of filters.
 
         :param types: A type or list of types of indicators to filter by.  If ``None``, will get all types of indicators
+        :param source: 'INCIDENT_REPORT' or 'OSINT'.  Defaults to 'INCIDENT_REPORT'.
+        :param is_enclave: Whether to get indicators found in enclave or community reports.
+        :param enclave_ids: A list of enclave ids.  Only indicators found in reports within these enclaves will be returned.
         :param from_time: start of time window in milliseconds since epoch
         :param to_time: end of time window in milliseconds since epoch
         :param page_size: number of results per page
@@ -635,6 +639,9 @@ class TruStar(object):
 
         params = {
             'types': types,
+            'source': source,
+            'distributionType': Report.DISTRIBUTION_TYPE_ENCLAVE if is_enclave else Report.DISTRIBUTION_TYPE_COMMUNITY,
+            'enclaveIds': enclave_ids,
             'from': from_time,
             'to': to_time,
             'pageSize': page_size,
@@ -685,7 +692,7 @@ class TruStar(object):
         Finds all reports that contain any of the given indicators and returns correlated indicators from those reports.
 
         :param indicators: list of indicator values to search for
-        :param sources: list of sources to search.  Options are: INCIDENT_REPORT, EXTERNAL_INTELLIGENCE, and ORION_FEED.
+        :param sources: list of sources to search.  Options are: INCIDENT_REPORT, EXTERNAL_INTELLIGENCE, and OSINT.
         :param page_size: number of results per page
         :param page_number: page to start returning results on
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
@@ -873,12 +880,15 @@ class TruStar(object):
         return Page.get_generator(page_generator=self.__get_reports_page_generator(is_enclave, enclave_ids, tag,
                                                                                    from_time, to_time, **kwargs))
 
-    def __get_indicators_page_generator(self, types=None, from_time=None, to_time=None,
-                                              start_page=0, page_size=None, **kwargs):
+    def __get_indicators_page_generator(self, types=None, source=None, is_enclave=None, enclave_ids=None,
+                                        from_time=None, to_time=None, start_page=0, page_size=None, **kwargs):
         """
         Creates a generator from the |get_indicators_page| method that returns each successive page.
 
         :param types: A type or list of types of indicators to filter by.  If ``None``, will get all types of indicators
+        :param source: 'INCIDENT_REPORT' or 'OSINT'.  Defaults to 'INCIDENT_REPORT'.
+        :param is_enclave: Whether to get indicators found in enclave or community reports.
+        :param enclave_ids: A list of enclave ids.  Only indicators found in reports within these enclaves will be returned.
         :param from_time: start of time window in milliseconds since epoch
         :param to_time: end of time window in milliseconds since epoch
         :param start_page: The page to start on.
@@ -888,23 +898,28 @@ class TruStar(object):
         """
 
         def func(page_number, page_size):
-            return self.get_indicators_page(types, from_time, to_time, page_size, page_number, **kwargs)
+            return self.get_indicators_page(types, source, is_enclave, enclave_ids,
+                                            from_time, to_time, page_size, page_number, **kwargs)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_indicators(self, types=None, from_time=None, to_time=None, **kwargs):
+    def get_indicators(self, types=None, source=None, is_enclave=None, enclave_ids=None,
+                       from_time=None, to_time=None, **kwargs):
         """
         Uses the |get_indicators_page| method to create a generator that returns each successive indicator.
 
         :param types: A type or list of types of indicators to filter by.  If ``None``, will get all types of indicators
+        :param source: 'INCIDENT_REPORT' or 'OSINT'.  Defaults to 'INCIDENT_REPORT'.
+        :param is_enclave: Whether to get indicators found in enclave or community reports.
+        :param enclave_ids: A list of enclave ids.  Only indicators found in reports within these enclaves will be returned.
         :param from_time: start of time window in milliseconds since epoch
         :param to_time: end of time window in milliseconds since epoch
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self.__get_indicators_page_generator(types, from_time,
-                                                                                      to_time, **kwargs))
+        return Page.get_generator(page_generator=self.__get_indicators_page_generator(types, source, is_enclave, enclave_ids,
+                                                                                      from_time, to_time, **kwargs))
 
     def __get_community_trends_page_generator(self, indicator_type=None, from_time=None, to_time=None,
                                               start_page=0, page_size=None, **kwargs):

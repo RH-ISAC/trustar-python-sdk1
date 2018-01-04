@@ -169,7 +169,7 @@ def main():
         logger.info("Getting indicators...")
 
         try:
-            indicators = ts.get_indicators(types=['URL', 'IP'])
+            indicators = ts.get_indicators(types=['URL', 'IP'], is_enclave=True, enclave_ids=ts.enclave_ids)
             logger.info("Found %d indicators." % len(indicators))
             for indicator in indicators:
                 logger.info(indicator)
