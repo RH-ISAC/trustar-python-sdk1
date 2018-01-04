@@ -875,6 +875,15 @@ class TruStar(object):
         :param int to_time: end of time window in milliseconds since epoch (optional)
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
+
+        Example:
+
+        >>> page = ts.get_reports(is_enclave=True, tag="malicious", from_time=1425695711000, to_time=1514185311000)
+        >>> print([report.id for report in reports])
+        ['661583cb-a6a7-4cbd-8a90-01578fa4da89', 'da131660-2708-4c8a-926e-f91fb5dbbc62', '2e3400d6-fa37-4a8c-bc2f-155aaa02ae5a', '38064828-d3db-4fff-8ab8-e0e3b304ff44', 'dbf26104-cee5-4ca4-bdbf-a01d0178c007', ...]
+        >>> print(len(reports))
+        58
+
         """
 
         return Page.get_generator(page_generator=self.__get_reports_page_generator(is_enclave, enclave_ids, tag,
