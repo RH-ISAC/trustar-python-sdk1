@@ -143,6 +143,12 @@ class Report(ModelBase):
                 'externalTrackingId': self.external_id
             }
 
+        # id field might not be present
+        if self.id is not None:
+            report_dict['id'] = self.id
+        else:
+            report_dict['id'] = None
+
         # indicators field might not be present
         if self.indicators is not None:
             report_dict['indicators'] = [indicator.to_dict(remove_nones=remove_nones) for indicator in self.indicators]
@@ -176,9 +182,19 @@ class Report(ModelBase):
             is_enclave = None
 
         # parse enclaves
-        enclaves = report.get('enclaves')
-        if enclaves is not None:
-            enclaves = [Enclave.from_dict(enclave) for enclave in enclaves]
+        enclaves = []
+        if report.get('enclaves') is not None:
+            # parse based on type
+            for enclave in report.get('enclaves'):
+                # enclave is entire EnclaveDto
+                if isinstance(enclave, dict):
+                    enclaves.append(Enclave.from_dict(enclave))
+                # enclave is just an enclave ID
+                elif isinstance(enclave, string_types):
+                    enclaves.append(Enclave(id=enclave))
+                else:
+                    raise ValueError("Expected 'enclave' field to hold either a dictionary representation of an enclave"
+                                     " or an enclave ID.  Got '%s' instead." % enclave)
 
         # parse indicators
         indicators = report.get('indicators')

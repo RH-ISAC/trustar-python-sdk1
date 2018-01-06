@@ -2,6 +2,8 @@
 Python SDK for the TruSTAR API
 ==============================
 
+See https://docs.trustar.co/ for the official documentation to the TruSTAR Python SDK.
+
 
 Installation/Upgrade
 --------------------
@@ -68,6 +70,6 @@ Running examples and tests
 API Documentation
 -----------------
 
-See https://github.com/trustar/public/wiki/TruSTAR-API for full API documentation
+See https://docs.trustar.co/ for full API documentation.
 
 

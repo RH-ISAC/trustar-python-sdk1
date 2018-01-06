@@ -71,9 +71,6 @@ class Page(ModelBase):
         :return: A dictionary representation of the page.
         """
 
-        if remove_nones:
-            return super().to_dict(remove_nones=True)
-
         items = []
 
         # attempt to replace each item with its dictionary representation if possible
@@ -170,6 +167,9 @@ class Page(ModelBase):
 
     def __iter__(self):
         return self.items.__iter__()
+
+    def __getitem__(self, item):
+        return self.items[item]
 
 
 class GeneratorWithLength(object):
