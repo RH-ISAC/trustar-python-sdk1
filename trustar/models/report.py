@@ -205,6 +205,7 @@ class Report(ModelBase):
                       title=report.get('title'),
                       body=report.get('reportBody'),
                       time_began=report.get('timeBegan'),
+                      external_id=report.get('externalTrackingId'),
                       external_url=report.get('externalUrl'),
                       is_enclave=is_enclave,
                       enclave_ids=report.get('enclaveIds'),
