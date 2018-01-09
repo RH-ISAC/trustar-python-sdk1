@@ -24,7 +24,7 @@ standard_library.install_aliases()
 logger = get_logger(__name__)
 
 
-CLIENT_VERSION = "0.3.3"
+CLIENT_VERSION = "0.3.4"
 
 
 class TruStar(object):

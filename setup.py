@@ -1,10 +1,10 @@
-# git tag 0.3.3 -m "Bump version" && git push --tags origin master
+# git tag 0.3.4 -m "Bump version" && git push --tags origin master
 # python setup.py sdist
 # twine upload --skip-existing dist/*
 
 from distutils.core import setup
 
-version = '0.3.3'
+version = '0.3.4'
 
 setup(
     name='trustar',
