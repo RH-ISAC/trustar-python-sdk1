@@ -384,7 +384,9 @@ class TruStar(object):
             reports are returned).
         :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific enclaves (optional - by
             default reports from all of user's enclaves are returned)
-        :param str tag: name of tag to filter reports by.
+        :param str tag: name of tag to filter reports by.  if a tag with this name exists in more than one enclave
+            indicated in ``enclave_ids``, the request will fail.  handle this by making separate requests for each
+            enclave ID if necessary.
         :param int from_time: start of time window in milliseconds since epoch (optional)
         :param int to_time: end of time window in milliseconds since epoch (optional)
         :param int page_number: the page number to get.
@@ -845,7 +847,9 @@ class TruStar(object):
             reports are returned).
         :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific
             enclaves (optional - by default reports from all enclaves are returned)
-        :param str tag: name of tag to filter reports by.\
+        :param str tag: name of tag to filter reports by.  if a tag with this name exists in more than one enclave
+            indicated in ``enclave_ids``, the request will fail.  handle this by making separate requests for each
+            enclave ID if necessary.
         :param int from_time: start of time window in milliseconds since epoch (optional)
         :param int to_time: end of time window in milliseconds since epoch (optional)
         :param start_page: The page to start on.
