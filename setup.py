@@ -4,7 +4,11 @@
 
 from distutils.core import setup
 
-version = '0.3.4'
+# read version
+version_globals = {}
+with open("trustar/version.py") as fp:
+    exec(fp.read(), version_globals)
+version = version_globals['__version__']
 
 setup(
     name='trustar',

@@ -17,14 +17,12 @@ from requests import HTTPError
 # package imports
 from .models import Indicator, Page, Tag, Report
 from .utils import normalize_timestamp, get_logger
+from .version import __version__
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
 
 logger = get_logger(__name__)
-
-
-CLIENT_VERSION = "0.3.4"
 
 
 class TruStar(object):
@@ -48,7 +46,7 @@ class TruStar(object):
         'auth': 'https://api.trustar.co/oauth/token',
         'base': 'https://api.trustar.co/api/1.3-beta',
         'client_type': 'PYTHON_SDK',
-        'client_version': CLIENT_VERSION,
+        'client_version': __version__,
         'client_metatag': None,
         'verify': True
     }
