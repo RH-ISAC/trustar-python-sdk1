@@ -712,24 +712,6 @@ class TruStar(object):
 
         return page
 
-    def get_related_external_indicators(self, indicators=None, sources=None, **kwargs):
-        """
-        Searches external systems for indicators that correlate with the given list of indicators.
-
-        :param indicators: list of indicator values to search for
-        :param sources: list of sources to search (check your Managed Integrations for a list of possible values)
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
-        :return: A dictionary where each key is one of the sources queries and each value is a dictionary containing
-            the information returned from that external source.
-        """
-
-        params = {
-            'indicators': indicators,
-            'sources': sources
-        }
-        resp = self.__get("indicators/external/related", params=params, **kwargs)
-        return resp.json()
-
     def search_indicators_page(self, search_term, enclave_ids=None, page_size=None, page_number=None, **kwargs):
         """
         Search for indicators containing a search term.

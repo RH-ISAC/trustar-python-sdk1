@@ -175,10 +175,6 @@ class TruStarTests(unittest.TestCase):
         result = self.ts.get_related_indicators_page(indicators=["evil", "1.2.3.4", "wannacry"],
                                                      sources=["osint", "incident_report"])
 
-    def test_get_external_related_indicators(self):
-        result = self.ts.get_related_external_indicators(indicators=["evil", "1.2.3.4", "wannacry"],
-                                                         sources=["facebook", "crowdstrike"])
-
     def test_get_correlated_reports(self):
         result = self.ts.get_correlated_report_ids(["evil", "wannacry"])
 
