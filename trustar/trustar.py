@@ -133,15 +133,15 @@ class TruStar(object):
             if k in config and v not in config:
                 config[v] = config[k]
 
-        # set properties from config dict
-        for key, val in config.items():
-            if val is None:
-                # override None with default value
-                if key in TruStar.DEFAULTS:
-                    config[key] = TruStar.DEFAULTS[key]
-                # ensure required properties are present
-                if val in TruStar.REQUIRED_KEYS:
-                    raise Exception("Missing config value for %s" % key)
+        # override Nones with default values if they exist
+        for key, val in TruStar.DEFAULTS.items():
+            if config.get(key) is None:
+                config[key] = val
+
+        # ensure required properties are present
+        for key in TruStar.REQUIRED_KEYS:
+            if config.get(key) is None:
+                raise Exception("Missing config value for %s" % key)
 
         # set properties
         self.auth = config.get('auth')
