@@ -5,6 +5,9 @@ import time
 import random
 
 
+CONFIG_FILE_PATH = 'config.yml'
+CONFIG_ROLE = 'dev'
+
 DAY = 24 * 60 * 60 * 1000
 
 current_time = int(time.time()) * 1000
@@ -25,7 +28,23 @@ class TruStarTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ts = TruStar(config_file='config.yml', config_role='dev')
+        cls.ts = TruStar(config_file=CONFIG_FILE_PATH, config_role=CONFIG_ROLE)
+
+    def test_wrong_version_error(self):
+        WRONG_VERSION = '1.2'
+        config = TruStar.config_from_file(config_file_path=CONFIG_FILE_PATH, config_role=CONFIG_ROLE)
+        config['api_endpoint'] = "%s/%s" % (config['api_endpoint'].rsplit('/', 1)[0], '1.2')
+
+        ex = None
+        try:
+            TruStar(config=config)
+        except Exception as e:
+            ex = e
+
+        self.assertIsNotNone(ex)
+        self.assertEqual("This version (%s) of the TruStar Python SDK is only compatible with version %s of the "
+                         "TruStar Rest API, but is attempting to contact version %s of the Rest API." %
+                         (trustar.__version__, trustar.__api_version__, WRONG_VERSION), ex.message)
 
     def test_ping(self):
         pong = self.ts.ping()
@@ -33,7 +52,7 @@ class TruStarTests(unittest.TestCase):
 
     def test_version(self):
         version = self.ts.get_version()
-        self.assertEqual(version, "1.3-beta")
+        self.assertEqual(version, trustar.__api_version__)
 
     def test_get_reports(self):
         """

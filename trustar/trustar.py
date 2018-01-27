@@ -17,7 +17,7 @@ from requests import HTTPError
 # package imports
 from .models import Indicator, Page, Tag, Report
 from .utils import normalize_timestamp, get_logger
-from .version import __version__
+from .version import __version__, __api_version__
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
@@ -90,43 +90,7 @@ class TruStar(object):
 
         # attempt to use configuration file if one exists
         if config is None:
-
-            if config is not None:
-                raise Exception("Cannot use 'config' parameter if also using 'config_file' parameter.")
-
-            # read config file depending on filetype, parse into dictionary
-            ext = os.path.splitext(config_file)[-1]
-            if ext in ['.conf', '.ini']:
-                config_parser = configparser.RawConfigParser()
-                config_parser.read(config_file)
-                roles = dict(config_parser)
-            elif ext in ['.json', '.yml', '.yaml']:
-                with open(config_file, 'r') as f:
-                    roles = yaml.load(f)
-            else:
-                raise IOError("Unrecognized filetype for config file '%s'" % config_file)
-
-            # ensure that config file has indicated role
-            if config_role in roles:
-                config = dict(roles[config_role])
-            else:
-                raise KeyError("Could not find role %s" % config_role)
-
-            # parse enclave ids
-            if 'enclave_ids' in config:
-                # if id has all numeric characters, will be parsed as an int, so convert to string
-                if isinstance(config['enclave_ids'], int):
-                    config['enclave_ids'] = str(config['enclave_ids'])
-                # split comma separated list if necessary
-                if isinstance(config['enclave_ids'], string_types):
-                    config['enclave_ids'] = config['enclave_ids'].split(',')
-                elif not isinstance(config['enclave_ids'], list):
-                    raise Exception("'enclave_ids' must be a list or a comma-separated list")
-                # strip out whitespace
-                config['enclave_ids'] = [str(x).strip() for x in config['enclave_ids'] if x is not None]
-            else:
-                # default to empty list
-                config['enclave_ids'] = []
+            config = self.config_from_file(config_file, config_role)
 
         # remap config keys names
         for k, v in self.REMAPPED_KEYS.items():
@@ -156,6 +120,50 @@ class TruStar(object):
 
         if isinstance(self.enclave_ids, str):
             self.enclave_ids = [self.enclave_ids]
+
+        api_version = self.get_version()
+        if api_version != __api_version__:
+            raise Exception("This version (%s) of the TruStar Python SDK is only compatible with version %s of"
+                            " the TruStar Rest API, but is attempting to contact version %s of the Rest API."
+                            % (__version__, __api_version__, api_version))
+
+    @staticmethod
+    def config_from_file(config_file_path, config_role):
+        # read config file depending on filetype, parse into dictionary
+        ext = os.path.splitext(config_file_path)[-1]
+        if ext in ['.conf', '.ini']:
+            config_parser = configparser.RawConfigParser()
+            config_parser.read(config_file_path)
+            roles = dict(config_parser)
+        elif ext in ['.json', '.yml', '.yaml']:
+            with open(config_file_path, 'r') as f:
+                roles = yaml.load(f)
+        else:
+            raise IOError("Unrecognized filetype for config file '%s'" % config_file_path)
+
+        # ensure that config file has indicated role
+        if config_role in roles:
+            config = dict(roles[config_role])
+        else:
+            raise KeyError("Could not find role %s" % config_role)
+
+        # parse enclave ids
+        if 'enclave_ids' in config:
+            # if id has all numeric characters, will be parsed as an int, so convert to string
+            if isinstance(config['enclave_ids'], int):
+                config['enclave_ids'] = str(config['enclave_ids'])
+            # split comma separated list if necessary
+            if isinstance(config['enclave_ids'], string_types):
+                config['enclave_ids'] = config['enclave_ids'].split(',')
+            elif not isinstance(config['enclave_ids'], list):
+                raise Exception("'enclave_ids' must be a list or a comma-separated list")
+            # strip out whitespace
+            config['enclave_ids'] = [str(x).strip() for x in config['enclave_ids'] if x is not None]
+        else:
+            # default to empty list
+            config['enclave_ids'] = []
+
+        return config
 
     @staticmethod
     def normalize_timestamp(date_time):
