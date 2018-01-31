@@ -77,7 +77,6 @@ class Indicator(ModelBase):
         :return: A dictionary representation of the indicator.
         """
 
-
         if remove_nones:
             return super().to_dict(remove_nones=True)
 
