@@ -236,8 +236,13 @@ class TruStar(object):
 
         # raise exception if status code indicates an error
         if 400 <= response.status_code < 600:
-            if 'message' in response.json():
-                reason = response.json()['message']
+            resp_json = None
+            try:
+                resp_json = response.json()
+            except:
+                pass
+            if resp_json is not None and 'message' in resp_json:
+                reason = resp_json['message']
             else:
                 reason = "unknown cause"
             message = "{} {} Error: {}".format(response.status_code,
