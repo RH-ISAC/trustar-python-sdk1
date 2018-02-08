@@ -8,6 +8,7 @@ from six import string_types
 from ..utils import normalize_timestamp, enclaves_from_ids
 from . import Indicator, Enclave
 from .base import ModelBase
+from .enum import *
 
 
 class Report(ModelBase):
@@ -29,11 +30,11 @@ class Report(ModelBase):
         only be set internally, after a report has been submitted or updated.
     """
 
-    ID_TYPE_INTERNAL = "internal"
-    ID_TYPE_EXTERNAL = "external"
+    ID_TYPE_INTERNAL = IdType.INTERNAL
+    ID_TYPE_EXTERNAL = IdType.EXTERNAL
 
-    DISTRIBUTION_TYPE_ENCLAVE = "ENCLAVE"
-    DISTRIBUTION_TYPE_COMMUNITY = "COMMUNITY"
+    DISTRIBUTION_TYPE_ENCLAVE = DistributionType.ENCLAVE
+    DISTRIBUTION_TYPE_COMMUNITY = DistributionType.COMMUNITY
 
     def __init__(self,
                  id=None,

@@ -6,6 +6,7 @@ from six import string_types
 
 # package imports
 from .base import ModelBase
+from .enum import *
 
 
 class Indicator(ModelBase):
@@ -21,33 +22,8 @@ class Indicator(ModelBase):
     :cvar PRIORITY_LEVELS: A list of all possible priority levels.
     """
 
-    TYPES = [
-        'IP',
-        'CIDR_BLOCK',
-        'URL',
-        'EMAIL_ADDRESS',
-        'MD5',
-        'SHA1',
-        'SHA256',
-        'MALWARE',
-        'SOFTWARE',
-        'REGISTRY_KEY',
-        'CVE',
-        'BITCOIN_ADDRESS',
-        'DOMAIN',
-        'FQDN',
-        'PERSON',
-        'LOCATION',
-        'ORGANIZATION',
-        'DATE',
-    ]
-
-    PRIORITY_LEVELS = [
-        "NOT_FOUND",
-        "LOW",
-        "MEDIUM",
-        "HIGH"
-    ]
+    TYPES = IndicatorType.values()
+    PRIORITY_LEVELS = PriorityLevel.values()
 
     def __init__(self, value, type, priority_level=None, correlation_count=None):
         self.value = value
