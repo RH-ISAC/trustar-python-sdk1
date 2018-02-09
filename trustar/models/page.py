@@ -43,7 +43,7 @@ class Page(ModelBase):
         :return: ``True`` if there are more pages available on the server.
         """
 
-        return self.page_number < self.get_total_pages()
+        return self.page_number + 1 < self.get_total_pages()
 
     def __len__(self):
         return len(self.items)

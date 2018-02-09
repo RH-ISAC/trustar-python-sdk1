@@ -386,7 +386,7 @@ class TruStar(object):
         resp = self._get("reports/%s" % report_id, params=params, **kwargs)
         return Report.from_dict(resp.json())
 
-    def get_reports_page(self, is_enclave=None, enclave_ids=None, tag=None,
+    def get_reports_page(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None,
                          from_time=None, to_time=None, page_number=None, page_size=None, **kwargs):
         """
         Retrieves a page of reports, filtering by time window, distribution type, enclave association, and tag.
@@ -435,6 +435,7 @@ class TruStar(object):
             'distributionType': distribution_type,
             'enclaveIds': enclave_ids,
             'tag': tag,
+            'excludedTags': excluded_tags,
             'pageNumber': page_number,
             'pageSize': page_size
         }
@@ -831,8 +832,8 @@ class TruStar(object):
     ### Generators ###
     ##################
 
-    def __get_reports_page_generator(self, is_enclave=None, enclave_ids=None, tag=None, from_time=None, to_time=None,
-                                     start_page=0, page_size=None, **kwargs):
+    def __get_reports_page_generator(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None,
+                                     from_time=None, to_time=None, start_page=0, page_size=None, **kwargs):
         """
         Creates a generator from the |get_reports_page| method that returns each successive page.
 
@@ -852,12 +853,13 @@ class TruStar(object):
         """
 
         def func(page_number, page_size):
-            return self.get_reports_page(is_enclave, enclave_ids, tag, from_time, to_time,
+            return self.get_reports_page(is_enclave, enclave_ids, tag, excluded_tags, from_time, to_time,
                                          page_number, page_size, **kwargs)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_reports(self, is_enclave=None, enclave_ids=None, tag=None, from_time=None, to_time=None, **kwargs):
+    def get_reports(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None, from_time=None, to_time=None,
+                    **kwargs):
         """
         Uses the |get_reports_page| method to create a generator that returns each successive report.
 
@@ -884,7 +886,8 @@ class TruStar(object):
         """
 
         return Page.get_generator(page_generator=self.__get_reports_page_generator(is_enclave, enclave_ids, tag,
-                                                                                   from_time, to_time, **kwargs))
+                                                                                   excluded_tags, from_time, to_time,
+                                                                                   **kwargs))
 
     def __get_indicators_page_generator(self, types=None, is_enclave=None, enclave_ids=None,
                                         from_time=None, to_time=None, start_page=0, page_size=None, **kwargs):
