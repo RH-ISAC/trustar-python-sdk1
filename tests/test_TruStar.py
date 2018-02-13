@@ -30,29 +30,14 @@ class TruStarTests(unittest.TestCase):
     def setUpClass(cls):
         cls.ts = TruStar(config_file=CONFIG_FILE_PATH, config_role=CONFIG_ROLE)
 
-    def test_wrong_version_error(self):
-        WRONG_VERSION = '1.2'
-        config = TruStar.config_from_file(config_file_path=CONFIG_FILE_PATH, config_role=CONFIG_ROLE)
-        config['api_endpoint'] = "%s/%s" % (config['api_endpoint'].rsplit('/', 1)[0], '1.2')
-
-        ex = None
-        try:
-            TruStar(config=config)
-        except Exception as e:
-            ex = e
-
-        self.assertIsNotNone(ex)
-        self.assertEqual("This version (%s) of the TruStar Python SDK is only compatible with version %s of the "
-                         "TruStar Rest API, but is attempting to contact version %s of the Rest API." %
-                         (trustar.__version__, trustar.__api_version__, WRONG_VERSION), ex.message)
-
     def test_ping(self):
         pong = self.ts.ping()
         self.assertTrue(len(pong) > 0)
 
     def test_version(self):
         version = self.ts.get_version()
-        self.assertEqual(version, trustar.__api_version__)
+        BETA_TAG = "-beta"
+        self.assertEqual(version.strip(BETA_TAG), trustar.__api_version__.strip(BETA_TAG))
 
     def test_get_reports(self):
         """

@@ -31,6 +31,7 @@ class IndicatorType(Enum):
 
 
 class PriorityLevel(Enum):
+
     NOT_FOUND = "NOT_FOUND"
     LOW = "LOW"
     MEDIUM = "MEDIUM"

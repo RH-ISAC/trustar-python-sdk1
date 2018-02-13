@@ -121,11 +121,15 @@ class TruStar(object):
         if isinstance(self.enclave_ids, str):
             self.enclave_ids = [self.enclave_ids]
 
+        # get API version and strip "beta" tag
         api_version = self.get_version()
-        if api_version != __api_version__:
-            raise Exception("This version (%s) of the TruStar Python SDK is only compatible with version %s of"
-                            " the TruStar Rest API, but is attempting to contact version %s of the Rest API."
-                            % (__version__, __api_version__, api_version))
+
+        BETA_TAG = "-beta"
+        # if API version does not match expected version, log a warning
+        if api_version.strip(BETA_TAG) != __api_version__.strip(BETA_TAG):
+            logger.warn("This version (%s) of the TruStar Python SDK is only compatible with version %s of"
+                        " the TruStar Rest API, but is attempting to contact version %s of the Rest API."
+                        % (__version__, __api_version__, api_version))
 
     @staticmethod
     def config_from_file(config_file_path, config_role):
