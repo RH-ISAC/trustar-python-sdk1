@@ -12,6 +12,7 @@ import os
 import requests
 import requests.auth
 import yaml
+import time
 from requests import HTTPError
 
 # package imports
@@ -215,7 +216,7 @@ class TruStar(object):
 
         return headers
 
-    def _request(self, method, path, headers=None, **kwargs):
+    def _request(self, method, path, headers=None, params=None, data=None, **kwargs):
         """
         A wrapper around ``requests.request`` that handles boilerplate code specific to TruStar's API.
 
@@ -231,12 +232,24 @@ class TruStar(object):
         if headers is not None:
             base_headers.update(headers)
 
-        # make request
-        response = requests.request(method=method,
-                                    url="{}/{}".format(self.base, path),
-                                    headers=base_headers,
-                                    verify=self.verify,
-                                    **kwargs)
+        retry = True
+        while retry:
+            # make request
+            response = requests.request(method=method,
+                                        url="{}/{}".format(self.base, path),
+                                        headers=base_headers,
+                                        verify=self.verify,
+                                        params=params,
+                                        data=data,
+                                        **kwargs)
+
+            # if "too many requests" status code received, wait until next request will be allowed and retry
+            if response.status_code == 429:
+                wait_time = response.json().get('waitTime')
+                logger.debug("Waiting %d seconds until next request allowed." % wait_time)
+                time.sleep(wait_time)
+            else:
+                retry = False
 
         # raise exception if status code indicates an error
         if 400 <= response.status_code < 600:
@@ -255,7 +268,7 @@ class TruStar(object):
             raise HTTPError(message, response=response)
         return response
 
-    def _get(self, path, **kwargs):
+    def _get(self, path, params=None, **kwargs):
         """
         Convenience method for making ``GET`` calls.
 
@@ -264,9 +277,9 @@ class TruStar(object):
         :return: The response object.
         """
 
-        return self._request("GET", path, **kwargs)
+        return self._request("GET", path, params=params, **kwargs)
 
-    def _put(self, path, **kwargs):
+    def _put(self, path, params=None, data=None, **kwargs):
         """
         Convenience method for making ``PUT`` calls.
 
@@ -275,9 +288,9 @@ class TruStar(object):
         :return: The response object.
         """
 
-        return self._request("PUT", path, **kwargs)
+        return self._request("PUT", path, params=params, data=data, **kwargs)
 
-    def _post(self, path, **kwargs):
+    def _post(self, path, params=None, data=None, **kwargs):
         """
         Convenience method for making ``POST`` calls.
 
@@ -286,9 +299,9 @@ class TruStar(object):
         :return: The response object.
         """
 
-        return self._request("POST", path, **kwargs)
+        return self._request("POST", path, params=params, data=data, **kwargs)
 
-    def _delete(self, path, **kwargs):
+    def _delete(self, path, params=None, **kwargs):
         """
         Convenience method for making ``DELETE`` calls.
 
@@ -297,7 +310,7 @@ class TruStar(object):
         :return: The response object.
         """
 
-        return self._request("DELETE", path, **kwargs)
+        return self._request("DELETE", path, params=params, **kwargs)
 
     def get_report_url(self, report_id):
         """
@@ -318,11 +331,9 @@ class TruStar(object):
     ### API Endpoints ###
     #####################
 
-    def ping(self, **kwargs):
+    def ping(self):
         """
         Ping the API.
-
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
 
         Example:
 
@@ -330,13 +341,11 @@ class TruStar(object):
         pong
         """
 
-        return self._get("ping", **kwargs).content.decode('utf-8').strip('\n')
+        return self._get("ping").content.decode('utf-8').strip('\n')
 
-    def get_version(self, **kwargs):
+    def get_version(self):
         """
         Get the version number of the API.
-
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
 
         Example:
 
@@ -344,20 +353,19 @@ class TruStar(object):
         1.3-beta
         """
 
-        return self._get("version", **kwargs).content.decode('utf-8').strip('\n')
+        return self._get("version").content.decode('utf-8').strip('\n')
 
 
     ########################
     ### Report Endpoints ###
     ########################
 
-    def get_report_details(self, report_id, id_type=None, **kwargs):
+    def get_report_details(self, report_id, id_type=None):
         """
         Retrieves a report by its ID.  Internal and external IDs are both allowed.
 
         :param str report_id: The ID of the incident report.
         :param str id_type: Indicates whether ID is internal or external.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
 
         :return: The retrieved |Report| object.
 
@@ -387,11 +395,11 @@ class TruStar(object):
         """
 
         params = {'idType': id_type}
-        resp = self._get("reports/%s" % report_id, params=params, **kwargs)
+        resp = self._get("reports/%s" % report_id, params=params)
         return Report.from_dict(resp.json())
 
     def get_reports_page(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None,
-                         from_time=None, to_time=None, page_number=None, page_size=None, **kwargs):
+                         from_time=None, to_time=None, page_number=None, page_size=None):
         """
         Retrieves a page of reports, filtering by time window, distribution type, enclave association, and tag.
 
@@ -406,7 +414,6 @@ class TruStar(object):
         :param int to_time: end of time window in milliseconds since epoch (optional)
         :param int page_number: the page number to get.
         :param int page_size: the size of the page to be returned.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
 
         :return: A |Page| of |Report| objects.
 
@@ -443,7 +450,7 @@ class TruStar(object):
             'pageNumber': page_number,
             'pageSize': page_size
         }
-        resp = self._get("reports", params=params, **kwargs)
+        resp = self._get("reports", params=params)
         page = Page.from_dict(resp.json())
 
         # replace each dict in 'items' with a Report object
@@ -452,7 +459,7 @@ class TruStar(object):
         # create a Page object from the dict
         return page
 
-    def submit_report(self, report, **kwargs):
+    def submit_report(self, report):
         """
         Submits a report.
 
@@ -463,7 +470,6 @@ class TruStar(object):
 
         :param report: The |Report| object that was submitted, with the ``id`` and ``indicators`` fields updated based
             on values from the response.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
 
         Example:
 
@@ -498,7 +504,7 @@ class TruStar(object):
             'incidentReport': report.to_dict(),
             'enclaveIds': report.get_enclave_ids()
         }
-        resp = self._post("reports", data=json.dumps(payload), timeout=60, **kwargs)
+        resp = self._post("reports", data=json.dumps(payload), timeout=60)
         body = resp.json()
 
         # get report id from response body
@@ -512,14 +518,13 @@ class TruStar(object):
 
         return report
 
-    def update_report(self, report, **kwargs):
+    def update_report(self, report):
         """
         Updates the report identified by the ``report.id`` field; if this field does not exist, then
         ``report.external_id`` will be used if it exists.  Any other fields on ``report`` that are not ``None``
         will overwrite values on the report on Station.
 
         :param report: A |Report| object with the updated values.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The |Report| object with any updated values returned in the response.
 
         Example:
@@ -551,7 +556,7 @@ class TruStar(object):
             'enclaveIds': report.get_enclave_ids()
         }
 
-        resp = self._put("reports/%s" % report_id, data=json.dumps(payload), params=params, **kwargs)
+        resp = self._put("reports/%s" % report_id, data=json.dumps(payload), params=params)
         body = resp.json()
 
         # set IDs from response body
@@ -566,13 +571,12 @@ class TruStar(object):
 
         return report
 
-    def delete_report(self, report_id, id_type=None, **kwargs):
+    def delete_report(self, report_id, id_type=None):
         """
         Deletes the report with the given id.
 
         :param report_id: the ID of the report to delete
         :param id_type: indicates whether the ID is internal or an external ID provided by the user
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: the response object
 
         Example:
@@ -583,15 +587,14 @@ class TruStar(object):
         """
 
         params = {'idType': id_type}
-        resp = self._delete("reports/%s" % report_id, params=params, **kwargs)
+        resp = self._delete("reports/%s" % report_id, params=params)
         return resp
 
-    def get_correlated_report_ids(self, indicators, **kwargs):
+    def get_correlated_report_ids(self, indicators):
         """
         Retrieves a list of the IDs of all TruSTAR reports that contain the searched indicator.
 
         :param indicators: A list of indicator values to retrieve correlated reports for.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The list of IDs of reports that correlated.
 
         Example:
@@ -602,10 +605,10 @@ class TruStar(object):
         """
 
         params = {'indicators': indicators}
-        resp = self._get("reports/correlate", params=params, **kwargs)
+        resp = self._get("reports/correlate", params=params)
         return resp.json()
 
-    def search_reports_page(self, search_term, enclave_ids=None, page_size=None, page_number=None, **kwargs):
+    def search_reports_page(self, search_term, enclave_ids=None, page_size=None, page_number=None):
         """
         Search for reports containing a search term.
 
@@ -614,7 +617,6 @@ class TruStar(object):
             default reports from all of user's enclaves are returned)
         :param int page_number: the page number to get.
         :param int page_size: the size of the page to be returned.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: a |Page| of |Report| objects.
         """
 
@@ -625,7 +627,7 @@ class TruStar(object):
             'pageNumber': page_number
         }
 
-        resp = self._get("reports/search", params=params, **kwargs)
+        resp = self._get("reports/search", params=params)
         page = Page.from_dict(resp.json())
 
         # parse items in response as indicators
@@ -639,7 +641,7 @@ class TruStar(object):
     ###########################
 
     def get_indicators_page(self, types=None, is_enclave=None, enclave_ids=None,
-                            from_time=None, to_time=None, page_size=None, page_number=None, **kwargs):
+                            from_time=None, to_time=None, page_size=None, page_number=None):
         """
         Find indicators based on a collection of filters.
 
@@ -650,7 +652,6 @@ class TruStar(object):
         :param to_time: end of time window in milliseconds since epoch
         :param page_size: number of results per page
         :param page_number: page to start returning results on
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: A |Page| of |Indicator| objects.
         """
 
@@ -664,7 +665,7 @@ class TruStar(object):
             'pageNumber': page_number
         }
 
-        resp = self._get("indicators", params=params, **kwargs)
+        resp = self._get("indicators", params=params)
         page = Page.from_dict(resp.json())
 
         # parse items in response as indicators
@@ -673,7 +674,7 @@ class TruStar(object):
         return page
 
     def get_community_trends_page(self, indicator_type=None, from_time=None, to_time=None,
-                                  page_size=None, page_number=None, **kwargs):
+                                  page_size=None, page_number=None):
         """
         Find indicators that are trending in the community.
 
@@ -683,7 +684,6 @@ class TruStar(object):
         :param to_time: end of time window in milliseconds since epoch
         :param page_size: number of results per page
         :param page_number: page to start returning results on
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: A |Page| of |Indicator| objects.
         """
 
@@ -695,7 +695,7 @@ class TruStar(object):
             'pageNumber': page_number
         }
 
-        resp = self._get("indicators/community-trending", params=params, **kwargs)
+        resp = self._get("indicators/community-trending", params=params)
         page = Page.from_dict(resp.json())
 
         # parse items in response as indicators
@@ -703,7 +703,7 @@ class TruStar(object):
 
         return page
 
-    def get_related_indicators_page(self, indicators=None, sources=None, page_size=None, page_number=None, **kwargs):
+    def get_related_indicators_page(self, indicators=None, sources=None, page_size=None, page_number=None):
         """
         Finds all reports that contain any of the given indicators and returns correlated indicators from those reports.
 
@@ -711,7 +711,6 @@ class TruStar(object):
         :param sources: list of sources to search.  Options are: INCIDENT_REPORT, EXTERNAL_INTELLIGENCE, and OSINT.
         :param page_size: number of results per page
         :param page_number: page to start returning results on
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: A |Page| of |Report| objects.
         """
 
@@ -722,7 +721,7 @@ class TruStar(object):
             'pageSize': page_size
         }
 
-        resp = self._get("indicators/related", params=params, **kwargs)
+        resp = self._get("indicators/related", params=params)
         page = Page.from_dict(resp.json())
 
         # parse items in response as indicators
@@ -730,7 +729,7 @@ class TruStar(object):
 
         return page
 
-    def search_indicators_page(self, search_term, enclave_ids=None, page_size=None, page_number=None, **kwargs):
+    def search_indicators_page(self, search_term, enclave_ids=None, page_size=None, page_number=None):
         """
         Search for indicators containing a search term.
 
@@ -739,7 +738,6 @@ class TruStar(object):
             enclaves (optional - by default reports from all of the user's enclaves are used)
         :param int page_number: the page number to get.
         :param int page_size: the size of the page to be returned.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: a |Page| of |Report| objects.
         """
 
@@ -750,7 +748,7 @@ class TruStar(object):
             'pageNumber': page_number
         }
 
-        resp = self._get("indicators/search", params=params, **kwargs)
+        resp = self._get("indicators/search", params=params)
         page = Page.from_dict(resp.json())
 
         # parse items in response as indicators
@@ -763,21 +761,20 @@ class TruStar(object):
     ### Tag Endpoints ###
     #####################
 
-    def get_enclave_tags(self, report_id, id_type=None, **kwargs):
+    def get_enclave_tags(self, report_id, id_type=None):
         """
         Retrieves all enclave tags present in a specific report.
 
         :param report_id: the ID of the report
         :param id_type: indicates whether the ID internal or an external ID provided by the user
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: A list of  |Tag| objects.
         """
 
         params = {'idType': id_type}
-        resp = self._get("reports/%s/enclave-tags" % report_id, params=params, **kwargs)
+        resp = self._get("reports/%s/enclave-tags" % report_id, params=params)
         return [Tag.from_dict(tag) for tag in resp.json()]
 
-    def add_enclave_tag(self, report_id, name, enclave_id, id_type=None, **kwargs):
+    def add_enclave_tag(self, report_id, name, enclave_id, id_type=None):
         """
         Adds a tag to a specific report, for a specific enclave.
 
@@ -785,7 +782,6 @@ class TruStar(object):
         :param name: The name of the tag to be added
         :param enclave_id: id of the enclave where the tag will be added
         :param id_type: indicates whether the ID internal or an external ID provided by the user
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: A |Tag| object representing the tag that was created.
         """
 
@@ -794,10 +790,10 @@ class TruStar(object):
             'name': name,
             'enclaveId': enclave_id
         }
-        resp = self._post("reports/%s/enclave-tags" % report_id, params=params, **kwargs)
+        resp = self._post("reports/%s/enclave-tags" % report_id, params=params)
         return Tag.from_dict(resp.json())
 
-    def delete_enclave_tag(self, report_id, name, enclave_id, id_type=None, **kwargs):
+    def delete_enclave_tag(self, report_id, name, enclave_id, id_type=None):
         """
         Deletes a tag from a specific report, in a specific enclave.
 
@@ -805,7 +801,6 @@ class TruStar(object):
         :param name: The name of the tag to be deleted
         :param enclave_id: id of the enclave where the tag will be added
         :param id_type: indicates whether the ID internal or an external ID provided by the user
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The response body.
         """
 
@@ -814,21 +809,20 @@ class TruStar(object):
             'name': name,
             'enclaveId': enclave_id
         }
-        resp = self._delete("reports/%s/enclave-tags" % report_id, params=params, **kwargs)
+        resp = self._delete("reports/%s/enclave-tags" % report_id, params=params)
         return resp.content.decode('utf8')
 
-    def get_all_enclave_tags(self, enclave_ids=None, **kwargs):
+    def get_all_enclave_tags(self, enclave_ids=None):
         """
         Retrieves all tags present in the given enclaves. If the enclave list is empty, the tags returned include all
         tags for all enclaves the user has access to.
 
         :param enclave_ids: list of enclave IDs
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The list of |Tag| objects.
         """
 
         params = {'enclaveIds': enclave_ids}
-        resp = self._get("enclave-tags", params=params, **kwargs)
+        resp = self._get("enclave-tags", params=params)
         return [Tag.from_dict(tag) for tag in resp.json()]
 
 
@@ -837,7 +831,7 @@ class TruStar(object):
     ##################
 
     def __get_reports_page_generator(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None,
-                                     from_time=None, to_time=None, start_page=0, page_size=None, **kwargs):
+                                     from_time=None, to_time=None, start_page=0, page_size=None):
         """
         Creates a generator from the |get_reports_page| method that returns each successive page.
 
@@ -852,18 +846,16 @@ class TruStar(object):
         :param int to_time: end of time window in milliseconds since epoch (optional)
         :param start_page: The page to start on.
         :param page_size: The size of each page.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
         """
 
         def func(page_number, page_size):
             return self.get_reports_page(is_enclave, enclave_ids, tag, excluded_tags, from_time, to_time,
-                                         page_number, page_size, **kwargs)
+                                         page_number, page_size)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_reports(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None, from_time=None, to_time=None,
-                    **kwargs):
+    def get_reports(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None, from_time=None, to_time=None):
         """
         Uses the |get_reports_page| method to create a generator that returns each successive report.
 
@@ -876,7 +868,6 @@ class TruStar(object):
             enclave ID if necessary.
         :param int from_time: start of time window in milliseconds since epoch (optional)
         :param int to_time: end of time window in milliseconds since epoch (optional)
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
 
         Example:
@@ -890,11 +881,10 @@ class TruStar(object):
         """
 
         return Page.get_generator(page_generator=self.__get_reports_page_generator(is_enclave, enclave_ids, tag,
-                                                                                   excluded_tags, from_time, to_time,
-                                                                                   **kwargs))
+                                                                                   excluded_tags, from_time, to_time))
 
     def __get_indicators_page_generator(self, types=None, is_enclave=None, enclave_ids=None,
-                                        from_time=None, to_time=None, start_page=0, page_size=None, **kwargs):
+                                        from_time=None, to_time=None, start_page=0, page_size=None):
         """
         Creates a generator from the |get_indicators_page| method that returns each successive page.
 
@@ -905,17 +895,16 @@ class TruStar(object):
         :param to_time: end of time window in milliseconds since epoch
         :param start_page: The page to start on.
         :param page_size: The size of each page.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
         """
 
         def func(page_number, page_size):
             return self.get_indicators_page(types, is_enclave, enclave_ids,
-                                            from_time, to_time, page_size, page_number, **kwargs)
+                                            from_time, to_time, page_size, page_number)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_indicators(self, types=None, is_enclave=None, enclave_ids=None, from_time=None, to_time=None, **kwargs):
+    def get_indicators(self, types=None, is_enclave=None, enclave_ids=None, from_time=None, to_time=None):
         """
         Uses the |get_indicators_page| method to create a generator that returns each successive indicator.
 
@@ -924,15 +913,14 @@ class TruStar(object):
         :param enclave_ids: A list of enclave ids.  Only indicators found in reports within these enclaves will be returned.
         :param from_time: start of time window in milliseconds since epoch
         :param to_time: end of time window in milliseconds since epoch
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
         """
 
         return Page.get_generator(page_generator=self.__get_indicators_page_generator(types, is_enclave, enclave_ids,
-                                                                                      from_time, to_time, **kwargs))
+                                                                                      from_time, to_time))
 
     def __get_community_trends_page_generator(self, indicator_type=None, from_time=None, to_time=None,
-                                              start_page=0, page_size=None, **kwargs):
+                                              start_page=0, page_size=None):
         """
         Creates a generator from the |get_community_trends_page| method that returns each successive page.
 
@@ -942,16 +930,15 @@ class TruStar(object):
         :param to_time: end of time window in milliseconds since epoch
         :param start_page: The page to start on.
         :param page_size: The size of each page.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
         """
 
         def func(page_number, page_size):
-            return self.get_community_trends_page(indicator_type, from_time, to_time, page_size, page_number, **kwargs)
+            return self.get_community_trends_page(indicator_type, from_time, to_time, page_size, page_number)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_community_trends(self, indicator_type=None, from_time=None, to_time=None, **kwargs):
+    def get_community_trends(self, indicator_type=None, from_time=None, to_time=None):
         """
         Uses the |get_community_trends_page| method to create a generator that returns each successive indicator.
 
@@ -959,14 +946,13 @@ class TruStar(object):
             for MALWARE and CVEs (this convention is for parity with the corresponding view on the Dashboard).
         :param from_time: start of time window in milliseconds since epoch
         :param to_time: end of time window in milliseconds since epoch
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
         """
 
         return Page.get_generator(page_generator=self.__get_community_trends_page_generator(indicator_type, from_time,
-                                                                                            to_time, **kwargs))
+                                                                                            to_time))
 
-    def __get_related_indicators_page_generator(self, indicators=None, sources=None, start_page=0, page_size=None, **kwargs):
+    def __get_related_indicators_page_generator(self, indicators=None, sources=None, start_page=0, page_size=None):
         """
         Creates a generator from the |get_related_indicators_page| method that returns each
         successive page.
@@ -975,29 +961,26 @@ class TruStar(object):
         :param sources: list of sources to search.  Options are: INCIDENT_REPORT, EXTERNAL_INTELLIGENCE, and ORION_FEED.
         :param start_page: The page to start on.
         :param page_size: The size of each page.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
         """
 
         def func(page_number, page_size):
-            return self.get_related_indicators_page(indicators, sources, page_size, page_number, **kwargs)
+            return self.get_related_indicators_page(indicators, sources, page_size, page_number)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_related_indicators(self, indicators=None, sources=None, **kwargs):
+    def get_related_indicators(self, indicators=None, sources=None):
         """
         Uses the |get_related_indicators_page| method to create a generator that returns each successive report.
 
         :param indicators: list of indicator values to search for
         :param sources: list of sources to search.  Options are: INCIDENT_REPORT, EXTERNAL_INTELLIGENCE, and ORION_FEED.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self.__get_related_indicators_page_generator(indicators, sources,
-                                                                                              **kwargs))
+        return Page.get_generator(page_generator=self.__get_related_indicators_page_generator(indicators, sources))
 
-    def __search_reports_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None, **kwargs):
+    def __search_reports_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None):
         """
         Creates a generator from the |search_reports_page| method that returns each successive page.
 
@@ -1006,30 +989,27 @@ class TruStar(object):
             default reports from all of user's enclaves are returned)
         :param int start_page: The page to start on.
         :param page_size: The size of each page.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: the generator
         """
 
         def func(page_number, page_size):
-            return self.search_reports_page(search_term, enclave_ids, page_size, page_number, **kwargs)
+            return self.search_reports_page(search_term, enclave_ids, page_size, page_number)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def search_reports(self, search_term, enclave_ids=None, **kwargs):
+    def search_reports(self, search_term, enclave_ids=None):
         """
         Uses the |search_reports_page| method to create a generator that returns each successive report.
 
         :param str search_term: The term to search for.
         :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific enclaves (optional - by
             default reports from all of user's enclaves are returned)
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self.__search_reports_page_generator(search_term, enclave_ids,
-                                                                                      **kwargs))
+        return Page.get_generator(page_generator=self.__search_reports_page_generator(search_term, enclave_ids))
 
-    def __search_indicators_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None, **kwargs):
+    def __search_indicators_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None):
         """
         Creates a generator from the |search_indicators_page| method that returns each successive page.
 
@@ -1038,25 +1018,22 @@ class TruStar(object):
             default indicators from all of user's enclaves are returned)
         :param int start_page: The page to start on.
         :param page_size: The size of each page.
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: the generator
         """
 
         def func(page_number, page_size):
-            return self.search_indicators_page(search_term, enclave_ids, page_size, page_number, **kwargs)
+            return self.search_indicators_page(search_term, enclave_ids, page_size, page_number)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def search_indicators(self, search_term, enclave_ids=None, **kwargs):
+    def search_indicators(self, search_term, enclave_ids=None):
         """
         Uses the |search_indicators_page| method to create a generator that returns each successive indicator.
 
         :param str search_term: The term to search for.
         :param list(str) enclave_ids: list of enclave ids used to restrict indicators to specific enclaves (optional - by
             default indicators from all of user's enclaves are returned)
-        :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self.__search_indicators_page_generator(search_term, enclave_ids,
-                                                                                      **kwargs))
+        return Page.get_generator(page_generator=self.__search_indicators_page_generator(search_term, enclave_ids))
