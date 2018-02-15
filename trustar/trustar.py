@@ -125,9 +125,15 @@ class TruStar(object):
         # get API version and strip "beta" tag
         # This comes from base url passed in config
         # e.g. https://api.trustar.co/api/1.3-beta will give 1.3-beta
-        api_version = self.base.split("/")[-1]
+        api_version = self.base.strip("/").split("/")[-1]
 
+        # strip beta tag
         BETA_TAG = "-beta"
+        api_version = api_version.strip(BETA_TAG)
+
+        # /api resolves to version 1.2
+        if api_version.lower() == "api":
+            api_version = "1.2"
 
         # if API version does not match expected version, log a warning
         if api_version.strip(BETA_TAG) != __api_version__.strip(BETA_TAG):
