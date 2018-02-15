@@ -711,7 +711,7 @@ class TruStar(object):
         Finds all reports that contain any of the given indicators and returns correlated indicators from those reports.
 
         :param indicators: list of indicator values to search for
-        :param sources: list of sources to search.  Options are: INCIDENT_REPORT, EXTERNAL_INTELLIGENCE, and OSINT.
+        :param enclave_ids: list of IDs of enclaves to search in
         :param page_size: number of results per page
         :param page_number: page to start returning results on
         :return: A |Page| of |Report| objects.
