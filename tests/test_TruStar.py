@@ -156,8 +156,7 @@ class TruStarTests(unittest.TestCase):
         # GET RELATED #
         ###############
 
-        server_related = list(self.ts.get_related_indicators(indicators=indicators,
-                                                             sources=["incident_report"]))
+        server_related = list(self.ts.get_related_indicators(indicators=indicators))
         related_reports = self.ts.get_correlated_report_ids(indicators=indicators)
 
         ###########
@@ -176,8 +175,7 @@ class TruStarTests(unittest.TestCase):
             self.assertTrue(indicator.lower() in server_indicator_values)
 
     def test_get_related_indicators(self):
-        result = self.ts.get_related_indicators_page(indicators=["evil", "1.2.3.4", "wannacry"],
-                                                     sources=["osint", "incident_report"])
+        result = self.ts.get_related_indicators_page(indicators=["evil", "1.2.3.4", "wannacry"])
 
     def test_get_correlated_reports(self):
         result = self.ts.get_correlated_report_ids(["evil", "wannacry"])

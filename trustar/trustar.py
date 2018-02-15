@@ -706,7 +706,7 @@ class TruStar(object):
 
         return page
 
-    def get_related_indicators_page(self, indicators=None, sources=None, page_size=None, page_number=None):
+    def get_related_indicators_page(self, indicators=None, enclave_ids=None, page_size=None, page_number=None):
         """
         Finds all reports that contain any of the given indicators and returns correlated indicators from those reports.
 
@@ -719,7 +719,7 @@ class TruStar(object):
 
         params = {
             'indicators': indicators,
-            'types': sources,
+            'enclaveIds': enclave_ids,
             'pageNumber': page_number,
             'pageSize': page_size
         }
@@ -955,33 +955,33 @@ class TruStar(object):
         return Page.get_generator(page_generator=self.__get_community_trends_page_generator(indicator_type, from_time,
                                                                                             to_time))
 
-    def __get_related_indicators_page_generator(self, indicators=None, sources=None, start_page=0, page_size=None):
+    def __get_related_indicators_page_generator(self, indicators=None, enclave_ids=None, start_page=0, page_size=None):
         """
         Creates a generator from the |get_related_indicators_page| method that returns each
         successive page.
 
         :param indicators: list of indicator values to search for
-        :param sources: list of sources to search.  Options are: INCIDENT_REPORT, EXTERNAL_INTELLIGENCE, and ORION_FEED.
+        :param enclave_ids: list of IDs of enclaves to search in
         :param start_page: The page to start on.
         :param page_size: The size of each page.
         :return: The generator.
         """
 
         def func(page_number, page_size):
-            return self.get_related_indicators_page(indicators, sources, page_size, page_number)
+            return self.get_related_indicators_page(indicators, enclave_ids, page_size, page_number)
 
         return Page.get_page_generator(func, start_page, page_size)
 
-    def get_related_indicators(self, indicators=None, sources=None):
+    def get_related_indicators(self, indicators=None, enclave_ids=None):
         """
         Uses the |get_related_indicators_page| method to create a generator that returns each successive report.
 
         :param indicators: list of indicator values to search for
-        :param sources: list of sources to search.  Options are: INCIDENT_REPORT, EXTERNAL_INTELLIGENCE, and ORION_FEED.
+        :param enclave_ids: list of IDs of enclaves to search in
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self.__get_related_indicators_page_generator(indicators, sources))
+        return Page.get_generator(page_generator=self.__get_related_indicators_page_generator(indicators, enclave_ids))
 
     def __search_reports_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None):
         """
