@@ -123,17 +123,17 @@ class TruStar(object):
             self.enclave_ids = [self.enclave_ids]
 
         # get API version and strip "beta" tag
-        try:
-            api_version = self.get_version()
-        except Exception as e:
-            logger.error("SDK configured successfully, but request to GET /version endpoint failed.  Error: %s" % e)
-        else:
-            BETA_TAG = "-beta"
-            # if API version does not match expected version, log a warning
-            if api_version.strip(BETA_TAG) != __api_version__.strip(BETA_TAG):
-                logger.warn("This version (%s) of the TruStar Python SDK is only compatible with version %s of"
-                            " the TruStar Rest API, but is attempting to contact version %s of the Rest API."
-                            % (__version__, __api_version__, api_version))
+        # This comes from base url passed in config
+        # e.g. https://api.trustar.co/api/1.3-beta will give 1.3-beta
+        api_version = self.base.split("/")[-1]
+
+        BETA_TAG = "-beta"
+
+        # if API version does not match expected version, log a warning
+        if api_version.strip(BETA_TAG) != __api_version__.strip(BETA_TAG):
+            logger.warn("This version (%s) of the TruStar Python SDK is only compatible with version %s of"
+                        " the TruStar Rest API, but is attempting to contact version %s of the Rest API."
+                        % (__version__, __api_version__, api_version))
 
     @staticmethod
     def config_from_file(config_file_path, config_role):
