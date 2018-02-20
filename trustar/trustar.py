@@ -506,6 +506,9 @@ class TruStar(object):
             else:
                 report.enclaves = []
 
+        if report.is_enclave and len(report.enclaves) == 0:
+            raise Exception("Cannot submit a report of distribution type 'ENCLAVE' with an empty set of enclaves.")
+
         if report.time_began is None:
             report.time_began = datetime.now()
 

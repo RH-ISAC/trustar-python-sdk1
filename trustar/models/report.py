@@ -79,10 +79,6 @@ class Report(ModelBase):
                                      "must provide either enclaves or enclave_ids value.")
                 enclaves = enclaves_from_ids(enclave_ids)
 
-            # ensure non-empty
-            if len(enclaves) == 0:
-                raise ValueError("Enclave report must have one or more enclaves.")
-
         time_began = normalize_timestamp(time_began)
 
         self.id = id
