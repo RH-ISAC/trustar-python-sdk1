@@ -22,12 +22,6 @@ class IndicatorType(Enum):
     REGISTRY_KEY = 'REGISTRY_KEY'
     CVE = 'CVE'
     BITCOIN_ADDRESS = 'BITCOIN_ADDRESS'
-    DOMAIN = 'DOMAIN'
-    FQDN = 'FQDN'
-    PERSON = 'PERSON'
-    LOCATION = 'LOCATION'
-    ORGANIZATION = 'ORGANIZATION'
-    DATE = 'DATE'
 
 
 class PriorityLevel(Enum):
