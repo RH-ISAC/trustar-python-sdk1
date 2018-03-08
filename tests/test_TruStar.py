@@ -80,11 +80,9 @@ class TruStarTests(unittest.TestCase):
         result = self.ts.delete_enclave_tag(report_id=report.id,
                                             enclave_id=self.ts.enclave_ids[0],
                                             name="some_tag")
-        self.assertEqual(result, "OK")
 
         # delete report
         response = self.ts.delete_report(report_id=report.id)
-        self.assertEqual(response.status_code, 200)
 
     def test_community_trends(self):
         """
@@ -94,21 +92,20 @@ class TruStarTests(unittest.TestCase):
         """
         totals = []
 
+        indicator_types = {
+            IndicatorType.CVE,
+            IndicatorType.MALWARE,
+            None
+        }
+
         # get results for all types and sum total elements for all except CVE and MALWARE
-        for indicator_type in Indicator.TYPES + [None]:
-            result = self.ts.get_community_trends_page(indicator_type=indicator_type)
+        for indicator_type in indicator_types:
+            result = self.ts.get_community_trends(indicator_type=indicator_type)
 
             if indicator_type is not None:
-                if indicator_type not in ['CVE', 'MALWARE']:
-                    totals.append(result.total_elements)
-
                 # ensure only indicators of correct type received
                 for indicator in result:
                     self.assertEqual(indicator.type, indicator_type)
-
-            else:
-                # check that no indicator type produces expected total number of elements
-                self.assertEqual(sum(totals), result.total_elements)
 
             correlation_counts = [indicator.correlation_count for indicator in result]
             for i in range(len(correlation_counts) - 1):
@@ -184,6 +181,9 @@ class TruStarTests(unittest.TestCase):
         """
         Test workflow of submitting and tagging a report, then getting all reports by that tag name.
         """
+
+        from_time = get_current_time_millis()
+
         enclave_id = self.ts.enclave_ids[0]
 
         # create and submit report
@@ -195,12 +195,12 @@ class TruStarTests(unittest.TestCase):
 
         # tag report
         tag = "some gibberish"
-        result = self.ts.add_enclave_tag(report_id=report.id,
-                                         name=tag,
-                                         enclave_id=enclave_id)
+        self.ts.add_enclave_tag(report_id=report.id, name=tag, enclave_id=enclave_id)
+
+        to_time = get_current_time_millis()
 
         # get all reports with the tag just created
-        report_ids = [report.id for report in self.ts.get_reports(tag=tag)]
+        report_ids = map(lambda x: x.id, self.ts.get_reports(tag=tag, from_time=from_time, to_time=to_time))
 
         try:
             # assert that only the report submitted earlier was found
@@ -211,99 +211,13 @@ class TruStarTests(unittest.TestCase):
             for id in report_ids:
                 self.ts.delete_report(report_id=id)
 
-    def test_get_indicators(self):
-
-        indicators = self.ts.get_indicators()
-        total = len(indicators)
-
-        count = 0
-        for indicator in indicators:
-            count += 1
-
-        self.assertEqual(total, count)
-
     def test_search_indicators(self):
-
         indicators = self.ts.search_indicators("a*c")
-        total = len(indicators)
-
-        count = 0
-        for indicator in indicators:
-            count += 1
-
-        self.assertEqual(total, count)
+        self.assertGreater(len(list(indicators)), 0)
 
     def test_search_reports(self):
         reports = self.ts.search_reports("a*c")
-        total = len(reports)
-
-        count = 0
-        for report in reports:
-            count += 1
-
-        self.assertEqual(total, count)
-
-    def test_page_generator(self):
-        """
-        Test that the get_page_generator function works
-        """
-        def func(page_size, page_number):
-            return self.ts.get_reports_page(from_time=old_time,
-                                            to_time=current_time,
-                                            is_enclave=False,
-                                            page_number=page_number,
-                                            page_size=page_size)
-
-        page_generator = Page.get_page_generator(func)
-
-        count = 0
-        total = len(page_generator)
-        for page in page_generator:
-            if total is not None:
-                self.assertEqual(total, page.total_elements)
-            else:
-                total = page.total_elements
-
-            count += len(page.items)
-
-        self.assertEqual(total, count)
-
-    def test_iterator(self):
-        """
-        Test that the get_generator function works
-        """
-        def func(page_size, page_number):
-            return self.ts.get_reports_page(from_time=old_time,
-                                            to_time=current_time,
-                                            is_enclave=False,
-                                            page_number=page_number,
-                                            page_size=page_size)
-
-        generator = Page.get_generator(func)
-
-        count = 0
-        total = len(generator)
-
-        for report in generator:
-            count += 1
-
-        self.assertEqual(count, total)
-
-    def test_report_generator(self):
-        """
-        Test that the report generator works.
-        """
-        reports = self.ts.get_reports(from_time=old_time,
-                                      to_time=current_time,
-                                      is_enclave=False)
-        total = len(reports)
-
-        count = 0
-        for report in reports:
-            count += 1
-            print(report)
-
-        self.assertEqual(count, total)
+        self.assertGreater(len(list(reports)), 0)
 
 
 if __name__ == '__main__':

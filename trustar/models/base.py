@@ -26,6 +26,14 @@ class ModelBase(object):
         else:
             raise NotImplementedError()
 
+    @staticmethod
+    def from_dict(d):
+        """
+        Creates an instance of the class from a dictionary representation.
+        :return: The instance.
+        """
+        raise NotImplementedError()
+
     def __str__(self):
         """
         :return: A json representation of the object.

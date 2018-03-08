@@ -6,11 +6,8 @@ from future import standard_library
 # package imports
 from .base import ModelBase
 
-# external imports
-import math
 
-
-class Page(ModelBase):
+class Slice(ModelBase):
     """
     This class models a page of items that would be found in the body of a response from an endpoint that uses
     pagination.
@@ -21,39 +18,17 @@ class Page(ModelBase):
     :ivar page_size: The size of the page that was request.  Note that, if this is the last page, then this might
         not equal len(items).  For instance, if pages of size 25 were requested, there are 107 total elements, and
         this is the last page, then page_size will be 25 even though the page only contains 7 elements.
-    :ivar total_elements: The total number of elements on the server, e.g. the total number of elements across all
-        pages.  Note that it is possible for this value to change between pages, since data can change between queries.
+    :ivar has_next: Whether or not a next page exists on the server.
     """
 
-    def __init__(self, items=None, page_number=None, page_size=None, total_elements=None):
+    def __init__(self, items=None, page_number=None, page_size=None, has_next=None):
         self.items = items
         self.page_number = page_number
         self.page_size = page_size
-        self.total_elements = total_elements
-
-    def get_total_pages(self):
-        """
-        :return: The total number of pages on the server.
-        """
-
-        if self.total_elements is None or self.page_size is None:
-            return None
-
-        return math.ceil(float(self.total_elements) / float(self.page_size))
+        self.has_next = has_next
 
     def has_more_pages(self):
-        """
-        :return: ``True`` if there are more pages available on the server.
-        """
-
-        total_pages = self.get_total_pages()
-        if self.page_number is None or total_pages is None:
-            return None
-
-        return self.page_number + 1 < total_pages
-
-    def __len__(self):
-        return len(self.items)
+        return self.has_next
 
     @staticmethod
     def from_dict(page, content_type=None):
@@ -63,13 +38,13 @@ class Page(ModelBase):
 
         :param page: The dictionary.
         :param content_type: The class that the contents should be deserialized into.
-        :return: The resulting |Page| object.
+        :return: The resulting |Slice| object.
         """
 
-        result = Page(items=page['items'],
-                      page_number=page['pageNumber'],
-                      page_size=page['pageSize'],
-                      total_elements=page['totalElements'])
+        result = Slice(items=page['items'],
+                       page_number=page['pageNumber'],
+                       page_size=page['pageSize'],
+                       has_next=page['hasNext'])
 
         if content_type is not None:
             if not hasattr(content_type, 'from_dict'):
@@ -96,12 +71,14 @@ class Page(ModelBase):
             else:
                 items.append(item)
 
-        return {
+        d = {
             'items': items,
             'pageNumber': self.page_number,
             'pageSize': self.page_size,
-            'totalElements': self.total_elements
+            'hasNext': self.has_next,
         }
+
+        return {k: v for k, v in d.items() if v is not None}
 
     @staticmethod
     def get_page_generator(func, start_page=0, page_size=None):
@@ -109,10 +86,11 @@ class Page(ModelBase):
         Constructs a generator for retrieving pages from a paginated endpoint.  This method is intended for internal
         use.
 
-        :param func: Should take parameters ``page_number`` and ``page_size`` and return the corresponding |Page| object.
+        :param func: Should take parameters ``page_number`` and ``page_size`` and return the corresponding |Slice|
+        object.
         :param start_page: The page to start on.
         :param page_size: The size of each page.
-        :return: A |GeneratorWithLength| instance that can be used to generate each successive page.
+        :return: A generator instance that can be used to generate each successive slice.
         """
 
         def generator():
@@ -124,13 +102,13 @@ class Page(ModelBase):
             # continuously request the next page as long as more pages exist
             while more_pages:
 
-                # get next page
-                page = func(page_number=page_number, page_size=page_size)
+                # get next slice
+                slice = func(page_number=page_number, page_size=page_size)
 
-                yield page
+                yield slice
 
                 # determine whether more pages exist
-                more_pages = page.has_more_pages()
+                more_pages = slice.has_more_pages()
                 page_number += 1
 
         return generator()
@@ -141,10 +119,10 @@ class Page(ModelBase):
         Gets a generator for retrieving all results from a paginated endpoint.  Pass exactly one of ``page_generator``
         or ``func``.  This method is intended for internal use.
 
-        :param func: Should take parameters ``page_number`` and ``page_size`` and return the corresponding |Page|
+        :param func: Should take parameters ``page_number`` and ``page_size`` and return the corresponding |Slice|
             object.  If ``page_iterator`` is ``None``, this will be used to create one.
-        :param page_generator: A generator to be used to generate each successive |Page|.
-        :return: A |GeneratorWithLength| instance that can be used to generate each successive element.
+        :param page_generator: A generator to be used to generate each successive |Slice|.
+        :return: A generator that generates each successive element.
         """
 
         # if page_iterator is None, use func to create one
@@ -162,9 +140,3 @@ class Page(ModelBase):
                     yield item
 
         return iterable()
-
-    def __iter__(self):
-        return self.items.__iter__()
-
-    def __getitem__(self, item):
-        return self.items[item]

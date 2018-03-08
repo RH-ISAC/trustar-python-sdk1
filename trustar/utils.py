@@ -15,6 +15,9 @@ from tzlocal import get_localzone
 from .models import Enclave
 
 
+DAY = 24 * 60 * 60 * 1000
+
+
 def normalize_timestamp(date_time):
     """
     Attempt to convert a string timestamp in to a TruSTAR compatible format for submission.
@@ -65,6 +68,10 @@ def normalize_timestamp(date_time):
     return datetime_dt.isoformat()
 
 
+def get_current_time_millis():
+    return int(time.time()) * 1000
+
+
 def enclaves_from_ids(enclave_ids):
     """
     Create enclave objects from a list of ids.
@@ -113,6 +120,26 @@ def get_logger(name=None):
     log.addHandler(stderr_handler)
 
     return log
+
+
+def get_time_based_page_generator(get_page, get_next_to_time, from_time=None, to_time=None):
+
+    if to_time is None:
+        to_time = get_current_time_millis()
+
+    if from_time is None:
+        from_time = to_time - DAY
+
+    while to_time is not None and from_time <= to_time:
+        result = get_page(from_time, to_time)
+        yield result
+        new_to_time = get_next_to_time(result)
+        if new_to_time is not None:
+            if new_to_time > to_time:
+                raise Exception("to_time should not increase between page iterations.  "
+                                "This can result in an endless loop.")
+            new_to_time -= 1
+        to_time = new_to_time
 
 
 logger = get_logger(__name__)

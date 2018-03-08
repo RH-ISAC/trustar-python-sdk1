@@ -46,7 +46,9 @@ class Report(ModelBase):
                  is_enclave=True,
                  enclave_ids=None,
                  enclaves=None,
-                 indicators=None):
+                 indicators=None,
+                 created=None,
+                 updated=None):
         """
         Constructs a Report object.
 
@@ -90,6 +92,8 @@ class Report(ModelBase):
         self.is_enclave = is_enclave
         self.enclaves = enclaves
         self.indicators = indicators
+        self.created = created
+        self.updated = updated
 
     def __get_distribution_type(self):
         """
@@ -137,7 +141,9 @@ class Report(ModelBase):
                 'timeBegan': self.time_began,
                 'externalUrl': self.external_url,
                 'distributionType': self.__get_distribution_type(),
-                'externalTrackingId': self.external_id
+                'externalTrackingId': self.external_id,
+                'created': self.created,
+                'updated': self.updated,
             }
 
         # id field might not be present
@@ -207,4 +213,6 @@ class Report(ModelBase):
                       is_enclave=is_enclave,
                       enclave_ids=report.get('enclaveIds'),
                       enclaves=enclaves,
-                      indicators=indicators)
+                      indicators=indicators,
+                      created=report.get('created'),
+                      updated=report.get('updated'))

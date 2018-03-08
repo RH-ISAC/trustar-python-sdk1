@@ -16,8 +16,8 @@ import time
 from requests import HTTPError
 
 # package imports
-from .models import Indicator, Page, Tag, Report
-from .utils import normalize_timestamp, get_logger
+from .models import Indicator, Page, Slice, Tag, Report, DistributionType
+from .utils import normalize_timestamp, get_logger, get_time_based_page_generator
 from .version import __version__, __api_version__
 
 # python 2 backwards compatibility
@@ -259,13 +259,14 @@ class TruStar(object):
         :return: The response object.
         """
 
-        # get headers and merge with headers from method parameter if it exists
-        base_headers = self._get_headers(is_json=method in ["POST", "PUT"])
-        if headers is not None:
-            base_headers.update(headers)
-
         retry = True
         while retry:
+
+            # get headers and merge with headers from method parameter if it exists
+            base_headers = self._get_headers(is_json=method in ["POST", "PUT"])
+            if headers is not None:
+                base_headers.update(headers)
+
             # make request
             response = requests.request(method=method,
                                         url="{}/{}".format(self.base, path),
@@ -278,11 +279,14 @@ class TruStar(object):
             # refresh token if expired
             if self._is_expired_token_response(response):
                 self._refresh_token()
+
             # if "too many requests" status code received, wait until next request will be allowed and retry
             elif response.status_code == 429:
                 wait_time = response.json().get('waitTime')
                 logger.debug("Waiting %d seconds until next request allowed." % wait_time)
                 time.sleep(wait_time)
+
+            # request cycle is complete
             else:
                 retry = False
 
@@ -434,7 +438,7 @@ class TruStar(object):
         return Report.from_dict(resp.json())
 
     def get_reports_page(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None,
-                         from_time=None, to_time=None, page_number=None, page_size=None):
+                         from_time=None, to_time=None):
         """
         Retrieves a page of reports, filtering by time window, distribution type, enclave association, and tag.
 
@@ -481,18 +485,13 @@ class TruStar(object):
             'distributionType': distribution_type,
             'enclaveIds': enclave_ids,
             'tag': tag,
-            'excludedTags': excluded_tags,
-            'pageNumber': page_number,
-            'pageSize': page_size
+            'excludedTags': excluded_tags
         }
         resp = self._get("reports", params=params)
-        page = Page.from_dict(resp.json())
-
-        # replace each dict in 'items' with a Report object
-        page.items = [Report.from_dict(report) for report in page.items]
+        result = Slice.from_dict(resp.json(), content_type=Report)
 
         # create a Page object from the dict
-        return page
+        return result
 
     def submit_report(self, report):
         """
@@ -503,7 +502,7 @@ class TruStar(object):
           |TruStar| object will be used.
         * If ``report.time_began`` is ``None``, then the current time will be used.
 
-        :param report: The |Report| object that was submitted, with the ``id`` and ``indicators`` fields updated based
+        :param report: The |Report| object that was submitted, with the ``id`` field updated based
             on values from the response.
 
         Example:
@@ -516,8 +515,6 @@ class TruStar(object):
         ac6a0d17-7350-4410-bc57-9699521db992
         >>> print(report.title)
         Suspicious Activity
-        >>> print(report.indicators[0].value)
-        169.178.68.63
         """
 
         # make distribution type default to "enclave"
@@ -535,6 +532,7 @@ class TruStar(object):
         if report.is_enclave and len(report.enclaves) == 0:
             raise Exception("Cannot submit a report of distribution type 'ENCLAVE' with an empty set of enclaves.")
 
+        # default time began is current time
         if report.time_began is None:
             report.time_began = datetime.now()
 
@@ -543,16 +541,9 @@ class TruStar(object):
             'enclaveIds': report.get_enclave_ids()
         }
         resp = self._post("reports", data=json.dumps(payload), timeout=60)
-        body = resp.json()
 
         # get report id from response body
-        report.id = body['reportId']
-
-        # parse indicators from response body
-        report.indicators = []
-        for indicator_type, indicators in body.get('reportIndicators').items() or []:
-            for value in indicators:
-                report.indicators.append(Indicator(value=value, type=indicator_type))
+        report.id = str(resp.content)
 
         return report
 
@@ -576,12 +567,15 @@ class TruStar(object):
         Changed Title
         """
 
+        # default to interal ID type if ID field is present
         if report.id is not None:
             id_type = Report.ID_TYPE_INTERNAL
             report_id = report.id
+        # if no ID field is present, but external ID field is, default to external ID type
         elif report.external_id is not None:
             id_type = Report.ID_TYPE_EXTERNAL
             report_id = report.external_id
+        # if no ID fields exist, raise exception
         else:
             raise Exception("Cannot update report without either an ID or an external ID.")
 
@@ -594,20 +588,7 @@ class TruStar(object):
             'enclaveIds': report.get_enclave_ids()
         }
 
-        resp = self._put("reports/%s" % report_id, data=json.dumps(payload), params=params)
-        body = resp.json()
-
-        # set IDs from response body
-        report.id = body.get('reportId')
-        report.external_id = body.get('externalTrackingId')
-
-        # parse indicators from response body
-        report.indicators = []
-        for indicator_type, indicators in body.get('reportIndicators').items() or []:
-            for value in indicators:
-                report.indicators.append(Indicator(value=value, type=indicator_type))
-
-        return report
+        self._put("reports/%s" % report_id, data=json.dumps(payload), params=params)
 
     def delete_report(self, report_id, id_type=None):
         """
@@ -625,8 +606,7 @@ class TruStar(object):
         """
 
         params = {'idType': id_type}
-        resp = self._delete("reports/%s" % report_id, params=params)
-        return resp
+        self._delete("reports/%s" % report_id, params=params)
 
     def get_correlated_report_ids(self, indicators):
         """
@@ -645,6 +625,35 @@ class TruStar(object):
         params = {'indicators': indicators}
         resp = self._get("reports/correlate", params=params)
         return resp.json()
+
+    def get_correlated_reports_page(self, indicators, enclave_ids=None, is_enclave=True,
+                                    page_size=None, page_number=None):
+        """
+        Retrieves a list of the IDs of all TruSTAR reports that contain the searched indicator.
+
+        :param indicators: A list of indicator values to retrieve correlated reports for.
+        :return: The list of IDs of reports that correlated.
+
+        Example:
+
+        >>> reports = ts.get_correlated_reports_page(["wannacry", "www.evil.com"]).items
+        >>> print([report.id for report in reports])
+        ["e3bc6921-e2c8-42eb-829e-eea8da2d3f36", "4d04804f-ff82-4a0b-8586-c42aef2f6f73"]
+        """
+
+        if is_enclave:
+            distribution_type = DistributionType.ENCLAVE
+        else:
+            distribution_type = DistributionType.COMMUNITY
+
+        params = {
+            'indicators': indicators,
+            'enclaveIds': enclave_ids,
+            'distributionType': distribution_type
+        }
+        resp = self._get("reports/correlated", params=params)
+
+        return Slice.from_dict(resp.json(), content_type=Report)
 
     def search_reports_page(self, search_term, enclave_ids=None, page_size=None, page_number=None):
         """
@@ -666,10 +675,7 @@ class TruStar(object):
         }
 
         resp = self._get("reports/search", params=params)
-        page = Page.from_dict(resp.json())
-
-        # parse items in response as indicators
-        page.items = [Report.from_dict(item) for item in page.items]
+        page = Page.from_dict(resp.json(), content_type=Report)
 
         return page
 
@@ -678,41 +684,7 @@ class TruStar(object):
     ### Indicator Endpoints ###
     ###########################
 
-    def get_indicators_page(self, types=None, is_enclave=None, enclave_ids=None,
-                            from_time=None, to_time=None, page_size=None, page_number=None):
-        """
-        Find indicators based on a collection of filters.
-
-        :param types: A type or list of types of indicators to filter by.  If ``None``, will get all types of indicators
-        :param is_enclave: Whether to get indicators found in enclave or community reports.
-        :param enclave_ids: A list of enclave ids.  Only indicators found in reports within these enclaves will be returned.
-        :param from_time: start of time window in milliseconds since epoch
-        :param to_time: end of time window in milliseconds since epoch
-        :param page_size: number of results per page
-        :param page_number: page to start returning results on
-        :return: A |Page| of |Indicator| objects.
-        """
-
-        params = {
-            'types': types,
-            'distributionType': Report.DISTRIBUTION_TYPE_ENCLAVE if is_enclave else Report.DISTRIBUTION_TYPE_COMMUNITY,
-            'enclaveIds': enclave_ids,
-            'from': from_time,
-            'to': to_time,
-            'pageSize': page_size,
-            'pageNumber': page_number
-        }
-
-        resp = self._get("indicators", params=params)
-        page = Page.from_dict(resp.json())
-
-        # parse items in response as indicators
-        page.items = [Indicator.from_dict(item) for item in page.items]
-
-        return page
-
-    def get_community_trends_page(self, indicator_type=None, from_time=None, to_time=None,
-                                  page_size=None, page_number=None):
+    def get_community_trends(self, indicator_type=None, days_back=None):
         """
         Find indicators that are trending in the community.
 
@@ -727,19 +699,14 @@ class TruStar(object):
 
         params = {
             'type': indicator_type,
-            'from': from_time,
-            'to': to_time,
-            'pageSize': page_size,
-            'pageNumber': page_number
+            'daysBack': days_back
         }
 
         resp = self._get("indicators/community-trending", params=params)
-        page = Page.from_dict(resp.json())
+        body = resp.json()
 
         # parse items in response as indicators
-        page.items = [Indicator.from_dict(item) for item in page.items]
-
-        return page
+        return map(Indicator.from_dict, body)
 
     def get_related_indicators_page(self, indicators=None, enclave_ids=None, page_size=None, page_number=None):
         """
@@ -760,12 +727,8 @@ class TruStar(object):
         }
 
         resp = self._get("indicators/related", params=params)
-        page = Page.from_dict(resp.json())
 
-        # parse items in response as indicators
-        page.items = [Indicator.from_dict(item) for item in page.items]
-
-        return page
+        return Slice.from_dict(resp.json(), content_type=Indicator)
 
     def search_indicators_page(self, search_term, enclave_ids=None, page_size=None, page_number=None):
         """
@@ -787,12 +750,8 @@ class TruStar(object):
         }
 
         resp = self._get("indicators/search", params=params)
-        page = Page.from_dict(resp.json())
 
-        # parse items in response as indicators
-        page.items = [Indicator.from_dict(item) for item in page.items]
-
-        return page
+        return Page.from_dict(resp.json(), content_type=Indicator)
 
 
     #####################
@@ -810,7 +769,7 @@ class TruStar(object):
 
         params = {'idType': id_type}
         resp = self._get("reports/%s/enclave-tags" % report_id, params=params)
-        return [Tag.from_dict(tag) for tag in resp.json()]
+        return map(Tag.from_dict, resp.json())
 
     def add_enclave_tag(self, report_id, name, enclave_id, id_type=None):
         """
@@ -829,7 +788,7 @@ class TruStar(object):
             'enclaveId': enclave_id
         }
         resp = self._post("reports/%s/enclave-tags" % report_id, params=params)
-        return Tag.from_dict(resp.json())
+        return str(resp.content)
 
     def delete_enclave_tag(self, report_id, name, enclave_id, id_type=None):
         """
@@ -847,8 +806,7 @@ class TruStar(object):
             'name': name,
             'enclaveId': enclave_id
         }
-        resp = self._delete("reports/%s/enclave-tags" % report_id, params=params)
-        return resp.content.decode('utf8')
+        self._delete("reports/%s/enclave-tags" % report_id, params=params)
 
     def get_all_enclave_tags(self, enclave_ids=None):
         """
@@ -861,15 +819,15 @@ class TruStar(object):
 
         params = {'enclaveIds': enclave_ids}
         resp = self._get("enclave-tags", params=params)
-        return [Tag.from_dict(tag) for tag in resp.json()]
+        return map(Tag.from_dict, resp.json())
 
 
     ##################
     ### Generators ###
     ##################
 
-    def __get_reports_page_generator(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None,
-                                     from_time=None, to_time=None, start_page=0, page_size=None):
+    def _get_reports_page_generator(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None,
+                                    from_time=None, to_time=None):
         """
         Creates a generator from the |get_reports_page| method that returns each successive page.
 
@@ -880,18 +838,20 @@ class TruStar(object):
         :param str tag: name of tag to filter reports by.  if a tag with this name exists in more than one enclave
             indicated in ``enclave_ids``, the request will fail.  handle this by making separate requests for each
             enclave ID if necessary.
-        :param int from_time: start of time window in milliseconds since epoch (optional)
-        :param int to_time: end of time window in milliseconds since epoch (optional)
-        :param start_page: The page to start on.
-        :param page_size: The size of each page.
+        :param int from_time: start of time window in milliseconds since epoch
+        :param int to_time: end of time window in milliseconds since epoch (optional, defaults to current time)
         :return: The generator.
         """
 
-        def func(page_number, page_size):
-            return self.get_reports_page(is_enclave, enclave_ids, tag, excluded_tags, from_time, to_time,
-                                         page_number, page_size)
+        def func(from_time, to_time):
+            return self.get_reports_page(is_enclave, enclave_ids, tag, excluded_tags, from_time, to_time)
 
-        return Page.get_page_generator(func, start_page, page_size)
+        return get_time_based_page_generator(
+            get_page=func,
+            get_next_to_time=lambda x: x.items[-1].updated if len(x.items) > 0 else None,
+            from_time=from_time,
+            to_time=to_time
+        )
 
     def get_reports(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None, from_time=None, to_time=None):
         """
@@ -918,79 +878,10 @@ class TruStar(object):
 
         """
 
-        return Page.get_generator(page_generator=self.__get_reports_page_generator(is_enclave, enclave_ids, tag,
+        return Slice.get_generator(page_generator=self._get_reports_page_generator(is_enclave, enclave_ids, tag,
                                                                                    excluded_tags, from_time, to_time))
 
-    def __get_indicators_page_generator(self, types=None, is_enclave=None, enclave_ids=None,
-                                        from_time=None, to_time=None, start_page=0, page_size=None):
-        """
-        Creates a generator from the |get_indicators_page| method that returns each successive page.
-
-        :param types: A type or list of types of indicators to filter by.  If ``None``, will get all types of indicators
-        :param is_enclave: Whether to get indicators found in enclave or community reports.
-        :param enclave_ids: A list of enclave ids.  Only indicators found in reports within these enclaves will be returned.
-        :param from_time: start of time window in milliseconds since epoch
-        :param to_time: end of time window in milliseconds since epoch
-        :param start_page: The page to start on.
-        :param page_size: The size of each page.
-        :return: The generator.
-        """
-
-        def func(page_number, page_size):
-            return self.get_indicators_page(types, is_enclave, enclave_ids,
-                                            from_time, to_time, page_size, page_number)
-
-        return Page.get_page_generator(func, start_page, page_size)
-
-    def get_indicators(self, types=None, is_enclave=None, enclave_ids=None, from_time=None, to_time=None):
-        """
-        Uses the |get_indicators_page| method to create a generator that returns each successive indicator.
-
-        :param types: A type or list of types of indicators to filter by.  If ``None``, will get all types of indicators
-        :param is_enclave: Whether to get indicators found in enclave or community reports.
-        :param enclave_ids: A list of enclave ids.  Only indicators found in reports within these enclaves will be returned.
-        :param from_time: start of time window in milliseconds since epoch
-        :param to_time: end of time window in milliseconds since epoch
-        :return: The generator.
-        """
-
-        return Page.get_generator(page_generator=self.__get_indicators_page_generator(types, is_enclave, enclave_ids,
-                                                                                      from_time, to_time))
-
-    def __get_community_trends_page_generator(self, indicator_type=None, from_time=None, to_time=None,
-                                              start_page=0, page_size=None):
-        """
-        Creates a generator from the |get_community_trends_page| method that returns each successive page.
-
-        :param indicator_type: A type of indicator to filter by.  If ``None``, will get all types of indicators except
-            for MALWARE and CVEs (this convention is for parity with the corresponding view on the Dashboard).
-        :param from_time: start of time window in milliseconds since epoch
-        :param to_time: end of time window in milliseconds since epoch
-        :param start_page: The page to start on.
-        :param page_size: The size of each page.
-        :return: The generator.
-        """
-
-        def func(page_number, page_size):
-            return self.get_community_trends_page(indicator_type, from_time, to_time, page_size, page_number)
-
-        return Page.get_page_generator(func, start_page, page_size)
-
-    def get_community_trends(self, indicator_type=None, from_time=None, to_time=None):
-        """
-        Uses the |get_community_trends_page| method to create a generator that returns each successive indicator.
-
-        :param indicator_type: A type of indicator to filter by.  If ``None``, will get all types of indicators except
-            for MALWARE and CVEs (this convention is for parity with the corresponding view on the Dashboard).
-        :param from_time: start of time window in milliseconds since epoch
-        :param to_time: end of time window in milliseconds since epoch
-        :return: The generator.
-        """
-
-        return Page.get_generator(page_generator=self.__get_community_trends_page_generator(indicator_type, from_time,
-                                                                                            to_time))
-
-    def __get_related_indicators_page_generator(self, indicators=None, enclave_ids=None, start_page=0, page_size=None):
+    def _get_related_indicators_page_generator(self, indicators=None, enclave_ids=None, start_page=0, page_size=None):
         """
         Creates a generator from the |get_related_indicators_page| method that returns each
         successive page.
@@ -1002,10 +893,10 @@ class TruStar(object):
         :return: The generator.
         """
 
-        def func(page_number, page_size):
+        def get_page(page_number, page_size):
             return self.get_related_indicators_page(indicators, enclave_ids, page_size, page_number)
 
-        return Page.get_page_generator(func, start_page, page_size)
+        return Page.get_page_generator(get_page, start_page, page_size)
 
     def get_related_indicators(self, indicators=None, enclave_ids=None):
         """
@@ -1016,9 +907,9 @@ class TruStar(object):
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self.__get_related_indicators_page_generator(indicators, enclave_ids))
+        return Page.get_generator(page_generator=self._get_related_indicators_page_generator(indicators, enclave_ids))
 
-    def __search_reports_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None):
+    def _search_reports_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None):
         """
         Creates a generator from the |search_reports_page| method that returns each successive page.
 
@@ -1030,10 +921,10 @@ class TruStar(object):
         :return: the generator
         """
 
-        def func(page_number, page_size):
+        def get_page(page_number, page_size):
             return self.search_reports_page(search_term, enclave_ids, page_size, page_number)
 
-        return Page.get_page_generator(func, start_page, page_size)
+        return Page.get_page_generator(get_page, start_page, page_size)
 
     def search_reports(self, search_term, enclave_ids=None):
         """
@@ -1045,9 +936,9 @@ class TruStar(object):
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self.__search_reports_page_generator(search_term, enclave_ids))
+        return Page.get_generator(page_generator=self._search_reports_page_generator(search_term, enclave_ids))
 
-    def __search_indicators_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None):
+    def _search_indicators_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None):
         """
         Creates a generator from the |search_indicators_page| method that returns each successive page.
 
@@ -1059,10 +950,10 @@ class TruStar(object):
         :return: the generator
         """
 
-        def func(page_number, page_size):
+        def get_page(page_number, page_size):
             return self.search_indicators_page(search_term, enclave_ids, page_size, page_number)
 
-        return Page.get_page_generator(func, start_page, page_size)
+        return Page.get_page_generator(get_page, start_page, page_size)
 
     def search_indicators(self, search_term, enclave_ids=None):
         """
@@ -1074,4 +965,4 @@ class TruStar(object):
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self.__search_indicators_page_generator(search_term, enclave_ids))
+        return Page.get_generator(page_generator=self._search_indicators_page_generator(search_term, enclave_ids))
