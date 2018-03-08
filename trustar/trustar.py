@@ -235,10 +235,14 @@ class TruStar(object):
 
     @classmethod
     def _is_expired_token_response(cls, response):
+
+        EXPIRED_MESSAGE = "Expired oauth2 access token"
+        INVALID_MESSAGE = "Invalid oauth2 access token"
+
         if response.status_code == 400:
             try:
                 body = response.json()
-                if body.get('error_description') == "Invalid oauth2 access token":
+                if str(body.get('error_description')) in [EXPIRED_MESSAGE, INVALID_MESSAGE]:
                     return True
             except:
                 pass
@@ -273,7 +277,7 @@ class TruStar(object):
 
             # refresh token if expired
             if self._is_expired_token_response(response):
-                self.token = self._get_token()
+                self._refresh_token()
             # if "too many requests" status code received, wait until next request will be allowed and retry
             elif response.status_code == 429:
                 wait_time = response.json().get('waitTime')
