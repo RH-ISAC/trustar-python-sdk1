@@ -845,7 +845,7 @@ class TruStar(object):
         Gets the list of enclaves that the user has access to.
 
         :return: A list of JSONs, each containing the GUID, name, and type of an enclave, as well as whether the user
-        has read, create, and update access to it.
+            has read, create, and update access to it.
         """
 
         resp = self._get("enclaves")
@@ -859,6 +859,7 @@ class TruStar(object):
     def get_whitelist_page(self, page_number=None, page_size=None):
         """
         Gets a paginated list of indicators that the user's company has whitelisted.
+
         :param int page_number: the page number to get.
         :param int page_size: the size of the page to be returned.
         :return: A |Page| of |Indicator| objects.
@@ -874,6 +875,7 @@ class TruStar(object):
     def add_terms_to_whitelist(self, terms):
         """
         Add a list of terms to the user's company's whitelist.
+
         :param terms: The list of terms to whitelist.
         :return: The list of extracted |Indicator|s that were whitelisted.
         """
@@ -882,6 +884,11 @@ class TruStar(object):
         return map(Indicator.from_dict, resp.json())
 
     def delete_indicator_from_whitelist(self, indicator):
+        """
+        Delete an indicator from the user's company's whitelist.
+
+        :param indicator: An |Indicator| object, representing the indicator to delete.
+        """
 
         params = indicator.to_dict()
         self._delete("whitelist", params=params)
@@ -945,11 +952,26 @@ class TruStar(object):
                                                                                   excluded_tags, from_time, to_time))
 
     def _get_indicators_for_report_page_generator(self, report_id, start_page=0, page_size=None):
+        """
+        Creates a generator from the |get_indicators_for_report_page| method that returns each successive page.
+
+        :param str report_id: The ID of the report to get indicators for.
+        :param int start_page: The page to start on.
+        :param int page_size: The size of each page.
+        :return: The generator.
+        """
 
         get_page = functools.partial(self.get_indicators_for_report_page, report_id=report_id)
         return Page.get_page_generator(get_page, start_page, page_size)
 
     def get_indicators_for_report(self, report_id):
+        """
+        Creates a generator that returns each successive indicator for a given report.
+
+        :param str report_id: The ID of the report to get indicators for.
+        :return: The generator.
+        """
+
         return Page.get_generator(page_generator=self._get_indicators_for_report_page_generator(report_id))
 
     def _get_related_indicators_page_generator(self, indicators=None, enclave_ids=None, start_page=0, page_size=None):
