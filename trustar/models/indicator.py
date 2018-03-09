@@ -58,7 +58,7 @@ class Indicator(ModelBase):
 
         return {
             'value': self.value,
-            'type': self.type,
+            'indicatorType': self.type,
             'priorityLevel': self.priority_level,
             'correlationCount': self.correlation_count
         }

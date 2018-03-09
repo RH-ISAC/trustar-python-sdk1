@@ -5,6 +5,7 @@ from future import standard_library
 
 # package imports
 from .base import ModelBase
+from ..utils import get_time_based_page_generator
 
 # external imports
 import math
@@ -25,11 +26,12 @@ class Page(ModelBase):
         pages.  Note that it is possible for this value to change between pages, since data can change between queries.
     """
 
-    def __init__(self, items=None, page_number=None, page_size=None, total_elements=None):
+    def __init__(self, items=None, page_number=None, page_size=None, total_elements=None, has_next=None):
         self.items = items
         self.page_number = page_number
         self.page_size = page_size
         self.total_elements = total_elements
+        self.has_next = has_next
 
     def get_total_pages(self):
         """
@@ -46,11 +48,16 @@ class Page(ModelBase):
         :return: ``True`` if there are more pages available on the server.
         """
 
+        # if has_next property exists, it represents whether more pages exist
+        if self.has_next is not None:
+            return self.has_next
+
+        # otherwise, try to compute whether or not more pages exist
         total_pages = self.get_total_pages()
         if self.page_number is None or total_pages is None:
             return None
-
-        return self.page_number + 1 < total_pages
+        else:
+            return self.page_number + 1 < total_pages
 
     def __len__(self):
         return len(self.items)
@@ -66,14 +73,15 @@ class Page(ModelBase):
         :return: The resulting |Page| object.
         """
 
-        result = Page(items=page['items'],
-                      page_number=page['pageNumber'],
-                      page_size=page['pageSize'],
-                      total_elements=page['totalElements'])
+        result = Page(items=page.get('items'),
+                      page_number=page.get('pageNumber'),
+                      page_size=page.get('pageSize'),
+                      total_elements=page.get('totalElements'),
+                      has_next=page.get('hasNext'))
 
         if content_type is not None:
-            if not hasattr(content_type, 'from_dict'):
-                raise Exception("content_type parameter must have a 'from_dict' method.")
+            if not issubclass(content_type, ModelBase):
+                raise ValueError("'content_type' must be a subclass of ModelBase.")
 
             result.items = map(content_type.from_dict, result.items)
 
@@ -100,7 +108,8 @@ class Page(ModelBase):
             'items': items,
             'pageNumber': self.page_number,
             'pageSize': self.page_size,
-            'totalElements': self.total_elements
+            'totalElements': self.total_elements,
+            'hasNext': self.has_next
         }
 
     @staticmethod
@@ -115,53 +124,44 @@ class Page(ModelBase):
         :return: A |GeneratorWithLength| instance that can be used to generate each successive page.
         """
 
-        def generator():
+        # initialize starting values
+        page_number = start_page
+        more_pages = True
 
-            # initialize starting values
-            page_number = start_page
-            more_pages = True
+        # continuously request the next page as long as more pages exist
+        while more_pages:
 
-            # continuously request the next page as long as more pages exist
-            while more_pages:
+            # get next page
+            page = func(page_number=page_number, page_size=page_size)
 
-                # get next page
-                page = func(page_number=page_number, page_size=page_size)
+            yield page
 
-                yield page
+            # determine whether more pages exist
+            more_pages = page.has_more_pages()
+            page_number += 1
 
-                # determine whether more pages exist
-                more_pages = page.has_more_pages()
-                page_number += 1
-
-        return generator()
+    @staticmethod
+    def get_time_based_page_generator(get_page, get_next_to_time, from_time=None, to_time=None):
+        return get_time_based_page_generator(get_page=get_page,
+                                             get_next_to_time=lambda page: get_next_to_time(page.items),
+                                             from_time=from_time,
+                                             to_time=to_time)
 
     @classmethod
-    def get_generator(cls, func=None, page_generator=None):
+    def get_generator(cls, page_generator):
         """
         Gets a generator for retrieving all results from a paginated endpoint.  Pass exactly one of ``page_generator``
         or ``func``.  This method is intended for internal use.
 
-        :param func: Should take parameters ``page_number`` and ``page_size`` and return the corresponding |Page|
-            object.  If ``page_iterator`` is ``None``, this will be used to create one.
         :param page_generator: A generator to be used to generate each successive |Page|.
-        :return: A |GeneratorWithLength| instance that can be used to generate each successive element.
+        :return: A generator that generates each successive element.
         """
 
-        # if page_iterator is None, use func to create one
-        if page_generator is None:
-            if func is None:
-                raise Exception("To use 'get_iterator', must provide either a page iterator or a method.")
-            else:
-                page_generator = cls.get_page_generator(func)
-
-        def iterable():
-            # yield each item in the page one by one;
-            # once it is out, generate the next page
-            for page in page_generator:
-                for item in page.items:
-                    yield item
-
-        return iterable()
+        # yield each item in the page one by one;
+        # once it is out, generate the next page
+        for page in page_generator:
+            for item in page.items:
+                yield item
 
     def __iter__(self):
         return self.items.__iter__()

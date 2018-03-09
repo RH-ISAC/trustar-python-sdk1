@@ -95,15 +95,15 @@ class Report(ModelBase):
         self.created = created
         self.updated = updated
 
-    def __get_distribution_type(self):
+    def _get_distribution_type(self):
         """
         :return: A string indicating whether the report belongs to an enclave or not.
         """
 
         if self.is_enclave:
-            return self.DISTRIBUTION_TYPE_ENCLAVE
+            return DistributionType.ENCLAVE
         else:
-            return self.DISTRIBUTION_TYPE_COMMUNITY
+            return DistributionType.COMMUNITY
 
     def get_enclave_ids(self):
         """
@@ -140,7 +140,7 @@ class Report(ModelBase):
                 'reportBody': self.body,
                 'timeBegan': self.time_began,
                 'externalUrl': self.external_url,
-                'distributionType': self.__get_distribution_type(),
+                'distributionType': self._get_distribution_type(),
                 'externalTrackingId': self.external_id,
                 'created': self.created,
                 'updated': self.updated,
@@ -180,7 +180,7 @@ class Report(ModelBase):
         # determine distribution type
         distribution_type = report.get('distributionType')
         if distribution_type is not None:
-            is_enclave = distribution_type.upper() != cls.DISTRIBUTION_TYPE_COMMUNITY
+            is_enclave = distribution_type.upper() != DistributionType.COMMUNITY
         else:
             is_enclave = None
 

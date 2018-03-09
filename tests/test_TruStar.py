@@ -149,6 +149,13 @@ class TruStarTests(unittest.TestCase):
             report = self.ts.submit_report(report=report)
             reports.append(report)
 
+        count = 0
+        for report, indicator_group in zip(reports, indicator_groups):
+            count += 1
+            report_indicators = self.ts.get_indicators_for_report(report_id=report.id)
+            self.assertSetEqual(set(x.value for x in report_indicators),
+                                set([indicators[count % 2]] + indicator_group))
+
         ###############
         # GET RELATED #
         ###############
@@ -218,6 +225,20 @@ class TruStarTests(unittest.TestCase):
     def test_search_reports(self):
         reports = self.ts.search_reports("a*c")
         self.assertGreater(len(list(reports)), 0)
+
+    def test_get_enclaves(self):
+        enclaves = self.ts.get_user_enclaves()
+        self.assertGreater(len(enclaves), 0)
+
+    def test_whitelist(self):
+        indicators = self.ts.add_terms_to_whitelist(["not_malicious.com", "really_not_malicious.net"])
+        self.assertEqual(len(indicators), 2)
+
+        whitelist = self.ts.get_whitelist_page()
+        self.assertGreater(len(whitelist), 0)
+
+        for indicator in indicators:
+            self.ts.delete_indicator_from_whitelist(indicator=indicator)
 
 
 if __name__ == '__main__':
