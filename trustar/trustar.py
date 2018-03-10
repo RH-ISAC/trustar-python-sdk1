@@ -609,9 +609,11 @@ class TruStar(object):
         params = {'idType': id_type}
         self._delete("reports/%s" % report_id, params=params)
 
+    @DeprecationWarning
     def get_correlated_report_ids(self, indicators):
         """
-        Retrieves a list of the IDs of all TruSTAR reports that contain the searched indicator.
+        DEPRECATED!
+        Retrieves a list of the IDs of all TruSTAR reports that contain the searched indicators.
 
         :param indicators: A list of indicator values to retrieve correlated reports for.
         :return: The list of IDs of reports that correlated.
@@ -630,9 +632,11 @@ class TruStar(object):
     def get_correlated_reports_page(self, indicators, enclave_ids=None, is_enclave=True,
                                     page_size=None, page_number=None):
         """
-        Retrieves a list of the IDs of all TruSTAR reports that contain the searched indicator.
+        Retrieves a page of all TruSTAR reports that contain the searched indicators.
 
         :param indicators: A list of indicator values to retrieve correlated reports for.
+        :param enclave_ids: The enclaves to search in.
+        :param is_enclave: Whether to search enclave reports or community reports.
         :return: The list of IDs of reports that correlated.
 
         Example:
@@ -943,8 +947,6 @@ class TruStar(object):
         >>> page = ts.get_reports(is_enclave=True, tag="malicious", from_time=1425695711000, to_time=1514185311000)
         >>> print([report.id for report in reports])
         ['661583cb-a6a7-4cbd-8a90-01578fa4da89', 'da131660-2708-4c8a-926e-f91fb5dbbc62', '2e3400d6-fa37-4a8c-bc2f-155aaa02ae5a', '38064828-d3db-4fff-8ab8-e0e3b304ff44', 'dbf26104-cee5-4ca4-bdbf-a01d0178c007', ...]
-        >>> print(len(reports))
-        58
 
         """
 
@@ -974,6 +976,35 @@ class TruStar(object):
 
         return Page.get_generator(page_generator=self._get_indicators_for_report_page_generator(report_id))
 
+    def _get_correlated_reports_page_generator(self, indicators, enclave_ids=None, is_enclave=True,
+                                               start_page=0, page_size=None):
+        """
+        Creates a generator from the |get_correlated_reports_page| method that returns each
+        successive page.
+
+        :param indicators: A list of indicator values to retrieve correlated reports for.
+        :param enclave_ids:
+        :param is_enclave:
+        :return: The generator.
+        """
+
+        get_page = functools.partial(self.get_correlated_reports_page, indicators, enclave_ids, is_enclave)
+        return Page.get_page_generator(get_page, start_page, page_size)
+
+    def get_correlated_reports(self, indicators, enclave_ids=None, is_enclave=True):
+        """
+        Uses the |get_correlated_reports_page| method to create a generator that returns each successive report.
+
+        :param indicators: A list of indicator values to retrieve correlated reports for.
+        :param enclave_ids: The enclaves to search in.
+        :param is_enclave: Whether to search enclave reports or community reports.
+        :return: The generator.
+        """
+
+        return Page.get_generator(page_generator=self._get_correlated_reports_page_generator(indicators,
+                                                                                             enclave_ids,
+                                                                                             is_enclave))
+
     def _get_related_indicators_page_generator(self, indicators=None, enclave_ids=None, start_page=0, page_size=None):
         """
         Creates a generator from the |get_related_indicators_page| method that returns each
@@ -1000,6 +1031,26 @@ class TruStar(object):
 
         return Page.get_generator(page_generator=self._get_related_indicators_page_generator(indicators, enclave_ids))
 
+    def _get_whitelist_page_generator(self, start_page=0, page_size=None):
+        """
+        Creates a generator from the |get_whitelist_page| method that returns each successive page.
+
+        :param int start_page: The page to start on.
+        :param page_size: The size of each page.
+        :return: The generator.
+        """
+
+        return Page.get_page_generator(self.get_whitelist_page, start_page, page_size)
+
+    def get_whitelist(self):
+        """
+        Uses the |get_whitelist_page| method to create a generator that returns each successive whitelisted indicator.
+
+        :return: The generator.
+        """
+
+        return Page.get_generator(page_generator=self._get_whitelist_page_generator())
+
     def _search_reports_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None):
         """
         Creates a generator from the |search_reports_page| method that returns each successive page.
@@ -1009,7 +1060,7 @@ class TruStar(object):
             default reports from all of user's enclaves are returned)
         :param int start_page: The page to start on.
         :param page_size: The size of each page.
-        :return: the generator
+        :return: The generator.
         """
 
         get_page = functools.partial(self.search_reports_page, search_term, enclave_ids)
@@ -1036,7 +1087,7 @@ class TruStar(object):
             default indicators from all of user's enclaves are returned)
         :param int start_page: The page to start on.
         :param page_size: The size of each page.
-        :return: the generator
+        :return: The generator.
         """
 
         get_page = functools.partial(self.search_indicators_page, search_term, enclave_ids)
