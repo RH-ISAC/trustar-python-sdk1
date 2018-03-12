@@ -80,35 +80,41 @@ class EnclavePermissions(Enclave):
         self.create = create
         self.update = update
 
-    @staticmethod
-    def from_dict(enclave):
+    @classmethod
+    def from_dict(cls, d):
         """
         Create a enclave object from a dictionary.
 
-        :param enclave: The dictionary.
-        :return: The enclave object.
+        :param d: The dictionary.
+        :return: The EnclavePermissions object.
         """
 
-        return Enclave(id=enclave['id'],
-                       name=enclave['name'],
-                       type=EnclaveType.from_string(enclave['type']))
+        enclave = super(cls, EnclavePermissions).from_dict(d)
+        enclave_permissions = cls.from_enclave(enclave)
+
+        enclave_permissions.read = d.get('read')
+        enclave_permissions.create = d.get('create')
+        enclave_permissions.update = d.get('update')
+
+        return enclave_permissions
 
     def to_dict(self, remove_nones=False):
         """
         Creates a dictionary representation of the enclave.
 
         :param remove_nones: Whether ``None`` values should be filtered out of the dictionary.  Defaults to ``False``.
-        :return: A dictionary representation of the enclave.
+        :return: A dictionary representation of the EnclavePermissions object.
         """
 
-        if remove_nones:
-            return super().to_dict(remove_nones=True)
+        d = super().to_dict(remove_nones=remove_nones)
 
-        return {
-            'id': self.id,
-            'name': self.name,
-            'type': self.type
-        }
+        d.update({
+            'read': self.read,
+            'create': self.create,
+            'updated': self.update
+        })
+
+        return d
 
     @classmethod
     def from_enclave(cls, enclave):

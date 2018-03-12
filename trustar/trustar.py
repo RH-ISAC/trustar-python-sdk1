@@ -17,7 +17,7 @@ from requests import HTTPError
 import functools
 
 # package imports
-from .models import Indicator, Page, Tag, Report, DistributionType, IdType
+from .models import Indicator, Page, Tag, Report, DistributionType, IdType, EnclavePermissions
 from .utils import normalize_timestamp, get_logger, get_time_based_page_generator
 from .version import __version__, __api_version__
 
@@ -887,7 +887,7 @@ class TruStar(object):
         """
 
         resp = self._get("enclaves")
-        return resp.json()
+        return map(EnclavePermissions.from_dict, resp.json())
 
 
     ###########################

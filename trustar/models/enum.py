@@ -64,4 +64,4 @@ class EnclaveType(Enum):
         if string == "CLOSED_CONCRETE":
             return cls.CLOSED
         else:
-            return super(EnclaveType).from_string(string)
+            return super(cls, EnclaveType).from_string(string)

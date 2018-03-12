@@ -229,6 +229,7 @@ class TruStarTests(unittest.TestCase):
     def test_get_enclaves(self):
         enclaves = self.ts.get_user_enclaves()
         self.assertGreater(len(enclaves), 0)
+        print(enclaves[0])
 
     def test_whitelist(self):
         indicators = self.ts.add_terms_to_whitelist(["not_malicious.com", "really_not_malicious.net"])
