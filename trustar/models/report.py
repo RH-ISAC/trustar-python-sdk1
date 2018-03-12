@@ -45,8 +45,6 @@ class Report(ModelBase):
                  external_url=None,
                  is_enclave=True,
                  enclave_ids=None,
-                 enclaves=None,
-                 indicators=None,
                  created=None,
                  updated=None):
         """
@@ -63,23 +61,17 @@ class Report(ModelBase):
         :param is_enclave: A boolean representing whether the distribution type of the report is ENCLAVE or COMMUNITY.
         :param enclave_ids: A list of guids of the enclaves that the report belongs to.  If "enclaves" parameter is not
             used, then Enclave objects will be constructed from this parameter instead.
-        :param enclaves: A list of Enclave objects representing the enclaves that the report belongs to.  If this is
-            ``None``, and is_enclave is ``True``, then the ``enclave_ids`` parameter should be used.
-        :param indicators: A list of Indicator objects that were extracted from the report.  This parameter should only
-            be used internally after a report has been submitted or updated.  Users should not directly create a report
-            with indicators already attached.
+        :param enclave_ids: The list of enclave_ids the report is associated with.  If ``is_enclave`` is ``True``, this
+            cannot be ``None`` or empty.
         """
 
-        # if the report belongs to any enclaves, resolve the list of enclave IDs
-        if is_enclave:
+        # default to distribution type ENCLAVE
+        if is_enclave is None:
+            is_enclave = True
 
-            # if enclaves is None, expect that enclave_ids is populated.
-            # derive Enclave objects from enclave_ids field instead
-            if enclaves is None:
-                if enclave_ids is None:
-                    raise ValueError("If distribution type is ENCLAVE, " +
-                                     "must provide either enclaves or enclave_ids value.")
-                enclaves = enclaves_from_ids(enclave_ids)
+        # ensure that enclave IDs are given if distribution type is ENCLAVE
+        if is_enclave and enclave_ids is None:
+            raise ValueError("If distribution type is ENCLAVE, must provide enclave IDs.")
 
         time_began = normalize_timestamp(time_began)
 
@@ -90,10 +82,12 @@ class Report(ModelBase):
         self.external_id = external_id
         self.external_url = external_url
         self.is_enclave = is_enclave
-        self.enclaves = enclaves
-        self.indicators = indicators
+        self.enclave_ids = enclave_ids
         self.created = created
         self.updated = updated
+
+        if isinstance(self.enclave_ids, string_types):
+            self.enclave_ids = [self.enclave_ids]
 
     def _get_distribution_type(self):
         """
@@ -104,25 +98,6 @@ class Report(ModelBase):
             return DistributionType.ENCLAVE
         else:
             return DistributionType.COMMUNITY
-
-    def get_enclave_ids(self):
-        """
-        :return: The IDs of the enclaves if ``enclaves`` is not ``None``, otherwise ``None``.
-        """
-
-        if self.enclaves is not None:
-            return [enclave.id for enclave in self.enclaves]
-        else:
-            return None
-
-    def set_enclave_ids(self, enclave_ids):
-        """
-        Overwrites all of the report's enclaves with a new set of enclaves.
-
-        :param enclave_ids: The IDs of the enclaves.
-        """
-
-        self.enclaves = [Enclave(id=id) for id in enclave_ids]
 
     def to_dict(self, remove_nones=False):
         """
@@ -142,6 +117,7 @@ class Report(ModelBase):
                 'externalUrl': self.external_url,
                 'distributionType': self._get_distribution_type(),
                 'externalTrackingId': self.external_id,
+                'enclaveIds': self.enclave_ids,
                 'created': self.created,
                 'updated': self.updated,
             }
@@ -151,18 +127,6 @@ class Report(ModelBase):
             report_dict['id'] = self.id
         else:
             report_dict['id'] = None
-
-        # indicators field might not be present
-        if self.indicators is not None:
-            report_dict['indicators'] = [indicator.to_dict(remove_nones=remove_nones) for indicator in self.indicators]
-        elif not remove_nones:
-            self.indicators = None
-
-        # enclaves field might not be present
-        if self.enclaves is not None:
-            report_dict['enclaves'] = [enclave.to_dict(remove_nones=remove_nones) for enclave in self.enclaves]
-        elif not remove_nones:
-            report_dict['enclaves'] = None
 
         return report_dict
 
@@ -184,26 +148,6 @@ class Report(ModelBase):
         else:
             is_enclave = None
 
-        # parse enclaves
-        enclaves = []
-        if report.get('enclaves') is not None:
-            # parse based on type
-            for enclave in report.get('enclaves'):
-                # enclave is entire EnclaveDto
-                if isinstance(enclave, dict):
-                    enclaves.append(Enclave.from_dict(enclave))
-                # enclave is just an enclave ID
-                elif isinstance(enclave, string_types):
-                    enclaves.append(Enclave(id=enclave))
-                else:
-                    raise ValueError("Expected 'enclave' field to hold either a dictionary representation of an enclave"
-                                     " or an enclave ID.  Got '%s' instead." % enclave)
-
-        # parse indicators
-        indicators = report.get('indicators')
-        if indicators is not None:
-            indicators = [Indicator.from_dict(indicator) for indicator in indicators]
-
         return Report(id=report.get('id'),
                       title=report.get('title'),
                       body=report.get('reportBody'),
@@ -212,7 +156,5 @@ class Report(ModelBase):
                       external_url=report.get('externalUrl'),
                       is_enclave=is_enclave,
                       enclave_ids=report.get('enclaveIds'),
-                      enclaves=enclaves,
-                      indicators=indicators,
                       created=report.get('created'),
                       updated=report.get('updated'))

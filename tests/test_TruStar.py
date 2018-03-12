@@ -153,7 +153,7 @@ class TruStarTests(unittest.TestCase):
         for report, indicator_group in zip(reports, indicator_groups):
             count += 1
             report_indicators = self.ts.get_indicators_for_report(report_id=report.id)
-            self.assertSetEqual(set(x.value for x in report_indicators),
+            self.assertSetEqual(set(str(x.value) for x in report_indicators),
                                 set([indicators[count % 2]] + indicator_group))
 
         ###############
@@ -174,7 +174,7 @@ class TruStarTests(unittest.TestCase):
         # ASSERT #
         ##########
 
-        server_indicator_values = set([ind.value.lower() for ind in server_related])
+        server_indicator_values = set([str(ind.value.lower()) for ind in server_related])
         for indicator in related:
             self.assertTrue(indicator.lower() in server_indicator_values)
 

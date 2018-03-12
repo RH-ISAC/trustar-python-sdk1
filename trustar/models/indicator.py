@@ -25,11 +25,22 @@ class Indicator(ModelBase):
     TYPES = IndicatorType.values()
     PRIORITY_LEVELS = PriorityLevel.values()
 
-    def __init__(self, value, type, priority_level=None, correlation_count=None):
+    def __init__(self,
+                 value,
+                 type,
+                 priority_level=None,
+                 correlation_count=None,
+                 whitelisted=None,
+                 weight=None,
+                 reason=None):
+
         self.value = value
         self.type = type
         self.priority_level = priority_level
         self.correlation_count = correlation_count
+        self.whitelisted = whitelisted
+        self.weight = weight
+        self.reason = reason
 
     @staticmethod
     def from_dict(indicator):
@@ -43,7 +54,10 @@ class Indicator(ModelBase):
         return Indicator(value=indicator.get('value'),
                          type=indicator.get('indicatorType'),
                          priority_level=indicator.get('priorityLevel'),
-                         correlation_count=indicator.get('correlationCount'))
+                         correlation_count=indicator.get('correlationCount'),
+                         whitelisted=indicator.get('whitelisted'),
+                         weight=indicator.get('weight'),
+                         reason=indicator.get('reason'))
 
     def to_dict(self, remove_nones=False):
         """
@@ -60,5 +74,8 @@ class Indicator(ModelBase):
             'value': self.value,
             'indicatorType': self.type,
             'priorityLevel': self.priority_level,
-            'correlationCount': self.correlation_count
+            'correlationCount': self.correlation_count,
+            'whitelisted': self.whitelisted,
+            'weight': self.weight,
+            'reason': self.reason
         }

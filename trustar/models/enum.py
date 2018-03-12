@@ -5,7 +5,15 @@ class Enum(object):
 
     @classmethod
     def values(cls):
-        return [attr for attr in dir(cls) if not callable(getattr(cls, attr)) and not attr.startswith("__")]
+        return [getattr(cls, attr) for attr in dir(cls) if not callable(getattr(cls, attr)) and not attr.startswith("__")]
+
+    @classmethod
+    def from_string(cls, string):
+        for attr in dir(cls):
+            value = getattr(cls, attr)
+            if value == string:
+                return value
+        raise ValueError("Enum value %s not found." % string)
 
 
 class IndicatorType(Enum):
@@ -32,13 +40,28 @@ class PriorityLevel(Enum):
     HIGH = "HIGH"
 
 
-class IdType:
+class IdType(Enum):
 
     INTERNAL = "internal"
     EXTERNAL = "external"
 
 
-class DistributionType:
+class DistributionType(Enum):
 
     ENCLAVE = "ENCLAVE"
     COMMUNITY = "COMMUNITY"
+
+
+class EnclaveType(Enum):
+
+    OPEN = "OPEN"
+    INTERNAL = "INTERNAL"
+    CLOSED = "CLOSED"
+    OTHER = "OTHER"
+
+    @classmethod
+    def from_string(cls, string):
+        if string == "CLOSED_CONCRETE":
+            return cls.CLOSED
+        else:
+            return super(EnclaveType).from_string(string)
