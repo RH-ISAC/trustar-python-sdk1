@@ -816,7 +816,7 @@ class TruStar(object):
         :param indicators: A list of indicator values of any type.
         :param enclave_ids: Only find details for indicators in these enclaves.
 
-        :return: a list of |Indicator| objects with all fields (except possibly ``reason`` filled out)
+        :return: a list of |Indicator| objects with all fields (except possibly ``reason``) filled out
         """
 
         # if the indicators parameter is a string, make it a singleton
