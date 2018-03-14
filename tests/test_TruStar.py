@@ -241,6 +241,21 @@ class TruStarTests(unittest.TestCase):
         for indicator in indicators:
             self.ts.delete_indicator_from_whitelist(indicator=indicator)
 
+    def test_get_indicator_details(self):
+
+        indicators = ["1.2.3.4", "evil.com"]
+
+        report = Report(title="test",
+                        body=' '.join(indicators))
+
+        self.ts.submit_report(report)
+
+        details = self.ts.get_indicator_details(indicators)
+
+        print(details)
+
+        self.ts.delete_report(report.id)
+
 
 if __name__ == '__main__':
     unittest.main()

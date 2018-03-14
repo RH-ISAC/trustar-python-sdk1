@@ -69,10 +69,6 @@ class Report(ModelBase):
         if is_enclave is None:
             is_enclave = True
 
-        # ensure that enclave IDs are given if distribution type is ENCLAVE
-        if is_enclave and enclave_ids is None:
-            raise ValueError("If distribution type is ENCLAVE, must provide enclave IDs.")
-
         time_began = normalize_timestamp(time_began)
 
         self.id = id

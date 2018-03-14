@@ -806,6 +806,29 @@ class TruStar(object):
 
         return Page.from_dict(resp.json(), content_type=Indicator)
 
+    def get_indicator_details(self, indicators, enclave_ids=None):
+        """
+        Provide a list of indicator values and obtain details for all of them, including indicator_type, priority_level,
+        correlation_count, and whether they have been whitelisted.  Note that the values provided must match indicator
+        values in Station exactly.  If the exact value of an indicator is not known, it should be obtained either through
+        the search endpoint first.
+
+        :param indicators: A list of indicator values of any type.
+        :param enclave_ids: Only find details for indicators in these enclaves.
+
+        :return: a list of |Indicator| objects with all fields (except possibly ``reason`` filled out)
+        """
+
+        # if the indicators parameter is a string, make it a singleton
+        if isinstance(indicators, string_types):
+            indicators = [indicators]
+
+        data = json.dumps(indicators)
+        params = {'enclaveIds': enclave_ids}
+        resp = self._post("indicators", params=params, data=data)
+
+        return map(Indicator.from_dict, resp.json())
+
 
     #####################
     ### Tag Endpoints ###
