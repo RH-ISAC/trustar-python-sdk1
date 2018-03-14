@@ -46,7 +46,7 @@ class TruStar(object):
     # default config values
     DEFAULTS = {
         'auth': 'https://api.trustar.co/oauth/token',
-        'base': 'https://api.trustar.co/api/1.3-beta',
+        'base': 'https://api.trustar.co/api/1.3',
         'client_type': 'PYTHON_SDK',
         'client_version': __version__,
         'client_metatag': None,
@@ -74,7 +74,7 @@ class TruStar(object):
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``auth_endpoint``       | No        | ``"https://api.trustar.co/oauth/token"``         | the URL used to obtain OAuth2 tokens                   |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
-        | ``api_endpoint``        | No        | ``"https://api.trustar.co/api/1.3-beta"``        | the base URL used for making API calls                 |
+        | ``api_endpoint``        | No        | ``"https://api.trustar.co/api/1.3"``             | the base URL used for making API calls                 |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``verify``              | No        | ``True``                                         | whether to use SSL verification                        |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
@@ -125,7 +125,7 @@ class TruStar(object):
 
         # get API version and strip "beta" tag
         # This comes from base url passed in config
-        # e.g. https://api.trustar.co/api/1.3-beta will give 1.3-beta
+        # e.g. https://api.trustar.co/api/1.3-beta will give 1.3
         api_version = self.base.strip("/").split("/")[-1]
 
         # strip beta tag
@@ -429,7 +429,7 @@ class TruStar(object):
         Example:
 
         >>> ts.get_version()
-        1.3-beta
+        1.3
         """
 
         return self._get("version").content.decode('utf-8').strip('\n')
