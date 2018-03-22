@@ -567,7 +567,7 @@ class TruStar(object):
                 report.enclave_ids = self.enclave_ids
             # if distribution type is COMMUNITY, API still expects non-null list of enclaves
             else:
-                report.enclaves = []
+                report.enclave_ids = []
 
         if report.is_enclave and len(report.enclave_ids) == 0:
             raise Exception("Cannot submit a report of distribution type 'ENCLAVE' with an empty set of enclaves.")
@@ -823,9 +823,11 @@ class TruStar(object):
         if isinstance(indicators, string_types):
             indicators = [indicators]
 
-        data = json.dumps(indicators)
-        params = {'enclaveIds': enclave_ids}
-        resp = self._post("indicators", params=params, data=data)
+        params = {
+            'enclaveIds': enclave_ids,
+            'indicatorValues': indicators
+        }
+        resp = self._get("indicators/details", params=params)
 
         return map(Indicator.from_dict, resp.json())
 
@@ -844,7 +846,7 @@ class TruStar(object):
         """
 
         params = {'idType': id_type}
-        resp = self._get("reports/%s/enclave-tags" % report_id, params=params)
+        resp = self._get("reports/%s/tags" % report_id, params=params)
         return map(Tag.from_dict, resp.json())
 
     def add_enclave_tag(self, report_id, name, enclave_id, id_type=None):
@@ -863,26 +865,23 @@ class TruStar(object):
             'name': name,
             'enclaveId': enclave_id
         }
-        resp = self._post("reports/%s/enclave-tags" % report_id, params=params)
+        resp = self._post("reports/%s/tags" % report_id, params=params)
         return str(resp.content)
 
-    def delete_enclave_tag(self, report_id, name, enclave_id, id_type=None):
+    def delete_enclave_tag(self, report_id, tag_id, id_type=None):
         """
         Deletes a tag from a specific report, in a specific enclave.
 
         :param report_id: The ID of the report
-        :param name: The name of the tag to be deleted
-        :param enclave_id: id of the enclave where the tag will be added
+        :param tag_id: id of the tag to delete
         :param id_type: indicates whether the ID internal or an external ID provided by the user
         :return: The response body.
         """
 
         params = {
-            'idType': id_type,
-            'name': name,
-            'enclaveId': enclave_id
+            'idType': id_type
         }
-        self._delete("reports/%s/enclave-tags" % report_id, params=params)
+        self._delete("reports/%s/tags/%s" % (report_id, tag_id), params=params)
 
     def get_all_enclave_tags(self, enclave_ids=None):
         """
@@ -894,7 +893,7 @@ class TruStar(object):
         """
 
         params = {'enclaveIds': enclave_ids}
-        resp = self._get("enclave-tags", params=params)
+        resp = self._get("tags", params=params)
         return map(Tag.from_dict, resp.json())
 
     #########################

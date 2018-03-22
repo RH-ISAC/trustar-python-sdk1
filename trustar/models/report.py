@@ -59,8 +59,6 @@ class Report(ModelBase):
             some external system, this should contain its id in that system.
         :param external_url: A URL to the report in an external system (if one exists).
         :param is_enclave: A boolean representing whether the distribution type of the report is ENCLAVE or COMMUNITY.
-        :param enclave_ids: A list of guids of the enclaves that the report belongs to.  If "enclaves" parameter is not
-            used, then Enclave objects will be constructed from this parameter instead.
         :param enclave_ids: The list of enclave_ids the report is associated with.  If ``is_enclave`` is ``True``, this
             cannot be ``None`` or empty.
         """
@@ -113,6 +111,7 @@ class Report(ModelBase):
                 'externalUrl': self.external_url,
                 'distributionType': self._get_distribution_type(),
                 'externalTrackingId': self.external_id,
+                'enclavesIds': self.enclave_ids,
                 'enclaveIds': self.enclave_ids,
                 'created': self.created,
                 'updated': self.updated,

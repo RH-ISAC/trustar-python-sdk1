@@ -75,11 +75,16 @@ class TruStarTests(unittest.TestCase):
 
         # get tags
         result = self.ts.get_enclave_tags(report_id=report.id)
+        tag_id = None
+        for tag in result:
+            if tag.name == "some_tag":
+                tag_id = tag.id
+
+        self.assertIsNotNone(tag_id)
 
         # delete tag
         result = self.ts.delete_enclave_tag(report_id=report.id,
-                                            enclave_id=self.ts.enclave_ids[0],
-                                            name="some_tag")
+                                            tag_id=tag_id)
 
         # delete report
         response = self.ts.delete_report(report_id=report.id)
@@ -219,11 +224,11 @@ class TruStarTests(unittest.TestCase):
                 self.ts.delete_report(report_id=id)
 
     def test_search_indicators(self):
-        indicators = self.ts.search_indicators("a*c")
+        indicators = self.ts.search_indicators("abc")
         self.assertGreater(len(list(indicators)), 0)
 
     def test_search_reports(self):
-        reports = self.ts.search_reports("a*c")
+        reports = self.ts.search_reports("abc")
         self.assertGreater(len(list(reports)), 0)
 
     def test_get_enclaves(self):

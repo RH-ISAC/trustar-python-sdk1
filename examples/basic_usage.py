@@ -82,29 +82,15 @@ def main():
 
         logger.info("Getting Latest Accessible Incident Reports Since 24 hours ago ...")
         try:
-            page_number = 0
 
             # get each successive page of reports
-            while page_number == 0 or page.has_more_pages():
+            report_generator = ts.get_reports(from_time=yesterday_time,
+                                              to_time=current_time,
+                                              is_enclave=True,
+                                              enclave_ids=ts.enclave_ids)
 
-                # get next page of reports
-                page = ts.get_reports_page(from_time=yesterday_time,
-                                           to_time=current_time,
-                                           is_enclave=True,
-                                           enclave_ids=ts.enclave_ids,
-                                           page_number=page_number,
-                                           page_size=5)
-
-                if page_number == 0:
-                    logger.info("Found %s total reports." % page.total_elements)
-
-                logger.info("Retrieved page %d of %d total pages." % (page.page_number, page.get_total_pages()))
-
-                # print each report in the page
-                for report in page.items:
-                    logger.info(report)
-
-                page_number += 1
+            for report in report_generator:
+                logger.info(report)
 
         except Exception as e:
             logger.error('Could not get latest reports, error: %s' % e)
@@ -120,8 +106,6 @@ def main():
             reports = ts.get_reports(from_time=two_days_ago,
                                      to_time=yesterday_time,
                                      is_enclave=False)
-
-            logger.info("Got %s results" % len(reports))
 
             for report in reports:
                 logger.info(report)
@@ -141,8 +125,6 @@ def main():
                                      to_time=current_time,
                                      is_enclave=True,
                                      enclave_ids=ts.enclave_ids)
-
-            logger.info("Got %s results" % len(reports))
 
             for report in reports:
                 logger.info(report)
@@ -165,27 +147,12 @@ def main():
 
         print('')
 
-    if do_get_indicators:
-        logger.info("Getting indicators...")
-
-        try:
-            indicators = ts.get_indicators(types=['URL', 'IP'], is_enclave=True, enclave_ids=ts.enclave_ids)
-            logger.info("Found %d indicators." % len(indicators))
-            for indicator in indicators:
-                logger.info(indicator)
-
-        except Exception as e:
-            logger.error('Could not get indicators, error: %s' % e)
-
-        print('')
-
     if do_community_trends:
         logger.info("Get community trends...")
 
         try:
             indicators = ts.get_community_trends(indicator_type=None,
-                                                 from_time=yesterday_time,
-                                                 to_time=current_time)
+                                                 days_back=1)
             for indicator in indicators:
                 logger.info(indicator)
         except Exception as e:
@@ -195,12 +162,12 @@ def main():
 
     if do_query_indicators:
         try:
+            logger.info("Getting related indicators...")
             indicators = ts.get_related_indicators(indicators=search_string)
-            logger.info("Got %s results" % len(indicators))
             for indicator in indicators:
                 logger.info(indicator)
         except Exception as e:
-            logger.error('Could not get correlated indicators, error: %s' % e)
+            logger.error('Could not get related indicators, error: %s' % e)
 
     # Submit simple test report to community
     if do_comm_submissions:
@@ -213,8 +180,6 @@ def main():
             report = ts.submit_report(report)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
 
-            if report.indicators is not None:
-                logger.info("Extracted the following community indicators: \n%s\n" % report.indicators)
         except Exception as e:
             logger.error('Could not submit community report, error: %s' % e)
 
@@ -234,8 +199,6 @@ def main():
 
             logger.info(report)
 
-            if report.indicators is not None:
-                logger.info("Extracted the following enclave indicators: \n%s\n" % report.indicators)
         except Exception as e:
             logger.error('Could not submit enclave report, error: %s' % e)
 
@@ -256,7 +219,6 @@ def main():
 
             logger.info("Report Submitted")
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not submit report, error: %s' % e)
@@ -271,7 +233,6 @@ def main():
 
             logger.info("\ttitle: %s" % report.title)
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
             report_guid = report.id
         except Exception as e:
@@ -290,7 +251,6 @@ def main():
             report = ts.update_report(report)
 
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not update report, error: %s' % e)
@@ -306,7 +266,6 @@ def main():
 
             logger.info("\ttitle: %s" % report.title)
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
@@ -325,7 +284,6 @@ def main():
 
             logger.info("Updated Report using GUID")
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not update report, error: %s' % e)
@@ -340,7 +298,6 @@ def main():
 
             logger.info("\ttitle: %s" % report.title)
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
@@ -357,7 +314,6 @@ def main():
 
             logger.info("Report Released using External ID:")
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not release report, error: %s' % e)
@@ -373,7 +329,6 @@ def main():
 
             logger.info("\ttitle: %s" % report.title)
             logger.info("\texternalTrackingId: %s" % report.external_id)
-            logger.info("\tindicators: %s" % report.indicators)
             logger.info("\tURL: %s\n" % ts.get_report_url(report.id))
         except Exception as e:
             logger.error('Could not get report, error: %s' % e)
@@ -429,9 +384,9 @@ def main():
                 logger.info(tags)
 
             # delete enclave tag by name
-            if do_delete_enclave_tag:
+            if do_get_enclave_tags and do_delete_enclave_tag:
                 logger.info("Delete enclave tag from report")
-                response = ts.delete_enclave_tag(report.id, name="triage", enclave_id=enclave_id)
+                response = ts.delete_enclave_tag(report.id, tags[0].id)
                 logger.info("\tDeleted enclave tag for report %s\n" % report.id)
                 logger.info(response)
 
