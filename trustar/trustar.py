@@ -893,7 +893,7 @@ class TruStar(object):
         """
 
         params = {'enclaveIds': enclave_ids}
-        resp = self._get("tags", params=params)
+        resp = self._get("reports/tags", params=params)
         return map(Tag.from_dict, resp.json())
 
     #########################

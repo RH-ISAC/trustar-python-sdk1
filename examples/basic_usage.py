@@ -362,19 +362,17 @@ def main():
 
             # get back report details, including the enclave it's in
             report = ts.get_report_details(report_id=report.id)
-            enclave_id = report.get_enclave_ids()[0]
+            enclave_id = report.enclave_ids[0]
 
             # add an enclave tag
-            tag = ts.add_enclave_tag(report_id=report.id, name="triage", enclave_id=enclave_id)
+            tag_id = ts.add_enclave_tag(report_id=report.id, name="triage", enclave_id=enclave_id)
             # logger.info the added enclave tag
-            logger.info(tag)
-            logger.info("\tId of new enclave tag %s\n" % tag.id)
+            logger.info("\tId of new enclave tag %s\n" % tag_id)
 
             # add another enclave tag
-            tag = ts.add_enclave_tag(report_id=report.id, name="resolved", enclave_id=enclave_id)
+            tag_id = ts.add_enclave_tag(report_id=report.id, name="resolved", enclave_id=enclave_id)
             # logger.info the added enclave tag
-            logger.info(tag)
-            logger.info("\tId of new enclave tag %s\n" % tag.id)
+            logger.info("\tId of new enclave tag %s\n" % tag_id)
 
             # Get enclave tag info
             if do_get_enclave_tags:
@@ -384,9 +382,9 @@ def main():
                 logger.info(tags)
 
             # delete enclave tag by name
-            if do_get_enclave_tags and do_delete_enclave_tag:
+            if do_delete_enclave_tag:
                 logger.info("Delete enclave tag from report")
-                response = ts.delete_enclave_tag(report.id, tags[0].id)
+                response = ts.delete_enclave_tag(report.id, tag_id)
                 logger.info("\tDeleted enclave tag for report %s\n" % report.id)
                 logger.info(response)
 
@@ -399,11 +397,11 @@ def main():
             logger.info(tags)
 
             # Search report by tag
+            logger.info("Getting reports tagged 'triage'.")
             reports = ts.get_reports(from_time=yesterday_time,
                                      to_time=current_time,
                                      enclave_ids=ts.enclave_ids,
                                      tag="triage")
-            logger.info("Got %s results" % len(reports))
 
             for report in reports:
                 logger.info(report)
@@ -428,13 +426,13 @@ def main():
 
         print('')
 
-    # search for indicators matching pattern "a*c"
+    # search for indicators matching pattern "abc"
     if do_search_indicators:
 
         try:
             logger.info("Searching indicators:")
 
-            indicators = ts.search_indicators("a*c")
+            indicators = ts.search_indicators("abc")
             for indicator in indicators:
                 logger.info(indicator)
 
