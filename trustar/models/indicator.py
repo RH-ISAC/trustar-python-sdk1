@@ -17,13 +17,14 @@ class Indicator(ModelBase):
     :ivar type: The type of indicator; i.e. "URL"
     :ivar priority_level: The priority level of the indicator
     :ivar correlation_count: The number of other indicators that are correlated with this indicator.
+    :ivar whitelisted: Whether the indicator is whitelisted or not.
+    :ivar weight: see |Indicator_resource| for details.
+    :ivar reason: see |Indicator_resource| for details.
 
     :cvar TYPES: A list of all valid indicator types.
-    :cvar PRIORITY_LEVELS: A list of all possible priority levels.
     """
 
     TYPES = IndicatorType.values()
-    PRIORITY_LEVELS = PriorityLevel.values()
 
     def __init__(self,
                  value,
@@ -42,8 +43,8 @@ class Indicator(ModelBase):
         self.weight = weight
         self.reason = reason
 
-    @staticmethod
-    def from_dict(indicator):
+    @classmethod
+    def from_dict(cls, indicator):
         """
         Create an indicator object from a dictionary.
 
