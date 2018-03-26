@@ -450,7 +450,7 @@ class TruStar(object):
 
         Example:
 
-        >>> report = ts.get_report_details(report_id)
+        >>> report = ts.get_report_details("1a09f14b-ef8c-443f-b082-9643071c522a")
         >>> print(report)
         {
           "id": "1a09f14b-ef8c-443f-b082-9643071c522a",
@@ -588,7 +588,8 @@ class TruStar(object):
         """
         Updates the report identified by the ``report.id`` field; if this field does not exist, then
         ``report.external_id`` will be used if it exists.  Any other fields on ``report`` that are not ``None``
-        will overwrite values on the report on Station.
+        will overwrite values on the report in TruSTAR's system.   Any fields that are  ``None`` will simply be ignored;
+        their values will be unchanged.
 
         :param report: A |Report| object with the updated values.
         :return: The |Report| object.
@@ -628,7 +629,7 @@ class TruStar(object):
 
     def delete_report(self, report_id, id_type=None):
         """
-        Deletes the report with the given id.
+        Deletes the report with the given ID.
 
         :param report_id: the ID of the report to delete
         :param id_type: indicates whether the ID is internal or an external ID provided by the user
@@ -855,7 +856,7 @@ class TruStar(object):
 
         :param report_id: The ID of the report
         :param name: The name of the tag to be added
-        :param enclave_id: id of the enclave where the tag will be added
+        :param enclave_id: ID of the enclave where the tag will be added
         :param id_type: indicates whether the ID internal or an external ID provided by the user
         :return: A |Tag| object representing the tag that was created.
         """
@@ -873,7 +874,7 @@ class TruStar(object):
         Deletes a tag from a specific report, in a specific enclave.
 
         :param report_id: The ID of the report
-        :param tag_id: id of the tag to delete
+        :param tag_id: ID of the tag to delete
         :param id_type: indicates whether the ID internal or an external ID provided by the user
         :return: The response body.
         """
