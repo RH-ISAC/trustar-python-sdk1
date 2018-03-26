@@ -420,7 +420,12 @@ class TruStar(object):
         pong
         """
 
-        return self._get("ping").content.decode('utf-8').strip('\n')
+        result = self._get("ping").content
+
+        if isinstance(result, bytes):
+            result = result.decode('utf-8')
+
+        return result.strip('\n')
 
     def get_version(self):
         """
@@ -432,7 +437,12 @@ class TruStar(object):
         1.3
         """
 
-        return self._get("version").content.decode('utf-8').strip('\n')
+        result = self._get("version").content
+
+        if isinstance(result, bytes):
+            result = result.decode('utf-8')
+
+        return result.strip('\n')
 
 
     ########################
@@ -580,7 +590,12 @@ class TruStar(object):
         resp = self._post("reports", data=data, timeout=60)
 
         # get report id from response body
-        report.id = resp.content.decode('utf-8')
+        report_id = resp.content
+
+        if isinstance(report_id, bytes):
+            report_id = report_id.decode('utf-8')
+
+        report.id = report_id
 
         return report
 
