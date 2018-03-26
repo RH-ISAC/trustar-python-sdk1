@@ -111,7 +111,6 @@ class Report(ModelBase):
                 'externalUrl': self.external_url,
                 'distributionType': self._get_distribution_type(),
                 'externalTrackingId': self.external_id,
-                'enclavesIds': self.enclave_ids,
                 'enclaveIds': self.enclave_ids,
                 'created': self.created,
                 'updated': self.updated,
