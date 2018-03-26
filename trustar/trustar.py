@@ -1,6 +1,6 @@
 # python 2 backwards compatibility
 from __future__ import print_function
-from builtins import object
+from builtins import object, str
 from future import standard_library
 from six import string_types
 
@@ -580,7 +580,7 @@ class TruStar(object):
         resp = self._post("reports", data=data, timeout=60)
 
         # get report id from response body
-        report.id = str(resp.content)
+        report.id = resp.content.decode('utf-8')
 
         return report
 
