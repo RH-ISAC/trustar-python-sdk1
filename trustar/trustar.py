@@ -468,13 +468,8 @@ class TruStar(object):
           "updated": 1515620420062,
           "reportBody": "Employee reported suspect email.  We had multiple reports of suspicious email overnight ...",
           "title": "Phishing Incident",
-          "enclaves": [
-            {
-              "id": "ac6a0d17-7350-4410-bc57-9699521db992",
-              "name": "Some Enclave",
-              "internalName": "Some Enclave",
-              "enclaveType": "DEFAULT",
-            }
+          "enclaveIds": [
+            "ac6a0d17-7350-4410-bc57-9699521db992"
           ],
           "distributionType": "ENCLAVE",
           "timeBegan": 1479941278000
