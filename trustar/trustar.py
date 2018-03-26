@@ -729,7 +729,7 @@ class TruStar(object):
         :param str report_id: the ID of the report to get the indicators for
         :param int page_number: the page number to get.
         :param int page_size: the size of the page to be returned.
-        :return:
+        :return: A |Page| of |Indicator| objects.
         """
 
         params = {
@@ -791,7 +791,7 @@ class TruStar(object):
             enclaves (optional - by default reports from all of the user's enclaves are used)
         :param int page_number: the page number to get.
         :param int page_size: the size of the page to be returned.
-        :return: a |Page| of |Report| objects.
+        :return: a |Page| of |Indicator| objects.
         """
 
         params = {
@@ -905,7 +905,7 @@ class TruStar(object):
         """
         Gets the list of enclaves that the user has access to.
 
-        :return: A list of JSONs, each containing the GUID, name, and type of an enclave, as well as whether the user
+        :return: A list of |EnclavePermissions| objects, each representing an enclave and whether the requesting user
             has read, create, and update access to it.
         """
 
@@ -938,7 +938,7 @@ class TruStar(object):
         Add a list of terms to the user's company's whitelist.
 
         :param terms: The list of terms to whitelist.
-        :return: The list of extracted |Indicator|s that were whitelisted.
+        :return: The list of extracted |Indicator| objects that were whitelisted.
         """
 
         resp = self._post("whitelist", json=terms)
