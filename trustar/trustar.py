@@ -501,16 +501,6 @@ class TruStar(object):
 
         :return: A |Page| of |Report| objects.
 
-        Example:
-
-        >>> page = ts.get_reports_page(is_enclave=True, tag=["malicious"], excluded_tags=["resolved"],
-        >>>                            from_time=1495695711000, to_time=1514185311000,
-        >>>                            page_number=1, page_size=5)
-        >>> print([report.id for report in page])
-        ['661583cb-a6a7-4cbd-8a90-01578fa4da89', 'da131660-2708-4c8a-926e-f91fb5dbbc62', '2e3400d6-fa37-4a8c-bc2f-155aaa02ae5a', '38064828-d3db-4fff-8ab8-e0e3b304ff44', 'dbf26104-cee5-4ca4-bdbf-a01d0178c007']
-        >>> print(len(page))
-        5
-
         """
 
         distribution_type = None
@@ -647,9 +637,7 @@ class TruStar(object):
 
         Example:
 
-        >>> response = ts.delete_report(report_id)
-        >>> print(response.content)
-        OK
+        >>> response = ts.delete_report("4d1fcaee-5009-4620-b239-2b22c3992b80")
         """
 
         params = {'idType': id_type}
@@ -1012,8 +1000,12 @@ class TruStar(object):
         Example:
 
         >>> page = ts.get_reports(is_enclave=True, tag="malicious", from_time=1425695711000, to_time=1514185311000)
-        >>> print([report.id for report in reports])
-        ['661583cb-a6a7-4cbd-8a90-01578fa4da89', 'da131660-2708-4c8a-926e-f91fb5dbbc62', '2e3400d6-fa37-4a8c-bc2f-155aaa02ae5a', '38064828-d3db-4fff-8ab8-e0e3b304ff44', 'dbf26104-cee5-4ca4-bdbf-a01d0178c007', ...]
+        >>> for report in reports: print(report.id)
+        '661583cb-a6a7-4cbd-8a90-01578fa4da89'
+        'da131660-2708-4c8a-926e-f91fb5dbbc62'
+        '2e3400d6-fa37-4a8c-bc2f-155aaa02ae5a'
+        '38064828-d3db-4fff-8ab8-e0e3b304ff44'
+        'dbf26104-cee5-4ca4-bdbf-a01d0178c007'
 
         """
 
