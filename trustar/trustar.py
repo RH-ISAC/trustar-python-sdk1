@@ -807,6 +807,8 @@ class TruStar(object):
 
     def get_indicator_details(self, indicators, enclave_ids=None):
         """
+        NOTE: This method uses an API endpoint that is intended for internal use only, and is not officially supported.
+
         Provide a list of indicator values and obtain details for all of them, including indicator_type, priority_level,
         correlation_count, and whether they have been whitelisted.  Note that the values provided must match indicator
         values in Station exactly.  If the exact value of an indicator is not known, it should be obtained either through
