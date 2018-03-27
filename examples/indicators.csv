@@ -1,0 +1,91 @@
+report_id,report_title,report_tags,indicator_value,indicator_type
+905005ca-2fad-434f-a5d1-59e8bc5c583b,Hello,,1.2.3.4,IP
+c0cc9e5b-855f-46af-baea-13853a4bdea7,Hello,,1.2.3.4,IP
+fbdfbdff-c2f2-4633-8d1e-bcd367c8b743,Hello,,1.2.3.4,IP
+5d944d0d-da8f-449e-bcb1-5604ca131d18,Hello,,1.2.3.4,IP
+13ba2f45-b872-43b1-94ad-4b7e60b1aa23,Hello,,1.2.3.4,IP
+05784981-6af4-4f3d-874f-68be56dad094,Hello,,1.2.3.4,IP
+76cd55d9-57e8-4930-941a-aa3924334257,Hello,,1.2.3.4,IP
+15d6d040-4a3b-4251-97e9-602070ee4a23,Hello,,1.2.3.4,IP
+e9781650-96fa-476c-badc-0c07e44069b8,Hello,,1.2.3.4,IP
+497f1fde-3c32-44b0-aeef-770386f3bd82,Hello,,1.2.3.4,IP
+9b2beb24-aceb-4370-b97c-e438edb48e2c,blah,,1.2.3.4,IP
+9b2beb24-aceb-4370-b97c-e438edb48e2c,blah,,a.com,URL
+9b2beb24-aceb-4370-b97c-e438edb48e2c,blah,,b.com,URL
+0b1e1ba6-87d5-4b34-bab2-5acf034d26bd,Enclave report with tag,triage,103.255.61.39,IP
+0b1e1ba6-87d5-4b34-bab2-5acf034d26bd,Enclave report with tag,triage,google.com,URL
+0b1e1ba6-87d5-4b34-bab2-5acf034d26bd,Enclave report with tag,triage,malware.exe,SOFTWARE
+100d0fe4-c2a4-4e89-b17c-a5f02e286e3f,ENCLAVE API SUBMISSION TEST,,103.255.61.39,IP
+100d0fe4-c2a4-4e89-b17c-a5f02e286e3f,ENCLAVE API SUBMISSION TEST,,google.com,URL
+100d0fe4-c2a4-4e89-b17c-a5f02e286e3f,ENCLAVE API SUBMISSION TEST,,malware.exe,SOFTWARE
+9a8b90a7-1e48-416c-ad94-db311822b260,Enclave report with tag,triage,103.255.61.39,IP
+9a8b90a7-1e48-416c-ad94-db311822b260,Enclave report with tag,triage,google.com,URL
+9a8b90a7-1e48-416c-ad94-db311822b260,Enclave report with tag,triage,malware.exe,SOFTWARE
+f7b02228-cb16-45a1-8249-91174e65cfeb,ENCLAVE API SUBMISSION TEST,,103.255.61.39,IP
+f7b02228-cb16-45a1-8249-91174e65cfeb,ENCLAVE API SUBMISSION TEST,,google.com,URL
+f7b02228-cb16-45a1-8249-91174e65cfeb,ENCLAVE API SUBMISSION TEST,,malware.exe,SOFTWARE
+4233c5c7-c7af-4516-b14c-11a0bd1117ad,Enclave report with tag,triage,103.255.61.39,IP
+4233c5c7-c7af-4516-b14c-11a0bd1117ad,Enclave report with tag,triage,google.com,URL
+4233c5c7-c7af-4516-b14c-11a0bd1117ad,Enclave report with tag,triage,malware.exe,SOFTWARE
+fb093097-9619-457b-af60-8d9d267457a5,ENCLAVE API SUBMISSION TEST,,103.255.61.39,IP
+fb093097-9619-457b-af60-8d9d267457a5,ENCLAVE API SUBMISSION TEST,,google.com,URL
+fb093097-9619-457b-af60-8d9d267457a5,ENCLAVE API SUBMISSION TEST,,malware.exe,SOFTWARE
+3ab4d44a-0316-4b3d-b10c-c2f55d4fd7f7,Enclave report with tag,triage,103.255.61.39,IP
+3ab4d44a-0316-4b3d-b10c-c2f55d4fd7f7,Enclave report with tag,triage,google.com,URL
+3ab4d44a-0316-4b3d-b10c-c2f55d4fd7f7,Enclave report with tag,triage,malware.exe,SOFTWARE
+30ffdfd3-8757-4660-a600-3fb7449cd704,ENCLAVE API SUBMISSION TEST,,103.255.61.39,IP
+30ffdfd3-8757-4660-a600-3fb7449cd704,ENCLAVE API SUBMISSION TEST,,google.com,URL
+30ffdfd3-8757-4660-a600-3fb7449cd704,ENCLAVE API SUBMISSION TEST,,malware.exe,SOFTWARE
+854e7870-c513-43b9-be82-4a70b8197174,Enclave report with tag,,103.255.61.39,IP
+854e7870-c513-43b9-be82-4a70b8197174,Enclave report with tag,,google.com,URL
+854e7870-c513-43b9-be82-4a70b8197174,Enclave report with tag,,malware.exe,SOFTWARE
+54843bbc-f2f3-4d0d-b8c3-160ad7ebd993,ENCLAVE API SUBMISSION TEST,,103.255.61.39,IP
+54843bbc-f2f3-4d0d-b8c3-160ad7ebd993,ENCLAVE API SUBMISSION TEST,,google.com,URL
+54843bbc-f2f3-4d0d-b8c3-160ad7ebd993,ENCLAVE API SUBMISSION TEST,,malware.exe,SOFTWARE
+e12787aa-6d2b-4748-8ce1-69d7ceb23f62,Enclave report with tag,,103.255.61.39,IP
+e12787aa-6d2b-4748-8ce1-69d7ceb23f62,Enclave report with tag,,google.com,URL
+e12787aa-6d2b-4748-8ce1-69d7ceb23f62,Enclave report with tag,,malware.exe,SOFTWARE
+7d898f44-c3d9-4ae4-8b4c-b95800e267a2,ENCLAVE API SUBMISSION TEST,,103.255.61.39,IP
+7d898f44-c3d9-4ae4-8b4c-b95800e267a2,ENCLAVE API SUBMISSION TEST,,google.com,URL
+7d898f44-c3d9-4ae4-8b4c-b95800e267a2,ENCLAVE API SUBMISSION TEST,,malware.exe,SOFTWARE
+c879a770-8b91-46e8-81d4-c386e29ff58b,ENCLAVE API SUBMISSION TEST,,103.255.61.39,IP
+c879a770-8b91-46e8-81d4-c386e29ff58b,ENCLAVE API SUBMISSION TEST,,google.com,URL
+c879a770-8b91-46e8-81d4-c386e29ff58b,ENCLAVE API SUBMISSION TEST,,malware.exe,SOFTWARE
+52801c88-5521-4eb4-a12b-16799a56a4cf,Test_Get_Related_Indicators_Report_1,,105.142.134.100,IP
+52801c88-5521-4eb4-a12b-16799a56a4cf,Test_Get_Related_Indicators_Report_1,,111.173.203.105,IP
+52801c88-5521-4eb4-a12b-16799a56a4cf,Test_Get_Related_Indicators_Report_1,,126.135.210.127,IP
+52801c88-5521-4eb4-a12b-16799a56a4cf,Test_Get_Related_Indicators_Report_1,,178.162.208.156,IP
+52801c88-5521-4eb4-a12b-16799a56a4cf,Test_Get_Related_Indicators_Report_1,,wefoijseroijr@yahoo.org,EMAIL_ADDRESS
+52801c88-5521-4eb4-a12b-16799a56a4cf,Test_Get_Related_Indicators_Report_1,,www.abcxyz1235.com,URL
+c42c99de-ad9b-4573-b644-c36b21825fa8,Test_Get_Related_Indicators_Report_3,,126.154.215.164,IP
+c42c99de-ad9b-4573-b644-c36b21825fa8,Test_Get_Related_Indicators_Report_3,,132.159.121.250,IP
+c42c99de-ad9b-4573-b644-c36b21825fa8,Test_Get_Related_Indicators_Report_3,,145.178.167.156,IP
+c42c99de-ad9b-4573-b644-c36b21825fa8,Test_Get_Related_Indicators_Report_3,,160.224.166.216,IP
+c42c99de-ad9b-4573-b644-c36b21825fa8,Test_Get_Related_Indicators_Report_3,,171.224.234.209,IP
+c42c99de-ad9b-4573-b644-c36b21825fa8,Test_Get_Related_Indicators_Report_3,,174.195.209.188,IP
+c42c99de-ad9b-4573-b644-c36b21825fa8,Test_Get_Related_Indicators_Report_3,,199.239.121.147,IP
+c42c99de-ad9b-4573-b644-c36b21825fa8,Test_Get_Related_Indicators_Report_3,,222.160.194.125,IP
+c42c99de-ad9b-4573-b644-c36b21825fa8,Test_Get_Related_Indicators_Report_3,,236.164.151.216,IP
+c42c99de-ad9b-4573-b644-c36b21825fa8,Test_Get_Related_Indicators_Report_3,,242.164.248.252,IP
+c42c99de-ad9b-4573-b644-c36b21825fa8,Test_Get_Related_Indicators_Report_3,,wefoijseroijr@yahoo.org,EMAIL_ADDRESS
+3fa45f81-eb45-49e2-9ac0-bc3e356328c7,Test_Get_Related_Indicators_Report_2,,141.121.113.176,IP
+3fa45f81-eb45-49e2-9ac0-bc3e356328c7,Test_Get_Related_Indicators_Report_2,,210.217.143.146,IP
+3fa45f81-eb45-49e2-9ac0-bc3e356328c7,Test_Get_Related_Indicators_Report_2,,227.163.238.109,IP
+3fa45f81-eb45-49e2-9ac0-bc3e356328c7,Test_Get_Related_Indicators_Report_2,,232.136.156.115,IP
+3fa45f81-eb45-49e2-9ac0-bc3e356328c7,Test_Get_Related_Indicators_Report_2,,www.wefrrtdgwefwef1234.org,URL
+cf5a2eb8-cbcf-4540-9669-bd2cee27f9ad,Test_Get_Related_Indicators_Report_1,,117.170.232.171,IP
+cf5a2eb8-cbcf-4540-9669-bd2cee27f9ad,Test_Get_Related_Indicators_Report_1,,123.119.135.143,IP
+cf5a2eb8-cbcf-4540-9669-bd2cee27f9ad,Test_Get_Related_Indicators_Report_1,,146.235.135.186,IP
+cf5a2eb8-cbcf-4540-9669-bd2cee27f9ad,Test_Get_Related_Indicators_Report_1,,163.216.107.190,IP
+cf5a2eb8-cbcf-4540-9669-bd2cee27f9ad,Test_Get_Related_Indicators_Report_1,,wefoijseroijr@yahoo.org,EMAIL_ADDRESS
+cf5a2eb8-cbcf-4540-9669-bd2cee27f9ad,Test_Get_Related_Indicators_Report_1,,www.abcxyz1235.com,URL
+2fbcec32-2a08-4a5c-a751-8056d72f4f78,test,,1.2.3.4,IP
+2fbcec32-2a08-4a5c-a751-8056d72f4f78,test,,evil.com,URL
+6924a052-570c-4b26-a706-51d6a2bc515e,test,,1.2.3.4,IP
+6924a052-570c-4b26-a706-51d6a2bc515e,test,,evil.com,URL
+26a9312a-7ec1-46d6-ba45-b8fa4f2a6a3a,Enclave report with tag,,103.255.61.39,IP
+26a9312a-7ec1-46d6-ba45-b8fa4f2a6a3a,Enclave report with tag,,google.com,URL
+26a9312a-7ec1-46d6-ba45-b8fa4f2a6a3a,Enclave report with tag,,malware.exe,SOFTWARE
+21718b51-852a-413a-8a66-763d20d3ea24,ENCLAVE API SUBMISSION TEST,,103.255.61.39,IP
+21718b51-852a-413a-8a66-763d20d3ea24,ENCLAVE API SUBMISSION TEST,,google.com,URL
+21718b51-852a-413a-8a66-763d20d3ea24,ENCLAVE API SUBMISSION TEST,,malware.exe,SOFTWARE

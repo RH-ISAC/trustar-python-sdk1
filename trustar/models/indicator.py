@@ -11,7 +11,7 @@ from .enum import *
 
 class Indicator(ModelBase):
     """
-    Models an indicator of compromise.
+    Models an |Indicator_resource|.
 
     :ivar value: The indicator value; i.e. "www.evil.com"
     :ivar type: The type of indicator; i.e. "URL"

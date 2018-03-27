@@ -11,7 +11,7 @@ from .enum import EnclaveType
 
 class Enclave(ModelBase):
     """
-    Models an enclave.
+    Models an |Enclave_resource|.
 
     :ivar id: The guid of the enclave.
     :ivar name: The name of the enclave.
@@ -30,8 +30,8 @@ class Enclave(ModelBase):
         self.name = name
         self.type = type
 
-    @staticmethod
-    def from_dict(enclave):
+    @classmethod
+    def from_dict(cls, enclave):
         """
         Create a enclave object from a dictionary.
 
@@ -62,6 +62,9 @@ class Enclave(ModelBase):
 
 
 class EnclavePermissions(Enclave):
+    """
+    Models an |Enclave_resource| object, but also contains the permissions that the requesting user has to the enclave.
+    """
 
     def __init__(self, id, name=None, type=None, read=None, create=None, update=None):
         """

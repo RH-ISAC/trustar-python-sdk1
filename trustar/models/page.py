@@ -14,7 +14,8 @@ import math
 class Page(ModelBase):
     """
     This class models a page of items that would be found in the body of a response from an endpoint that uses
-    pagination.
+    pagination.  Not all paginated endpoints will use ``page_number``.  For instance, the |get_reports_page| method
+    requires pagination to be performed by continuously adjusting the ``from`` and ``to`` parameters.
 
     :ivar items: The list of items of the page; i.e. a list of indicators, reports, etc.
     :ivar page_number: The number of the page out of all total pages, indexed from 0.  i.e. if there are
@@ -121,7 +122,7 @@ class Page(ModelBase):
         :param func: Should take parameters ``page_number`` and ``page_size`` and return the corresponding |Page| object.
         :param start_page: The page to start on.
         :param page_size: The size of each page.
-        :return: A |GeneratorWithLength| instance that can be used to generate each successive page.
+        :return: A generator that generates each successive page.
         """
 
         # initialize starting values

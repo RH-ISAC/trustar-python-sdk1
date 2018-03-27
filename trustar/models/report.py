@@ -5,15 +5,14 @@ from future import standard_library
 from six import string_types
 
 # package imports
-from ..utils import normalize_timestamp, enclaves_from_ids
-from . import Indicator, Enclave
+from ..utils import normalize_timestamp
 from .base import ModelBase
 from .enum import *
 
 
 class Report(ModelBase):
     """
-    Models an incident report.
+    Models a |Report_resource|.
 
     :ivar id: the report guid
     :ivar title: the report title
@@ -24,10 +23,7 @@ class Report(ModelBase):
         external system, this should contain its id in that system.
     :ivar external_url: A URL to the report in an external system (if one exists).
     :ivar is_enclave: A boolean representing whether the distribution type of the report is ENCLAVE or COMMUNITY.
-    :ivar enclaves: A list of Enclave objects representing the enclaves that the report belongs to.
-    :ivar indicators: A list of Indicator objects representing the indicators extracted from the report.
-        Should be None if the report has not yet been submitted.  This property should not be edited directly; it should
-        only be set internally, after a report has been submitted or updated.
+    :ivar enclave_ids: A list of Enclave objects representing the enclaves that the report belongs to.
     """
 
     ID_TYPE_INTERNAL = IdType.INTERNAL

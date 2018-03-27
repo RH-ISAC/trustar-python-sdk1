@@ -69,7 +69,17 @@ def normalize_timestamp(date_time):
 
 
 def get_current_time_millis():
+    """
+    :return: the current time in milliseconds since epoch.
+    """
     return int(time.time()) * 1000
+
+
+def datetime_to_millis(dt):
+    """
+    Convert a ``datetime`` object to milliseconds since epoch.
+    """
+    return int(time.mktime(dt.timetuple())) * 1000
 
 
 def enclaves_from_ids(enclave_ids):
