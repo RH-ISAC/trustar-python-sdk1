@@ -8,3 +8,4 @@ MANIFEST
 venv*
 .DS_Store
 tests/config.yml
+tests/trustar.conf

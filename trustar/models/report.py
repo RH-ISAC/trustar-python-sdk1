@@ -23,7 +23,7 @@ class Report(ModelBase):
         external system, this should contain its id in that system.
     :ivar external_url: A URL to the report in an external system (if one exists).
     :ivar is_enclave: A boolean representing whether the distribution type of the report is ENCLAVE or COMMUNITY.
-    :ivar enclave_ids: A list of Enclave objects representing the enclaves that the report belongs to.
+    :ivar enclave_ids: A list of IDs of enclaves that the report belongs to
     """
 
     ID_TYPE_INTERNAL = IdType.INTERNAL
