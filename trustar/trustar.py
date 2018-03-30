@@ -758,7 +758,7 @@ class TruStar(object):
         body = resp.json()
 
         # parse items in response as indicators
-        return map(Indicator.from_dict, body)
+        return [Indicator.from_dict(indicator) for indicator in body]
 
     def get_related_indicators_page(self, indicators=None, enclave_ids=None, page_size=None, page_number=None):
         """
@@ -830,7 +830,7 @@ class TruStar(object):
         }
         resp = self._get("indicators/details", params=params)
 
-        return map(Indicator.from_dict, resp.json())
+        return [Indicator.from_dict(indicator) for indicator in resp.json()]
 
 
     #####################
@@ -848,7 +848,7 @@ class TruStar(object):
 
         params = {'idType': id_type}
         resp = self._get("reports/%s/tags" % report_id, params=params)
-        return map(Tag.from_dict, resp.json())
+        return [Tag.from_dict(indicator) for indicator in resp.json()]
 
     def add_enclave_tag(self, report_id, name, enclave_id, id_type=None):
         """
@@ -895,7 +895,7 @@ class TruStar(object):
 
         params = {'enclaveIds': enclave_ids}
         resp = self._get("reports/tags", params=params)
-        return map(Tag.from_dict, resp.json())
+        return [Tag.from_dict(indicator) for indicator in resp.json()]
 
     #########################
     ### Enclave Endpoints ###
@@ -910,7 +910,7 @@ class TruStar(object):
         """
 
         resp = self._get("enclaves")
-        return map(EnclavePermissions.from_dict, resp.json())
+        return [EnclavePermissions.from_dict(indicator) for indicator in resp.json()]
 
 
     ###########################
@@ -942,7 +942,7 @@ class TruStar(object):
         """
 
         resp = self._post("whitelist", json=terms)
-        return map(Indicator.from_dict, resp.json())
+        return [Indicator.from_dict(indicator) for indicator in resp.json()]
 
     def delete_indicator_from_whitelist(self, indicator):
         """

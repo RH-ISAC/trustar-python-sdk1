@@ -1,7 +1,9 @@
-from trustar import TruStar, Report, get_logger
-import sys
-import csv
+"""
+Reads reports from a CSV and submits them to TruSTAR.
+"""
 
+from trustar import TruStar, Report, get_logger
+import csv
 
 logger = get_logger(__name__)
 
@@ -12,46 +14,30 @@ MAPPING = {
     "external_id": "id"
 }
 
+CSV_PATH = "reports.csv"
 
-def main(csv_path):
-    """
-    Reads reports from a CSV and submits them to TruSTAR.
+# initialize SDK
+ts = TruStar()
 
-    :param csv_path: The path to the CSV
-    """
+# read in CSV
+with open(CSV_PATH, 'r') as f:
+    reader = csv.DictReader(f)
 
-    # initialize SDK
-    ts = TruStar()
+    # iterate over rows
+    for row in reader:
 
-    # read in CSV
-    with open(csv_path, 'r') as f:
-        reader = csv.DictReader(f)
+        # define method to get report field from CSV row
+        def get_field(field):
+            return row.get(MAPPING.get(field))
 
-        # iterate over rows
-        for row in reader:
+        # construct report from CSV row
+        report = Report(title=get_field('title'),
+                        body=get_field('body'),
+                        external_id=get_field('external_id'),
+                        is_enclave=True,
+                        enclave_ids=ts.enclave_ids)
 
-            # define method to get report field from CSV row
-            def get_field(field):
-                return row.get(MAPPING.get(field))
+        # submit report
+        ts.submit_report(report)
 
-            # construct report from CSV row
-            report = Report(title=get_field('title'),
-                            body=get_field('body'),
-                            external_id=get_field('external_id'),
-                            is_enclave=True,
-                            enclave_ids=ts.enclave_ids)
-
-            # submit report
-            ts.submit_report(report)
-
-            logger.info("Submitted report: %s" % report)
-
-
-if __name__ == '__main__':
-
-    # ensure csv path was passed as argument
-    if len(sys.argv) < 2:
-        raise Exception("Program requires one argument, the path to the CSV.")
-
-    # call main function
-    main(sys.argv[1])
+        logger.info("Submitted report: %s" % report)

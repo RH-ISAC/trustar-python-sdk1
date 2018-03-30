@@ -84,7 +84,7 @@ class Page(ModelBase):
             if not issubclass(content_type, ModelBase):
                 raise ValueError("'content_type' must be a subclass of ModelBase.")
 
-            result.items = map(content_type.from_dict, result.items)
+            result.items = [content_type.from_dict(item) for item in result.items]
 
         return result
 
