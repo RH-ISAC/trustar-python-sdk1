@@ -5,7 +5,7 @@ import time
 import random
 
 
-CONFIG_FILE_PATH = 'config.yml'
+CONFIG_FILE_PATH = 'trustar.conf'
 CONFIG_ROLE = 'dev'
 
 DAY = 24 * 60 * 60 * 1000
@@ -212,7 +212,7 @@ class TruStarTests(unittest.TestCase):
         to_time = get_current_time_millis()
 
         # get all reports with the tag just created
-        report_ids = map(lambda x: x.id, self.ts.get_reports(tag=tag, from_time=from_time, to_time=to_time))
+        report_ids = [r.id for r in self.ts.get_reports(tag=tag, from_time=from_time, to_time=to_time)]
 
         try:
             # assert that only the report submitted earlier was found
@@ -225,11 +225,11 @@ class TruStarTests(unittest.TestCase):
 
     def test_search_indicators(self):
         indicators = self.ts.search_indicators("abc")
-        self.assertGreater(len(list(indicators)), 0)
+        self.assertGreater(len(indicators), 0)
 
     def test_search_reports(self):
         reports = self.ts.search_reports("abc")
-        self.assertGreater(len(list(reports)), 0)
+        self.assertGreater(len(reports), 0)
 
     def test_get_enclaves(self):
         enclaves = self.ts.get_user_enclaves()
