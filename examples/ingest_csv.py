@@ -15,7 +15,6 @@ from builtins import range
 from trustar import TruStar, Report
 
 import argparse
-import json
 import sys
 import time
 import traceback
@@ -96,7 +95,9 @@ def main():
         report = Report(title=current_title,
                         time_began=current_datetime,
                         body=current_content,
-                        external_id=current_case_id)
+                        external_id=current_case_id,
+                        is_enclave=True,
+                        enclave_ids=ts.enclave_ids)
 
         all_reports.append(report)
 
@@ -109,7 +110,7 @@ def main():
             while not successful and attempts < 5:
                 attempts += 1
                 try:
-                    report = ts.submit_report(report=staged_report, enclave=True)
+                    report = ts.submit_report(report=staged_report)
                     num_submitted += 1
                     successful = True
 
@@ -124,12 +125,20 @@ def main():
                     # Build CEF output:
                     # - HTTP_USER_AGENT is the cs1 field
                     # - example CEF output: CEF:version|vendor|product|device_version|signature|name|severity|cs1=(num_submitted) cs2=(report_url)
-                    config = {'cef.version': '0.5', 'cef.vendor': 'TruSTAR',
-                              'cef.device_version': '2.0', 'cef.product': 'API',
-                              'cef': True, 'cef.file': args.cef_output_file}
+                    config = {
+                        'cef.version': '0.5',
+                        'cef.vendor': 'TruSTAR',
+                        'cef.device_version': '2.0',
+                        'cef.product': 'API',
+                        'cef': True,
+                        'cef.file': args.cef_output_file
+                    }
 
-                    environ = {'REMOTE_ADDR': '127.0.0.1', 'HTTP_HOST': '127.0.0.1',
-                               'HTTP_USER_AGENT': report.title}
+                    environ = {
+                        'REMOTE_ADDR': '127.0.0.1',
+                        'HTTP_HOST': '127.0.0.1',
+                        'HTTP_USER_AGENT': report.title
+                    }
 
                     log_cef('SUBMISSION', 1, environ, config, signature="INFO",
                             cs2=report.external_id,
@@ -139,9 +148,6 @@ def main():
                     # TODO: ADD YOUR CUSTOM POST-PROCESSING CODE FOR THIS SUBMISSION HERE
                     ####
 
-                    if report.indicators is not None:
-                        print("Indicators:\n %s" %
-                              json.dumps([indicator.to_dict() for indicator in report.indicators], indent=2))
                     print()
 
                 except Exception as e:
