@@ -7,19 +7,12 @@ from six import string_types
 # external imports
 import json
 from datetime import datetime
-import configparser
-import os
-import requests
-import requests.auth
-import yaml
-import time
-from requests import HTTPError
 import functools
 
 # package imports
+from .api_client import ApiClient
 from .models import Indicator, Page, Tag, Report, DistributionType, IdType, EnclavePermissions
 from .utils import normalize_timestamp, get_logger, get_time_based_page_generator
-from .version import __version__, __api_version__
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
@@ -29,8 +22,8 @@ logger = get_logger(__name__)
 
 class TruStar(object):
 
-    def __init__(self, client=None):
-        self.client = client
+    def __init__(self, config_file="trustar.conf", config_role="trustar", config=None):
+        self._client = ApiClient(config_file=config_file, config_role=config_role, config=config)
 
     @staticmethod
     def normalize_timestamp(date_time):
@@ -50,7 +43,7 @@ class TruStar(object):
         pong
         """
 
-        result = self._get("ping").content
+        result = self._client.get("ping").content
 
         if isinstance(result, bytes):
             result = result.decode('utf-8')
@@ -67,7 +60,7 @@ class TruStar(object):
         1.3
         """
 
-        result = self._get("version").content
+        result = self._client.get("version").content
 
         if isinstance(result, bytes):
             result = result.decode('utf-8')
@@ -108,7 +101,7 @@ class TruStar(object):
         """
 
         params = {'idType': id_type}
-        resp = self._get("reports/%s" % report_id, params=params)
+        resp = self._client.get("reports/%s" % report_id, params=params)
         return Report.from_dict(resp.json())
 
     def get_reports_page(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None,
@@ -152,7 +145,7 @@ class TruStar(object):
             'tag': tag,
             'excludedTags': excluded_tags
         }
-        resp = self._get("reports", params=params)
+        resp = self._client.get("reports", params=params)
         result = Page.from_dict(resp.json(), content_type=Report)
 
         # create a Page object from the dict
@@ -202,7 +195,7 @@ class TruStar(object):
             report.time_began = datetime.now()
 
         data = json.dumps(report.to_dict())
-        resp = self._post("reports", data=data, timeout=60)
+        resp = self._client.post("reports", data=data, timeout=60)
 
         # get report id from response body
         report_id = resp.content
@@ -253,7 +246,7 @@ class TruStar(object):
         params = {'idType': id_type}
 
         data = json.dumps(report.to_dict())
-        self._put("reports/%s" % report_id, data=data, params=params)
+        self._client.put("reports/%s" % report_id, data=data, params=params)
 
         return report
 
@@ -271,7 +264,7 @@ class TruStar(object):
         """
 
         params = {'idType': id_type}
-        self._delete("reports/%s" % report_id, params=params)
+        self._client.delete("reports/%s" % report_id, params=params)
 
     def get_correlated_report_ids(self, indicators):
         """
@@ -289,7 +282,7 @@ class TruStar(object):
         """
 
         params = {'indicators': indicators}
-        resp = self._get("reports/correlate", params=params)
+        resp = self._client.get("reports/correlate", params=params)
         return resp.json()
 
     def get_correlated_reports_page(self, indicators, enclave_ids=None, is_enclave=True,
@@ -319,7 +312,7 @@ class TruStar(object):
             'enclaveIds': enclave_ids,
             'distributionType': distribution_type
         }
-        resp = self._get("reports/correlated", params=params)
+        resp = self._client.get("reports/correlated", params=params)
 
         return Page.from_dict(resp.json(), content_type=Report)
 
@@ -342,7 +335,7 @@ class TruStar(object):
             'pageNumber': page_number
         }
 
-        resp = self._get("reports/search", params=params)
+        resp = self._client.get("reports/search", params=params)
         page = Page.from_dict(resp.json(), content_type=Report)
 
         return page
@@ -366,7 +359,7 @@ class TruStar(object):
             'pageNumber': page_number,
             'pageSize': page_size
         }
-        resp = self._get("reports/%s/indicators" % report_id, params=params)
+        resp = self._client.get("reports/%s/indicators" % report_id, params=params)
         return Page.from_dict(resp.json(), content_type=Indicator)
 
     def get_community_trends(self, indicator_type=None, days_back=None):
@@ -384,7 +377,7 @@ class TruStar(object):
             'daysBack': days_back
         }
 
-        resp = self._get("indicators/community-trending", params=params)
+        resp = self._client.get("indicators/community-trending", params=params)
         body = resp.json()
 
         # parse items in response as indicators
@@ -408,7 +401,7 @@ class TruStar(object):
             'pageSize': page_size
         }
 
-        resp = self._get("indicators/related", params=params)
+        resp = self._client.get("indicators/related", params=params)
 
         return Page.from_dict(resp.json(), content_type=Indicator)
 
@@ -431,7 +424,7 @@ class TruStar(object):
             'pageNumber': page_number
         }
 
-        resp = self._get("indicators/search", params=params)
+        resp = self._client.get("indicators/search", params=params)
 
         return Page.from_dict(resp.json(), content_type=Indicator)
 
@@ -458,7 +451,7 @@ class TruStar(object):
             'enclaveIds': enclave_ids,
             'indicatorValues': indicators
         }
-        resp = self._get("indicators/details", params=params)
+        resp = self._client.get("indicators/details", params=params)
 
         return [Indicator.from_dict(indicator) for indicator in resp.json()]
 
@@ -477,7 +470,7 @@ class TruStar(object):
         """
 
         params = {'idType': id_type}
-        resp = self._get("reports/%s/tags" % report_id, params=params)
+        resp = self._client.get("reports/%s/tags" % report_id, params=params)
         return [Tag.from_dict(indicator) for indicator in resp.json()]
 
     def add_enclave_tag(self, report_id, name, enclave_id, id_type=None):
@@ -496,7 +489,7 @@ class TruStar(object):
             'name': name,
             'enclaveId': enclave_id
         }
-        resp = self._post("reports/%s/tags" % report_id, params=params)
+        resp = self._client.post("reports/%s/tags" % report_id, params=params)
         return str(resp.content)
 
     def delete_enclave_tag(self, report_id, tag_id, id_type=None):
@@ -512,7 +505,7 @@ class TruStar(object):
         params = {
             'idType': id_type
         }
-        self._delete("reports/%s/tags/%s" % (report_id, tag_id), params=params)
+        self._client.delete("reports/%s/tags/%s" % (report_id, tag_id), params=params)
 
     def get_all_enclave_tags(self, enclave_ids=None):
         """
@@ -524,7 +517,7 @@ class TruStar(object):
         """
 
         params = {'enclaveIds': enclave_ids}
-        resp = self._get("reports/tags", params=params)
+        resp = self._client.get("reports/tags", params=params)
         return [Tag.from_dict(indicator) for indicator in resp.json()]
 
     #########################
@@ -539,7 +532,7 @@ class TruStar(object):
             has read, create, and update access to it.
         """
 
-        resp = self._get("enclaves")
+        resp = self._client.get("enclaves")
         return [EnclavePermissions.from_dict(indicator) for indicator in resp.json()]
 
 
@@ -560,7 +553,7 @@ class TruStar(object):
             'pageNumber': page_number,
             'pageSize': page_size
         }
-        resp = self._get("whitelist", params=params)
+        resp = self._client.get("whitelist", params=params)
         return Page.from_dict(resp.json(), content_type=Indicator)
 
     def add_terms_to_whitelist(self, terms):
@@ -571,7 +564,7 @@ class TruStar(object):
         :return: The list of extracted |Indicator| objects that were whitelisted.
         """
 
-        resp = self._post("whitelist", json=terms)
+        resp = self._client.post("whitelist", json=terms)
         return [Indicator.from_dict(indicator) for indicator in resp.json()]
 
     def delete_indicator_from_whitelist(self, indicator):
@@ -582,7 +575,7 @@ class TruStar(object):
         """
 
         params = indicator.to_dict()
-        self._delete("whitelist", params=params)
+        self._client.delete("whitelist", params=params)
 
 
     ##################

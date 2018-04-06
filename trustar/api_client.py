@@ -4,8 +4,6 @@ from future import standard_library
 from six import string_types
 
 # external imports
-import json
-from datetime import datetime
 import configparser
 import os
 import requests
@@ -13,19 +11,17 @@ import requests.auth
 import yaml
 import time
 from requests import HTTPError
-import functools
 
 # package imports
-from .models import Indicator, Page, Tag, Report, DistributionType, IdType, EnclavePermissions
-from .utils import normalize_timestamp, get_logger, get_time_based_page_generator
+from .utils import get_logger
 from .version import __version__, __api_version__
 
 logger = get_logger(__name__)
 
 
-class TruStar(object):
+class ApiClient(object):
     """
-    This class is used to interact with the TruStar API.
+    This class is used to make HTTP requests to the TruStar API.
     """
 
     # raise exception if any of these config keys are missing
@@ -96,12 +92,12 @@ class TruStar(object):
                 config[v] = config[k]
 
         # override Nones with default values if they exist
-        for key, val in TruStar.DEFAULTS.items():
+        for key, val in self.DEFAULTS.items():
             if config.get(key) is None:
                 config[key] = val
 
         # ensure required properties are present
-        for key in TruStar.REQUIRED_KEYS:
+        for key in self.REQUIRED_KEYS:
             if config.get(key) is None:
                 raise Exception("Missing config value for %s" % key)
 
@@ -377,4 +373,3 @@ class TruStar(object):
         """
 
         return self._request("DELETE", path, params=params, **kwargs)
-
