@@ -11,9 +11,6 @@ import dateutil.parser
 import pytz
 from tzlocal import get_localzone
 
-# package imports
-from .models import Enclave
-
 
 DAY = 24 * 60 * 60 * 1000
 
@@ -80,25 +77,6 @@ def datetime_to_millis(dt):
     Convert a ``datetime`` object to milliseconds since epoch.
     """
     return int(time.mktime(dt.timetuple())) * 1000
-
-
-def enclaves_from_ids(enclave_ids):
-    """
-    Create enclave objects from a list of ids.
-    :param enclave_ids: A list, or comma-separated list, of enclave guids.
-    :return: A list of Enclave objects.
-    """
-
-    # if string, convert comma-separated list into python list
-    if isinstance(enclave_ids, string_types):
-        enclave_ids = [x.strip() for x in enclave_ids.split(',')]
-
-    # ensure is list
-    if not isinstance(enclave_ids, list):
-        raise ValueError("Enclave IDs must either be a list or a comma-separated string.")
-
-    # create Enclave objects and filter out None values
-    return [Enclave(id=id) for id in enclave_ids if id is not None]
 
 
 def get_logger(name=None):

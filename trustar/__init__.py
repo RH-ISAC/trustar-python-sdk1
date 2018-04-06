@@ -4,4 +4,4 @@ from .trustar import TruStar
 from .models import *
 from .utils import *
 
-from .version import __version__
+from .version import __version__, __api_version__

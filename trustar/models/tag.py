@@ -5,7 +5,6 @@ from future import standard_library
 from six import string_types
 
 # package imports
-from ..utils import enclaves_from_ids
 from .base import ModelBase
 
 
