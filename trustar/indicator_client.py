@@ -42,7 +42,7 @@ class IndicatorClient(object):
 
         :param indicator_type: A type of indicator to filter by.  If ``None``, will get all types of indicators except
             for MALWARE and CVEs (this convention is for parity with the corresponding view on the Dashboard).
-        :param days_back: The number of days back to search.  Allowed values: 1, 3, 7, 30
+        :param days_back: The number of days back to search.  Any integer between 1 and 30 is allowed.
         :return: A list of |Indicator| objects.
         """
 
