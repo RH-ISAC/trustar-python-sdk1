@@ -91,7 +91,7 @@ class ReportClient(object):
             'to': to_time,
             'distributionType': distribution_type,
             'enclaveIds': enclave_ids,
-            'tag': tag,
+            'tags': tag,
             'excludedTags': excluded_tags
         }
         resp = self._client.get("reports", params=params)

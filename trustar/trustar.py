@@ -57,7 +57,7 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         The only required config keys are ``user_api_key`` and ``user_api_secret``.  To obtain these values, login to
         TruSTAR Station in your browser and visit the **API** tab under **SETTINGS** to generate an API key and secret.
 
-        The other available keys, and their defaults, are listed below:
+        All available keys, and their defaults, are listed below:
 
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | key                     | required  | default                                          | description                                            |
