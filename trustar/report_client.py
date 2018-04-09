@@ -2,7 +2,6 @@
 from __future__ import print_function
 from builtins import object, str
 from future import standard_library
-from six import string_types
 
 # external imports
 import json
