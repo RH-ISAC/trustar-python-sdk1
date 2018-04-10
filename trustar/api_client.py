@@ -43,6 +43,8 @@ class ApiClient(object):
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``verify``              | No        | ``True``                                         | whether to use SSL verification                        |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | ``retry``               | No        | ``True``                                         | whether to wait and retry requests that fail with 429  |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``client_type``         | No        | ``"Python_SDK"``                                 | the name of the client being used                      |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``client_version``      | No        | the version of the Python SDK in use             | the version of the client being used                   |
@@ -62,6 +64,7 @@ class ApiClient(object):
         self.client_version = config.get('client_version')
         self.client_metatag = config.get('client_metatag')
         self.verify = config.get('verify')
+        self.retry = config.get('retry')
 
         # initialize token property
         self.token = None
@@ -145,18 +148,18 @@ class ApiClient(object):
                 pass
         return False
 
-    def request(self, method, path, headers=None, params=None, data=None, retry=True, **kwargs):
+    def request(self, method, path, headers=None, params=None, data=None, **kwargs):
         """
         A wrapper around ``requests.request`` that handles boilerplate code specific to TruStar's API.
 
         :param str method: The method of the request (``GET``, ``PUT``, ``POST``, or ``DELETE``)
         :param str path: The path of the request, i.e. the piece of the URL after the base URL
         :param dict headers: A dictionary of headers that will be merged with the base headers for the SDK
-        :param boolean retry: Whether to retry a request that fails due to an exceeded request quota
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The response object.
         """
 
+        retry = self.retry
         attempted = False
         while not attempted or retry:
 
