@@ -14,7 +14,7 @@ from .api_client import ApiClient
 from .report_client import ReportClient
 from .indicator_client import IndicatorClient
 from .tag_client import TagClient
-from .models import EnclavePermissions
+from .models import EnclavePermissions, RequestQuota
 from .utils import normalize_timestamp, get_logger
 
 from .version import __version__, __api_version__
@@ -234,3 +234,7 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
 
         resp = self._client.get("enclaves")
         return [EnclavePermissions.from_dict(indicator) for indicator in resp.json()]
+
+    def get_request_quotas(self):
+        resp = self._client.get("request-quotas")
+        return [RequestQuota.from_dict(quota) for quota in resp.json()]

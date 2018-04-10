@@ -145,19 +145,20 @@ class ApiClient(object):
                 pass
         return False
 
-    def request(self, method, path, headers=None, params=None, data=None, **kwargs):
+    def request(self, method, path, headers=None, params=None, data=None, retry=True, **kwargs):
         """
         A wrapper around ``requests.request`` that handles boilerplate code specific to TruStar's API.
 
         :param str method: The method of the request (``GET``, ``PUT``, ``POST``, or ``DELETE``)
         :param str path: The path of the request, i.e. the piece of the URL after the base URL
         :param dict headers: A dictionary of headers that will be merged with the base headers for the SDK
+        :param boolean retry: Whether to retry a request that fails due to an exceeded request quota
         :param kwargs: Any extra keyword arguments.  These will be forwarded to the call to ``requests.request``.
         :return: The response object.
         """
 
-        retry = True
-        while retry:
+        attempted = False
+        while not attempted or retry:
 
             # get headers and merge with headers from method parameter if it exists
             base_headers = self._get_headers(is_json=method in ["POST", "PUT"])
@@ -173,12 +174,14 @@ class ApiClient(object):
                                         data=data,
                                         **kwargs)
 
+            attempted = True
+
             # refresh token if expired
             if self._is_expired_token_response(response):
                 self._refresh_token()
 
             # if "too many requests" status code received, wait until next request will be allowed and retry
-            elif response.status_code == 429:
+            elif retry and response.status_code == 429:
                 wait_time = response.json().get('waitTime')
                 logger.debug("Waiting %d seconds until next request allowed." % wait_time)
                 time.sleep(wait_time)
