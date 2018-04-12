@@ -45,7 +45,9 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         'client_type': 'PYTHON_SDK',
         'client_version': __version__,
         'client_metatag': None,
-        'verify': True
+        'verify': True,
+        'retry': True,
+        'max_wait_time': 60
     }
 
     def __init__(self, config_file="trustar.conf", config_role="trustar", config=None):
@@ -75,6 +77,8 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         | ``verify``              | No        | ``True``                                         | whether to use SSL verification                        |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``retry``               | No        | ``True``                                         | whether to wait and retry requests that fail with 429  |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | ``max_wait_time``       | No        | ``60``                                           | allow to fail if 429 wait time is greater than this    |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``client_type``         | No        | ``"Python_SDK"``                                 | the name of the client being used                      |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+

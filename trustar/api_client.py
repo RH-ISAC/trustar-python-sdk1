@@ -30,27 +30,29 @@ class ApiClient(object):
 
         All available keys, and their defaults, are listed below:
 
-        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
-        | key                     | required  | default                                          | description                                            |
-        +=========================+===========+==================================================+========================================================+
-        | ``user_api_key``        | Yes       | ``True``                                         | API key                                                |
-        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
-        | ``user_api_secret``     | Yes       | ``True``                                         | API secret                                             |
-        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
-        | ``auth_endpoint``       | No        | ``"https://api.trustar.co/oauth/token"``         | the URL used to obtain OAuth2 tokens                   |
-        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
-        | ``api_endpoint``        | No        | ``"https://api.trustar.co/api/1.3"``             | the base URL used for making API calls                 |
-        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
-        | ``verify``              | No        | ``True``                                         | whether to use SSL verification                        |
-        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
-        | ``retry``               | No        | ``True``                                         | whether to wait and retry requests that fail with 429  |
-        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
-        | ``client_type``         | No        | ``"Python_SDK"``                                 | the name of the client being used                      |
-        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
-        | ``client_version``      | No        | the version of the Python SDK in use             | the version of the client being used                   |
-        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
-        | ``client_metatag``      | No        | ``None``                                         | any additional information (ex. email address of user) |
-        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        +-------------------------+--------------------------------------------------------+
+        | key                     | description                                            |
+        +=========================+========================================================+
+        | ``user_api_key``        | API key                                                |
+        +-------------------------+--------------------------------------------------------+
+        | ``user_api_secret``     | API secret                                             |
+        +-------------------------+--------------------------------------------------------+
+        | ``auth_endpoint``       | the URL used to obtain OAuth2 tokens                   |
+        +-------------------------+--------------------------------------------------------+
+        | ``api_endpoint``        | the base URL used for making API calls                 |
+        +-------------------------+--------------------------------------------------------+
+        | ``verify``              | whether to use SSL verification                        |
+        +-------------------------+--------------------------------------------------------+
+        | ``retry``               | whether to wait and retry requests that fail with 429  |
+        +-------------------------+--------------------------------------------------------+
+        | ``max_wait_time``       | allow to fail if 429 wait time is greater than this    |
+        +-------------------------+--------------------------------------------------------+
+        | ``client_type``         | the name of the client being used                      |
+        +-------------------------+--------------------------------------------------------+
+        | ``client_version``      | the version of the client being used                   |
+        +-------------------------+--------------------------------------------------------+
+        | ``client_metatag``      | any additional information (ex. email address of user) |
+        +-------------------------+--------------------------------------------------------+
 
         :param dict config: A dictionary of configuration options.
         """
@@ -65,6 +67,7 @@ class ApiClient(object):
         self.client_metatag = config.get('client_metatag')
         self.verify = config.get('verify')
         self.retry = config.get('retry')
+        self.max_wait_time = config.get('max_wait_time')
 
         # initialize token property
         self.token = None
@@ -187,7 +190,12 @@ class ApiClient(object):
             elif retry and response.status_code == 429:
                 wait_time = response.json().get('waitTime')
                 logger.debug("Waiting %d seconds until next request allowed." % wait_time)
-                time.sleep(wait_time)
+
+                # if wait time exceeds max wait time, allow the exception to be thrown
+                if wait_time <= self.max_wait_time:
+                    time.sleep(wait_time)
+                else:
+                    retry = False
 
             # request cycle is complete
             else:
