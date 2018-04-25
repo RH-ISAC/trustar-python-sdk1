@@ -242,5 +242,11 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         return [EnclavePermissions.from_dict(indicator) for indicator in resp.json()]
 
     def get_request_quotas(self):
+        """
+        Gets the request quotas for the user's company.
+
+        :return: A list of |RequestQuota| objects.
+        """
+
         resp = self._client.get("request-quotas")
         return [RequestQuota.from_dict(quota) for quota in resp.json()]
