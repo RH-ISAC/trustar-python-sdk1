@@ -9,7 +9,7 @@ from .base import ModelBase
 
 class RequestQuota(ModelBase):
     """
-    Models a |RequestQuota_resource|.
+    Models a request quota.
 
     :ivar guid: The GUID of the counter.
     :ivar max_requests: The maximum number of requests allowed during the time window.
