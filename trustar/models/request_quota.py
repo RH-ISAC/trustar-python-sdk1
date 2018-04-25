@@ -9,12 +9,12 @@ from .base import ModelBase
 
 class RequestQuota(ModelBase):
 
-    def __init__(self, guid, max_requests, used_requests, window_size, last_reset_time):
+    def __init__(self, guid, max_requests, used_requests, time_window, last_reset_time):
 
         self.guid = guid
         self.max_requests = max_requests
         self.used_requests = used_requests
-        self.window_size = window_size
+        self.time_window = time_window
         self.last_reset_time = last_reset_time
 
     def to_dict(self, remove_nones=False):
@@ -26,7 +26,7 @@ class RequestQuota(ModelBase):
             'guid': self.guid,
             'maxRequests': self.max_requests,
             'usedRequests': self.used_requests,
-            'windowSize': self.window_size,
+            'timeWindow': self.time_window,
             'lastResetTime': self.last_reset_time
         }
         return d
@@ -40,5 +40,5 @@ class RequestQuota(ModelBase):
         return RequestQuota(guid=d.get('guid'),
                             max_requests=d.get('maxRequests'),
                             used_requests=d.get('usedRequests'),
-                            window_size=d.get('windowSize'),
+                            time_window=d.get('timeWindow'),
                             last_reset_time=d.get('lastResetTime'))

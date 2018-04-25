@@ -7,6 +7,7 @@ from six import string_types
 import requests
 import requests.auth
 import time
+from math import ceil
 from requests import HTTPError
 
 # package imports
@@ -188,7 +189,7 @@ class ApiClient(object):
 
             # if "too many requests" status code received, wait until next request will be allowed and retry
             elif retry and response.status_code == 429:
-                wait_time = response.json().get('waitTime')
+                wait_time = ceil(response.json().get('waitTime') / 1000)
                 logger.debug("Waiting %d seconds until next request allowed." % wait_time)
 
                 # if wait time exceeds max wait time, allow the exception to be thrown
