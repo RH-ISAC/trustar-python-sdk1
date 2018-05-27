@@ -37,7 +37,7 @@ class TagClient(object):
         :param name: The name of the tag to be added
         :param enclave_id: ID of the enclave where the tag will be added
         :param id_type: indicates whether the ID internal or an external ID provided by the user
-        :return: A |Tag| object representing the tag that was created.
+        :return: The ID of the tag that was created.
         """
 
         params = {
@@ -75,3 +75,45 @@ class TagClient(object):
         params = {'enclaveIds': enclave_ids}
         resp = self._client.get("reports/tags", params=params)
         return [Tag.from_dict(indicator) for indicator in resp.json()]
+
+    def get_all_indicator_tags(self, enclave_ids=None):
+        """
+        Get all indicator tags for a set of enclaves.
+
+        :param enclave_ids: list of enclave IDs
+        :return: The list of |Tag| objects.
+        """
+
+        if enclave_ids is None:
+            enclave_ids = self.enclave_ids
+
+        params = {'enclaveIds': enclave_ids}
+        resp = self._client.get("indicators/tags", params=params)
+        return [Tag.from_dict(indicator) for indicator in resp.json()]
+
+    def add_indicator_tag(self, indicator_value, name, enclave_id):
+        """
+        Adds a tag to a specific indicator, for a specific enclave.
+
+        :param indicator_value: The value of the indicator
+        :param name: The name of the tag to be added
+        :param enclave_id: ID of the enclave where the tag will be added
+        :return: A |Tag| object representing the tag that was created.
+        """
+
+        params = {
+            'name': name,
+            'enclaveId': enclave_id
+        }
+        resp = self._client.post("indicators/%s/tags" % indicator_value, params=params)
+        return Tag.from_dict(resp.json())
+
+    def delete_indicator_tag(self, indicator_value, tag_id):
+        """
+        Deletes a tag from a specific indicator, in a specific enclave.
+
+        :param indicator_value: The value of the indicator to delete the tag from
+        :param tag_id: ID of the tag to delete
+        """
+
+        self._client.delete("indicators/%s/tags/%s" % (indicator_value, tag_id))

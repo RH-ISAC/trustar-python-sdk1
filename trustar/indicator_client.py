@@ -9,7 +9,7 @@ import functools
 import json
 
 # package imports
-from .models import Indicator, Page
+from .models import Indicator, Page, Tag
 from .utils import get_logger
 
 # python 2 backwards compatibility
@@ -161,11 +161,22 @@ class IndicatorClient(object):
         access to.
 
         :param value: the value of the indicator
-        :return: A json containing the metadata.
+        :return: A dict containing three fields: 'indicator' (an |Indicator| object), 'tags' (a list of |Tag| objects),
+        and 'enclaveIds' (a list of enclave IDs that the indicator was found in).
         """
 
         resp = self._client.get("indicators/%s/metadata" % value)
-        return resp.json()
+        body = resp.json()
+
+        indicator = Indicator.from_dict(body)
+        tags = [Tag.from_dict(tag) for tag in body.get('tags')]
+        enclave_ids = body.get('enclaveIds')
+
+        return {
+            'indicator': indicator,
+            'tags': tags,
+            'enclaveIds': enclave_ids
+        }
 
     def get_indicator_details(self, indicators, enclave_ids=None):
         """

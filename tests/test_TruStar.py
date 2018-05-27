@@ -285,6 +285,20 @@ class TruStarTests(unittest.TestCase):
         metadata = self.ts.get_indicator_metadata("blah.com")
         print(metadata)
 
+    def test_add_tag_to_indicator(self):
+        tag = self.ts.add_indicator_tag("blah.com", name="indicator_tag", enclave_id=self.ts.enclave_ids[0])
+        print(tag)
+
+    def test_get_indicator_tags(self):
+        tags = self.ts.get_all_indicator_tags()
+        print(tags)
+
+    def test_delete_tag_from_indicator(self):
+        metadata = self.ts.get_indicator_metadata("blah.com")
+        tags = metadata.get('tags')
+        tag = tags[0]
+        self.ts.delete_indicator_tag(metadata.get('indicator').value, tag_id=tag.id)
+
 
 if __name__ == '__main__':
     unittest.main()
