@@ -20,6 +20,11 @@ class Indicator(ModelBase):
     :ivar whitelisted: Whether the indicator is whitelisted or not.
     :ivar weight: see |Indicator_resource| for details.
     :ivar reason: see |Indicator_resource| for details.
+    :ivar first_seen: the first time this indicator was sighted
+    :ivar last_seen: the last time this indicator was sighted
+    :ivar sightings: the number of times this indicator has been sighted
+    :ivar source: the source that the indicator was observed from
+    :ivar notes: a string containing notes about the indicator
 
     :cvar TYPES: A list of all valid indicator types.
     """
@@ -28,12 +33,17 @@ class Indicator(ModelBase):
 
     def __init__(self,
                  value,
-                 type,
+                 type=None,
                  priority_level=None,
                  correlation_count=None,
                  whitelisted=None,
                  weight=None,
-                 reason=None):
+                 reason=None,
+                 first_seen=None,
+                 last_seen=None,
+                 sightings=None,
+                 source=None,
+                 notes=None):
 
         self.value = value
         self.type = type
@@ -42,6 +52,13 @@ class Indicator(ModelBase):
         self.whitelisted = whitelisted
         self.weight = weight
         self.reason = reason
+
+        # ioc management fields
+        self.first_seen = first_seen
+        self.last_seen = last_seen
+        self.sightings = sightings
+        self.source = source
+        self.notes = notes
 
     @classmethod
     def from_dict(cls, indicator):
@@ -58,7 +75,11 @@ class Indicator(ModelBase):
                          correlation_count=indicator.get('correlationCount'),
                          whitelisted=indicator.get('whitelisted'),
                          weight=indicator.get('weight'),
-                         reason=indicator.get('reason'))
+                         reason=indicator.get('reason'),
+                         first_seen=indicator.get('firstSeen'),
+                         last_seen=indicator.get('lastSeen'),
+                         source=indicator.get('source'),
+                         notes=indicator.get('notes'))
 
     def to_dict(self, remove_nones=False):
         """
@@ -78,5 +99,9 @@ class Indicator(ModelBase):
             'correlationCount': self.correlation_count,
             'whitelisted': self.whitelisted,
             'weight': self.weight,
-            'reason': self.reason
+            'reason': self.reason,
+            'firstSeen': self.first_seen,
+            'lastSeen': self.last_seen,
+            'source': self.source,
+            'notes': self.notes
         }

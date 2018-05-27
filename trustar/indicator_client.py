@@ -6,6 +6,7 @@ from six import string_types
 
 # external imports
 import functools
+import json
 
 # package imports
 from .models import Indicator, Page
@@ -102,6 +103,70 @@ class IndicatorClient(object):
 
         return Page.from_dict(resp.json(), content_type=Indicator)
 
+    def submit_indicators(self, indicators, enclave_ids=None, tags=None):
+        """
+        Submit indicators directly.  Indicator value is required, other metadata is optional: firstSeen, lastSeen,
+        sightings, notes, and source. The submission must specify enclaves for the indicators to be submitted to, and
+        can optionally specify tags to assign to all the indicators in the submission. The tags can be existing or new,
+        and are identified by name and enclaveId.
+
+        :param list(Indicator) indicators: a list of |Indicator| objects.
+        :param list(string) enclave_ids: a list of enclave IDs.
+        :param list(string) tags: a list of |Tag| objects that will be applied to all indicators in the submission.
+        """
+
+        if enclave_ids is None:
+            enclave_ids = self.enclave_ids
+
+        body = {
+            "enclaveIds": enclave_ids,
+            "content": [indicator.to_dict() for indicator in indicators],
+            "tags": [tag.to_dict() for tag in tags]
+        }
+        self._client.post("indicators", data=json.dumps(body))
+
+    def get_indicators_page(self, from_time=None, to_time=None, page_number=None, page_size=None,
+                            enclave_ids=None, included_tag_ids=None, excluded_tag_ids=None):
+        """
+        Get a page of indicators matching the provided filters.
+
+        :param int from_time: start of time window in milliseconds since epoch (defaults to 7 days ago)
+        :param int to_time: end of time window in milliseconds since epoch (defaults to current time)
+        :param int page_number: the page number
+        :param int page_size: the page size
+        :param list(string) enclave_ids: a list of enclave IDs to filter by
+        :param list(string) included_tag_ids: only indicators containing ALL of these tags will be returned
+        :param list(string) excluded_tag_ids: only indicators containing NONE of these tags will be returned
+        :return: a |Page| of indicators
+        """
+
+        params = {
+            'from': from_time,
+            'to': to_time,
+            'pageSize': page_size,
+            'startPage': page_number,
+            'enclaveIds': enclave_ids,
+            'includedTags': included_tag_ids,
+            'excludedTags': excluded_tag_ids
+        }
+
+        resp = self._client.get("indicators", params=params)
+
+        return Page.from_dict(resp.json(), content_type=Indicator)
+
+    def get_indicator_metadata(self,value):
+        """
+        Provide metadata associated with an indicator, including value, indicatorType, noteCount, sightings, lastSeen,
+        enclaveIds, and tags. The metadata is determined based on the enclaves the user making the request has READ
+        access to.
+
+        :param value: the value of the indicator
+        :return: A json containing the metadata.
+        """
+
+        resp = self._client.get("indicators/%s/metadata" % value)
+        return resp.json()
+
     def get_indicator_details(self, indicators, enclave_ids=None):
         """
         NOTE: This method uses an API endpoint that is intended for internal use only, and is not officially supported.
@@ -188,6 +253,45 @@ class IndicatorClient(object):
         """
 
         return Page.get_generator(page_generator=self._get_indicators_for_report_page_generator(report_id))
+
+    def _get_indicators_page_generator(self, from_time=None, to_time=None, page_number=0, page_size=None,
+                                       enclave_ids=None, included_tag_ids=None, excluded_tag_ids=None):
+        """
+        Creates a generator from the |get_indicators_page| method that returns each successive page.
+
+        :param int from_time: start of time window in milliseconds since epoch (defaults to 7 days ago)
+        :param int to_time: end of time window in milliseconds since epoch (defaults to current time)
+        :param int page_number: the page number
+        :param int page_size: the page size
+        :param list(string) enclave_ids: a list of enclave IDs to filter by
+        :param list(string) included_tag_ids: only indicators containing ALL of these tags will be returned
+        :param list(string) excluded_tag_ids: only indicators containing NONE of these tags will be returned
+        :return: a |Page| of indicators
+        """
+
+        get_page = functools.partial(self.get_indicators_page, from_time=from_time, to_time=to_time,
+                                     page_number=page_number, page_size=page_size, enclave_ids=enclave_ids,
+                                     included_tag_ids=included_tag_ids, excluded_tag_ids=excluded_tag_ids)
+        return Page.get_page_generator(get_page, page_number, page_size)
+
+    def get_indicators(self, from_time=None, to_time=None, enclave_ids=None,
+                       included_tag_ids=None, excluded_tag_ids=None):
+        """
+        Creates a generator from the |get_indicators_page| method that returns each successive page.
+
+        :param int from_time: start of time window in milliseconds since epoch (defaults to 7 days ago)
+        :param int to_time: end of time window in milliseconds since epoch (defaults to current time)
+        :param list(string) enclave_ids: a list of enclave IDs to filter by
+        :param list(string) included_tag_ids: only indicators containing ALL of these tags will be returned
+        :param list(string) excluded_tag_ids: only indicators containing NONE of these tags will be returned
+        :return: a |Page| of indicators
+        """
+
+        return Page.get_generator(page_generator=self._get_indicators_page_generator(from_time=from_time,
+                                                                                     to_time=to_time,
+                                                                                     enclave_ids=enclave_ids,
+                                                                                     included_tag_ids=included_tag_ids,
+                                                                                     excluded_tag_ids=excluded_tag_ids))
 
     def _get_related_indicators_page_generator(self, indicators=None, enclave_ids=None, start_page=0, page_size=None):
         """

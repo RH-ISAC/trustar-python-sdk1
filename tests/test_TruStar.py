@@ -5,7 +5,7 @@ import time
 import random
 
 
-CONFIG_FILE_PATH = 'trustar.conf'
+CONFIG_FILE_PATH = '/usr/local/etc/trustar.conf'
 CONFIG_ROLE = 'trustar'
 
 DAY = 24 * 60 * 60 * 1000
@@ -260,6 +260,30 @@ class TruStarTests(unittest.TestCase):
         print(details)
 
         self.ts.delete_report(report.id)
+
+    def test_submit_indicators(self):
+        indicators = [
+            Indicator(value="1.5.8.7",
+                      first_seen=get_current_time_millis() - 24 * 60 * 60 * 1000, last_seen= get_current_time_millis(),
+                      sightings=100, source="Somewhere", notes="This is a note."),
+            Indicator(value="1.5.8.9",
+                      first_seen=get_current_time_millis() - 2 * 24 * 60 * 60 * 1000, last_seen=get_current_time_millis(),
+                      sightings=50, source="Somewhere else", notes="This is another note.")
+        ]
+        tags = [
+            Tag(name="tag_1", enclave_id=self.ts.enclave_ids[0]),
+            Tag(name="tag_2", enclave_id=self.ts.enclave_ids[0])
+        ]
+        self.ts.submit_indicators(indicators=indicators, tags=tags)
+
+    def test_get_indicators(self):
+
+        indicators = self.ts.get_indicators_page(from_time=0, to_time=get_current_time_millis())
+        print(indicators)
+
+    def test_get_indicator_metadata(self):
+        metadata = self.ts.get_indicator_metadata("blah.com")
+        print(metadata)
 
 
 if __name__ == '__main__':
