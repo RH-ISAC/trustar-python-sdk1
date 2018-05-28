@@ -162,7 +162,7 @@ class IndicatorClient(object):
 
         :param value: the value of the indicator
         :return: A dict containing three fields: 'indicator' (an |Indicator| object), 'tags' (a list of |Tag| objects),
-        and 'enclaveIds' (a list of enclave IDs that the indicator was found in).
+            and 'enclaveIds' (a list of enclave IDs that the indicator was found in).
         """
 
         resp = self._client.get("indicators/%s/metadata" % value)
@@ -277,7 +277,7 @@ class IndicatorClient(object):
         :param list(string) enclave_ids: a list of enclave IDs to filter by
         :param list(string) included_tag_ids: only indicators containing ALL of these tags will be returned
         :param list(string) excluded_tag_ids: only indicators containing NONE of these tags will be returned
-        :return: a |Page| of indicators
+        :return: a |Page| of |Indicator| objects
         """
 
         get_page = functools.partial(self.get_indicators_page, from_time=from_time, to_time=to_time,
@@ -295,7 +295,7 @@ class IndicatorClient(object):
         :param list(string) enclave_ids: a list of enclave IDs to filter by
         :param list(string) included_tag_ids: only indicators containing ALL of these tags will be returned
         :param list(string) excluded_tag_ids: only indicators containing NONE of these tags will be returned
-        :return: a |Page| of indicators
+        :return: The generator.
         """
 
         return Page.get_generator(page_generator=self._get_indicators_page_generator(from_time=from_time,
