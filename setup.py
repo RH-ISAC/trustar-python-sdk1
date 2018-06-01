@@ -13,7 +13,7 @@ version = version_globals['__version__']
 
 setup(
     name='trustar',
-    packages=['trustar', 'trustar.models'],
+    packages=find_packages(),
     version=version,
     author='TruSTAR Technology, Inc.',
     author_email='support@trustar.co',
