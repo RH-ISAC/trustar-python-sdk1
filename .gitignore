@@ -2,10 +2,9 @@
 build/
 /dist/
 /.idea/
-/examples/trustar.conf
 MANIFEST
 *.pyc
 venv*
 .DS_Store
 tests/config.yml
-tests/trustar.conf
+**/trustar.conf

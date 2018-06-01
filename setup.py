@@ -2,7 +2,8 @@
 # python setup.py sdist
 # twine upload --skip-existing dist/*
 
-from distutils.core import setup
+from setuptools import setup, find_packages
+from glob import glob
 
 # read version
 version_globals = {}
@@ -30,6 +31,7 @@ setup(
                       'PyYAML',
                       'six'
                       ],
-
+    include_package_data=True,
+    scripts=glob('trustar/examples/**/*.py') + glob('trustar/examples/*.py'),
     use_2to3=True
 )
