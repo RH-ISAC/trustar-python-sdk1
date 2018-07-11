@@ -73,3 +73,13 @@ API Documentation
 See https://docs.trustar.co/ for full API documentation.
 
 
+Development
+===========
+
+To setup this project for development:
+
+1. Create a virtualenv: ``virtualenv --no-site-packages -p python3 venv3``
+2. Activate the virtualenv: ``./venv3/bin/activate``
+3. Install this package in editable mode: ``pip install -e .``
+4. Although step 3 will install the core requirements for the package, some additional packages are used during
+development (specifically, ``nose``).  So run ``pip install -r requirements.txt`` to install these.

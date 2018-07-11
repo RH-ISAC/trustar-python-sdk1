@@ -62,6 +62,7 @@ class TruStarTests(unittest.TestCase):
 
         # update report
         report.body = "Bleh bleh bleh"
+        report.enclave_ids = None
         self.ts.update_report(report=report)
 
         # get report
