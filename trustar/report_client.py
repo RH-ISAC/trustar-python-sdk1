@@ -61,6 +61,10 @@ class ReportClient(object):
         This method does not take ``page_number`` and ``page_size`` parameters.  Instead, each successive page must be
         found by adjusting the ``from_time`` and ``to_time`` parameters.
 
+        Note:  This endpoint will only return reports from a time window of maximum size of 2 weeks. If you give a
+        time window larger than 2 weeks, it will pull reports starting at 2 weeks before the “to” date, through the
+        “to” date.
+
         :param boolean is_enclave: restrict reports to specific distribution type (optional - by default all accessible
             reports are returned).
         :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific enclaves (optional - by
