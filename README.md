@@ -73,7 +73,7 @@ virtualenv --no-site-packages -p python3 venv3
 ```
 2. Activate the virtualenv:
 ```bash
-./venv3/bin/activate
+source ./venv3/bin/activate
 ```
 3. Install this package in editable mode:
 ```bash
