@@ -169,7 +169,11 @@ class IndicatorClient(object):
         body = resp.json()
 
         indicator = Indicator.from_dict(body)
-        tags = [Tag.from_dict(tag) for tag in body.get('tags')]
+
+        tags = body.get('tags')
+        if tags is not None:
+            tags = [Tag.from_dict(tag) for tag in tags]
+
         enclave_ids = body.get('enclaveIds')
 
         return {
