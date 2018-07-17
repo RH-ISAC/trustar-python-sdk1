@@ -107,7 +107,8 @@ class IndicatorClient(object):
         """
         Submit indicators directly.  Indicator value is required, other metadata is optional: firstSeen, lastSeen,
         sightings, notes, and source. The submission must specify enclaves for the indicators to be submitted to, and
-        can optionally specify tags to assign to all the indicators in the submission. The tags can be existing or new,
+        can optionally specify tags to assign to all the indicators in the submission, and/or include individual tags in
+        each Indicator that will take precedence over the submission tags. The tags can be existing or new,
         and are identified by name and enclaveId.
 
         :param list(Indicator) indicators: a list of |Indicator| objects.
