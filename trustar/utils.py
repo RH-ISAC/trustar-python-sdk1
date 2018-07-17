@@ -99,7 +99,7 @@ def get_logger(name=None):
     # configure STDERR handler
     stderr_handler = logging.StreamHandler(sys.stderr)
     stderr_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-    stderr_handler.setLevel(logging.WARN)
+    stderr_handler.setLevel(logging.INFO)
 
     # configure logger
     log = logging.getLogger(name)
