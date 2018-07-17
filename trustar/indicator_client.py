@@ -290,7 +290,8 @@ class IndicatorClient(object):
         return Page.get_page_generator(get_page, page_number, page_size)
 
     def get_indicators(self, from_time=None, to_time=None, enclave_ids=None,
-                       included_tag_ids=None, excluded_tag_ids=None):
+                       included_tag_ids=None, excluded_tag_ids=None,
+                       start_page=0, page_size=None):
         """
         Creates a generator from the |get_indicators_page| method that returns each successive page.
 
@@ -306,7 +307,9 @@ class IndicatorClient(object):
                                                                                      to_time=to_time,
                                                                                      enclave_ids=enclave_ids,
                                                                                      included_tag_ids=included_tag_ids,
-                                                                                     excluded_tag_ids=excluded_tag_ids))
+                                                                                     excluded_tag_ids=excluded_tag_ids,
+                                                                                     page_number=start_page,
+                                                                                     page_size=page_size))
 
     def _get_related_indicators_page_generator(self, indicators=None, enclave_ids=None, start_page=0, page_size=None):
         """
