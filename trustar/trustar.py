@@ -101,6 +101,22 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
             if k in config and v not in config:
                 config[v] = config[k]
 
+        verify = config.get('verify')
+        if verify is not None and verify.lower() == 'false':
+            config['verify'] = False
+        else:
+            config['verify'] = True
+
+        retry = config.get('retry')
+        if retry is not None and retry.lower() == 'false':
+            config['retry'] = False
+        else:
+            config['retry'] = True
+
+        max_wait_time = config.get('max_wait_time')
+        if max_wait_time is not None:
+            config['max_wait_time'] = int(max_wait_time)
+
         # override Nones with default values if they exist
         for key, val in self.DEFAULTS.items():
             if config.get(key) is None:
