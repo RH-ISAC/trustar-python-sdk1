@@ -71,6 +71,9 @@ class Indicator(ModelBase):
         :param indicator: The dictionary.
         :return: The indicator object.
         """
+        tags = indicator.get('tags')
+        if tags is not None:
+            tags = [Tag.from_dict(tag) for tag in tags]
 
         return Indicator(value=indicator.get('value'),
                          type=indicator.get('indicatorType'),
@@ -83,7 +86,7 @@ class Indicator(ModelBase):
                          last_seen=indicator.get('lastSeen'),
                          source=indicator.get('source'),
                          notes=indicator.get('notes'),
-                         tags=indicator.get('tags'))
+                         tags=tags)
 
     def to_dict(self, remove_nones=False):
         """
@@ -95,6 +98,10 @@ class Indicator(ModelBase):
 
         if remove_nones:
             return super().to_dict(remove_nones=True)
+
+        tags = None
+        if self.tags is not None:
+            tags = [Tag.to_dict(remove_nones=remove_nones) for tag in self.tags]
 
         return {
             'value': self.value,
@@ -108,5 +115,5 @@ class Indicator(ModelBase):
             'lastSeen': self.last_seen,
             'source': self.source,
             'notes': self.notes,
-            'tags': self.tags
+            'tags': tags
         }
