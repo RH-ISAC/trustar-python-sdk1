@@ -7,6 +7,7 @@ from six import string_types
 # package imports
 from .base import ModelBase
 from .enum import *
+from .tag import Tag
 
 
 class Indicator(ModelBase):
@@ -101,7 +102,7 @@ class Indicator(ModelBase):
 
         tags = None
         if self.tags is not None:
-            tags = [Tag.to_dict(remove_nones=remove_nones) for tag in self.tags]
+            tags = [tag.to_dict(remove_nones=remove_nones) for tag in self.tags]
 
         return {
             'value': self.value,
