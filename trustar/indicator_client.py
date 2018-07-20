@@ -146,8 +146,8 @@ class IndicatorClient(object):
             'pageSize': page_size,
             'startPage': page_number,
             'enclaveIds': enclave_ids,
-            'includedTags': included_tag_ids,
-            'excludedTags': excluded_tag_ids
+            'tagIds': included_tag_ids,
+            'excludedTagIds': excluded_tag_ids
         }
 
         resp = self._client.get("indicators", params=params)
