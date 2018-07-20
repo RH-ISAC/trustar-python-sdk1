@@ -1,4 +1,4 @@
-# git tag 0.3.11 -m "Bump version" && git push --tags origin master
+# git tag 0.3.12.1 -m "Bump version" && git push --tags origin master
 # python setup.py sdist
 # twine upload --skip-existing dist/*
 
