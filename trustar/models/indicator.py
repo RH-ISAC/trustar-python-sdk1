@@ -7,6 +7,7 @@ from six import string_types
 # package imports
 from .base import ModelBase
 from .enum import *
+from .tag import Tag
 
 
 class Indicator(ModelBase):
@@ -25,6 +26,7 @@ class Indicator(ModelBase):
     :ivar sightings: the number of times this indicator has been sighted
     :ivar source: the source that the indicator was observed from
     :ivar notes: a string containing notes about the indicator
+    :ivar tags: a list containing tag objects associated with the indicator
 
     :cvar TYPES: A list of all valid indicator types.
     """
@@ -43,7 +45,8 @@ class Indicator(ModelBase):
                  last_seen=None,
                  sightings=None,
                  source=None,
-                 notes=None):
+                 notes=None,
+                 tags=None):
 
         self.value = value
         self.type = type
@@ -59,6 +62,7 @@ class Indicator(ModelBase):
         self.sightings = sightings
         self.source = source
         self.notes = notes
+        self.tags = tags
 
     @classmethod
     def from_dict(cls, indicator):
@@ -68,6 +72,9 @@ class Indicator(ModelBase):
         :param indicator: The dictionary.
         :return: The indicator object.
         """
+        tags = indicator.get('tags')
+        if tags is not None:
+            tags = [Tag.from_dict(tag) for tag in tags]
 
         return Indicator(value=indicator.get('value'),
                          type=indicator.get('indicatorType'),
@@ -79,7 +86,8 @@ class Indicator(ModelBase):
                          first_seen=indicator.get('firstSeen'),
                          last_seen=indicator.get('lastSeen'),
                          source=indicator.get('source'),
-                         notes=indicator.get('notes'))
+                         notes=indicator.get('notes'),
+                         tags=tags)
 
     def to_dict(self, remove_nones=False):
         """
@@ -92,6 +100,10 @@ class Indicator(ModelBase):
         if remove_nones:
             return super().to_dict(remove_nones=True)
 
+        tags = None
+        if self.tags is not None:
+            tags = [tag.to_dict(remove_nones=remove_nones) for tag in self.tags]
+
         return {
             'value': self.value,
             'indicatorType': self.type,
@@ -103,5 +115,6 @@ class Indicator(ModelBase):
             'firstSeen': self.first_seen,
             'lastSeen': self.last_seen,
             'source': self.source,
-            'notes': self.notes
+            'notes': self.notes,
+            'tags': tags
         }
