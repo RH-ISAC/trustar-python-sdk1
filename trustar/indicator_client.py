@@ -155,33 +155,50 @@ class IndicatorClient(object):
 
         return Page.from_dict(resp.json(), content_type=Indicator)
 
-    def get_indicator_metadata(self,value):
+    def get_indicator_metadata(self, value):
         """
-        Provide metadata associated with an indicator, including value, indicatorType, noteCount, sightings, lastSeen,
-        enclaveIds, and tags. The metadata is determined based on the enclaves the user making the request has READ
-        access to.
+        Note: This method is deprecated.
 
-        :param value: the value of the indicator
+        Provide metadata associated with a single indicators, including value, indicatorType, noteCount,
+        sightings, lastSeen, enclaveIds, and tags. The metadata is determined based on the enclaves the user making the
+        request has READ access to.
+
+        :param indicators: a list of indicator values to query.
+        :return: A dict containing three fields: 'indicator' (an |Indicator| object), 'tags' (a list of |Tag|
+            objects), and 'enclaveIds' (a list of enclave IDs that the indicator was found in).
+        """
+
+        result = self.get_indicators_metadata(Indicator(value=value))
+        if len(result) > 0:
+            indicator = result[0]
+            return {
+                'indicator': indicator,
+                'tags': indicator.tags,
+                'enclaveIds': indicator.enclave_ids
+            }
+        else:
+            return None
+
+    def get_indicators_metadata(self, indicators):
+        """
+        Provide metadata associated with an list of indicators, including value, indicatorType, noteCount, sightings,
+        lastSeen, enclaveIds, and tags. The metadata is determined based on the enclaves the user making the request has
+        READ access to.
+
+        :param indicators: a list of |Indicator| objects to query.  Values are required, types are optional.  Types
+            might be required to distinguish in a case where one indicator value has been associated with multiple types
+            based on different contexts.
         :return: A dict containing three fields: 'indicator' (an |Indicator| object), 'tags' (a list of |Tag| objects),
             and 'enclaveIds' (a list of enclave IDs that the indicator was found in).
         """
 
-        resp = self._client.get("indicators/%s/metadata" % value)
-        body = resp.json()
-
-        indicator = Indicator.from_dict(body)
-
-        tags = body.get('tags')
-        if tags is not None:
-            tags = [Tag.from_dict(tag) for tag in tags]
-
-        enclave_ids = body.get('enclaveIds')
-
-        return {
-            'indicator': indicator,
-            'tags': tags,
-            'enclaveIds': enclave_ids
+        params = {
+            'values': [i.value for i in indicators],
+            'types': [i.indicatorType for i in indicators]
         }
+        resp = self._client.get("indicators/metadata", params=params)
+
+        return [Indicator.from_dict(x) for x in resp.json()]
 
     def get_indicator_details(self, indicators, enclave_ids=None):
         """
