@@ -224,10 +224,12 @@ class TruStarTests(unittest.TestCase):
             for id in report_ids:
                 self.ts.delete_report(report_id=id)
 
+    @unittest.skip
     def test_search_indicators(self):
         indicators = self.ts.search_indicators("abc")
         self.assertGreater(len(list(indicators)), 0)
 
+    @unittest.skip
     def test_search_reports(self):
         reports = self.ts.search_reports("abc")
         self.assertGreater(len(list(reports)), 0)
@@ -284,6 +286,26 @@ class TruStarTests(unittest.TestCase):
     def test_get_indicator_metadata(self):
         metadata = self.ts.get_indicator_metadata("blah.com")
         print(metadata)
+
+    def test_get_indicators_metadata(self):
+        values = ['1.5.8.7', '1.5.8.9']
+
+        indicators = [Indicator(value=value, type=IndicatorType.IP) for value in values]
+        metadata = self.ts.get_indicators_metadata(indicators)
+        self.assertTrue(len(metadata) == 2)
+
+        for i in indicators:
+            i.type = IndicatorType.URL
+
+        metadata = self.ts.get_indicators_metadata(indicators)
+        self.assertTrue(len(metadata) == 0)
+
+        for i in indicators:
+            i.type = None
+
+        metadata = self.ts.get_indicators_metadata(indicators)
+        self.assertTrue(len(metadata) == 2)
+
 
     def test_add_tag_to_indicator(self):
         tag = self.ts.add_indicator_tag("blah.com", name="indicator_tag", enclave_id=self.ts.enclave_ids[0])

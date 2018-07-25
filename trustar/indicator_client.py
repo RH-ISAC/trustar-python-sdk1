@@ -163,12 +163,12 @@ class IndicatorClient(object):
         sightings, lastSeen, enclaveIds, and tags. The metadata is determined based on the enclaves the user making the
         request has READ access to.
 
-        :param indicators: a list of indicator values to query.
+        :param value: an indicator value to query.
         :return: A dict containing three fields: 'indicator' (an |Indicator| object), 'tags' (a list of |Tag|
             objects), and 'enclaveIds' (a list of enclave IDs that the indicator was found in).
         """
 
-        result = self.get_indicators_metadata(Indicator(value=value))
+        result = self.get_indicators_metadata([Indicator(value=value)])
         if len(result) > 0:
             indicator = result[0]
             return {
@@ -188,14 +188,17 @@ class IndicatorClient(object):
         :param indicators: a list of |Indicator| objects to query.  Values are required, types are optional.  Types
             might be required to distinguish in a case where one indicator value has been associated with multiple types
             based on different contexts.
-        :return: A dict containing three fields: 'indicator' (an |Indicator| object), 'tags' (a list of |Tag| objects),
-            and 'enclaveIds' (a list of enclave IDs that the indicator was found in).
+        :return: A list of |Indicator| objects.
         """
 
         params = {
             'values': [i.value for i in indicators],
-            'types': [i.indicatorType for i in indicators]
+            'types': [i.type for i in indicators]
         }
+
+        if len(params.get('types')) == 0:
+            params['types'] = None
+
         resp = self._client.get("indicators/metadata", params=params)
 
         return [Indicator.from_dict(x) for x in resp.json()]
