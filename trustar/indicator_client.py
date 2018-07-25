@@ -157,8 +157,6 @@ class IndicatorClient(object):
 
     def get_indicator_metadata(self, value):
         """
-        Note: This method is deprecated.
-
         Provide metadata associated with a single indicators, including value, indicatorType, noteCount,
         sightings, lastSeen, enclaveIds, and tags. The metadata is determined based on the enclaves the user making the
         request has READ access to.
@@ -166,6 +164,8 @@ class IndicatorClient(object):
         :param value: an indicator value to query.
         :return: A dict containing three fields: 'indicator' (an |Indicator| object), 'tags' (a list of |Tag|
             objects), and 'enclaveIds' (a list of enclave IDs that the indicator was found in).
+
+        .. warning:: This method is deprecated.  Please use |get_indicators_metadata| instead.
         """
 
         result = self.get_indicators_metadata([Indicator(value=value)])
