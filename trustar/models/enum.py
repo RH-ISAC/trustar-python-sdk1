@@ -1,3 +1,9 @@
+from ..utils import get_logger
+
+
+logger = get_logger(__name__)
+
+
 class Enum(object):
 
     def __new__(cls, *args, **kwargs):
@@ -9,11 +15,22 @@ class Enum(object):
 
     @classmethod
     def from_string(cls, string):
+        """
+        Simply logs a warning if the desired enum value is not found.
+
+        :param string:
+        :return:
+        """
+
+        # find enum value
         for attr in dir(cls):
             value = getattr(cls, attr)
             if value == string:
                 return value
-        raise ValueError("Enum value %s not found." % string)
+
+        # if not found, log warning and return the value passed in
+        logger.warning("{} is not a valid enum value for {}.".format(string, cls.__name__))
+        return string
 
 
 class IndicatorType(Enum):
@@ -58,6 +75,8 @@ class EnclaveType(Enum):
     INTERNAL = "INTERNAL"
     CLOSED = "CLOSED"
     OTHER = "OTHER"
+    RESEARCH = "RESEARCH"
+    COMMUNITY = "COMMUNITY"
 
     @classmethod
     def from_string(cls, string):
