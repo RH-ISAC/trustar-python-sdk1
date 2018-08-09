@@ -278,10 +278,7 @@ class ReportClient(object):
             default reports from all of user's enclaves are returned)
         :param int page_number: the page number to get.
         :param int page_size: the size of the page to be returned.
-        :return: a |Page| of |Report| objects.  *NOTE*:  These |Report| objects will have Null "body" attributes. 
-             This function only returns values for the "id", "title", "time_began", "is_enclave", "created", 
-             and "updated" attributes.  
-        
+        :return: a |Page| of |Report| objects.  *NOTE*:  The bodies of these reports will be ``None``.
         """
 
         params = {
@@ -399,12 +396,10 @@ class ReportClient(object):
         """
         Uses the |search_reports_page| method to create a generator that returns each successive report.
 
-        :param str search_term: The term to search for.  This string must be 3 characters in length, minimum.  
+        :param str search_term: The term to search for.  This string must be at least 3 characters in length.
         :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific enclaves (optional - by
             default reports from all of user's enclaves are returned)
-        :return: The generator of Report objects that will contain values for the following attributes only:  
-            "id", "title", "time_began", "is_enclave", "created", and "updated".  The "body" attribute is Null 
-            because the http API endpoint that serves the data for this function does not return that attribute. 
+        :return: The generator of Report objects.  Note that the body attributes of these reports will be ``None``.
         """
 
         return Page.get_generator(page_generator=self._search_reports_page_generator(search_term, enclave_ids))
