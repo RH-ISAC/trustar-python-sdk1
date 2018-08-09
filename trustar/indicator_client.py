@@ -119,10 +119,13 @@ class IndicatorClient(object):
         if enclave_ids is None:
             enclave_ids = self.enclave_ids
 
+        if tags is not None:
+            tags = [tag.to_dict() for tag in tags]
+
         body = {
             "enclaveIds": enclave_ids,
             "content": [indicator.to_dict() for indicator in indicators],
-            "tags": [tag.to_dict() for tag in tags]
+            "tags": tags
         }
         self._client.post("indicators", data=json.dumps(body))
 
