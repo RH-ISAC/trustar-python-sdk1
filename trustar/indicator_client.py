@@ -148,7 +148,7 @@ class IndicatorClient(object):
             'from': from_time,
             'to': to_time,
             'pageSize': page_size,
-            'startPage': page_number,
+            'pageNumber': page_number,
             'enclaveIds': enclave_ids,
             'tagIds': included_tag_ids,
             'excludedTagIds': excluded_tag_ids
