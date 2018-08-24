@@ -320,19 +320,26 @@ class ReportClient(object):
 
     def get_reports(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None, from_time=None, to_time=None):
         """
-        Uses the |get_reports_page| method to create a generator that returns each successive report.
+        Uses the |get_reports_page| method to create a generator that returns each successive report as a trustar
+        report object.
 
         :param boolean is_enclave: restrict reports to specific distribution type (optional - by default all accessible
             reports are returned).
         :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific
             enclaves (optional - by default reports from all enclaves are returned)
-        :param str tag: name of tag to filter reports by.  if a tag with this name exists in more than one enclave
-            indicated in ``enclave_ids``, the request will fail.  handle this by making separate requests for each
+        :param list(str) tag: a list of tags; only reports containing ALL of these tags will be returned. 
+            If a tag with this name exists in more than one enclave in the list passed as the ``enclave_ids``
+            argument, the request will fail.  Handle this by making separate requests for each
             enclave ID if necessary.
+        :param list(str) excluded_tags: a list of tags; reports containing ANY of these tags will not be returned. 
         :param int from_time: start of time window in milliseconds since epoch (optional)
         :param int to_time: end of time window in milliseconds since epoch (optional)
-        :return: The generator.
+        :return: A generator of Report objects.
 
+        Note:  If a report contains all of the tags in the list passed as argument to the 'tag' parameter and also 
+        contains any (1 or more) of the tags in the list passed as argument to the 'excluded_tags' parameter, that 
+        report will not be returned by this function.  
+        
         Example:
 
         >>> page = ts.get_reports(is_enclave=True, tag="malicious", from_time=1425695711000, to_time=1514185311000)
