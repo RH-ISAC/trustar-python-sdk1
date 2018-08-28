@@ -317,15 +317,24 @@ class IndicatorClient(object):
                        included_tag_ids=None, excluded_tag_ids=None,
                        start_page=0, page_size=None):
         """
-        Creates a generator from the |get_indicators_page| method that returns each successive page.
+        Creates a generator from the |get_indicators_page| method that returns each successive indicator as an
+        |Indicator| object containing values for the |Indicator.value| and |Indicator.type| attributes only; all
+        other |Indicator| object attributes will contain Null values.
 
         :param int from_time: start of time window in milliseconds since epoch (defaults to 7 days ago).
         :param int to_time: end of time window in milliseconds since epoch (defaults to current time).
         :param list(string) enclave_ids: a list of enclave IDs from which to get indicators from. 
         :param list(string) included_tag_ids: only indicators containing ALL of these tag GUIDs will be returned.
         :param list(string) excluded_tag_ids: only indicators containing NONE of these tags GUIDs be returned. 
-        :param int start_page: you shouldn't need to use this parameter.
-        :param int page_size: you shouldn't need to use this parameter, but will accept values between 1 and 1000. 
+        :param int start_page: see 'page_size' explanation.
+        :param int page_size: the API endpoint's back-end will create a list of all the indicator objects that meet
+        the time/tag parameters.  This function can cut that list into pages of size 'page_size', and you can use the
+        'page_size' and 'start_page' parameters to customize which page the fgenerator starts at.  This is useful for very 
+        large lists of indicators, probably not very useful for small lists of indicators.  Most users should not 
+        need to use these parameters ('page_size' and 'start_page').  The 'page_size' parameter will accept values 
+        between 1 and 1000.  Passing the integer 1000 as the argument to this parameter should result in your script 
+        making fewer API calls because it returns the largest quantity of indicators with each API call.  An API call 
+        has to be made to fetch each page.   
         :return: A generator of |Indicator| objects containing values for the "value" and "type" attributes only.
         All other attributes of the |Indicator| object will contain Null values. 
         
