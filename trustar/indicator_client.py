@@ -319,12 +319,16 @@ class IndicatorClient(object):
         """
         Creates a generator from the |get_indicators_page| method that returns each successive page.
 
-        :param int from_time: start of time window in milliseconds since epoch (defaults to 7 days ago)
-        :param int to_time: end of time window in milliseconds since epoch (defaults to current time)
-        :param list(string) enclave_ids: a list of enclave IDs to filter by
-        :param list(string) included_tag_ids: only indicators containing ALL of these tags will be returned
-        :param list(string) excluded_tag_ids: only indicators containing NONE of these tags will be returned
-        :return: The generator.
+        :param int from_time: start of time window in milliseconds since epoch (defaults to 7 days ago).
+        :param int to_time: end of time window in milliseconds since epoch (defaults to current time).
+        :param list(string) enclave_ids: a list of enclave IDs from which to get indicators from. 
+        :param list(string) included_tag_ids: only indicators containing ALL of these tag GUIDs will be returned.
+        :param list(string) excluded_tag_ids: only indicators containing NONE of these tags GUIDs be returned. 
+        :param int start_page: you shouldn't need to use this parameter.
+        :param int page_size: you shouldn't need to use this parameter, but will accept values between 1 and 1000. 
+        :return: A generator of |Indicator| objects containing values for the "value" and "type" attributes only.
+        All other attributes of the |Indicator| object will contain Null values. 
+        
         """
 
         return Page.get_generator(page_generator=self._get_indicators_page_generator(from_time=from_time,
@@ -354,8 +358,8 @@ class IndicatorClient(object):
         """
         Uses the |get_related_indicators_page| method to create a generator that returns each successive report.
 
-        :param indicators: list of indicator values to search for
-        :param enclave_ids: list of IDs of enclaves to search in
+        :param list(string) indicators: list of indicator values to search for
+        :param list(string) enclave_ids: list of GUIDs of enclaves to search in
         :return: The generator.
         """
 
@@ -366,7 +370,7 @@ class IndicatorClient(object):
         Creates a generator from the |get_whitelist_page| method that returns each successive page.
 
         :param int start_page: The page to start on.
-        :param page_size: The size of each page.
+        :param int page_size: The size of each page.
         :return: The generator.
         """
 
