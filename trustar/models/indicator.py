@@ -26,7 +26,7 @@ class Indicator(ModelBase):
     :ivar sightings: the number of times this indicator has been sighted
     :ivar source: the source that the indicator was observed from
     :ivar notes: a string containing notes about the indicator
-    :ivar tags: a list containing tag objects associated with the indicator
+    :ivar tags: a list containing |Tag| objects associated with the indicator
     :ivar enclave_ids: a list of enclaves that the indicator is found in
 
     :cvar TYPES: A list of all valid indicator types.
