@@ -246,6 +246,8 @@ class ReportClient(object):
         :param indicators: A list of indicator values to retrieve correlated reports for.
         :param enclave_ids: The enclaves to search in.
         :param is_enclave: Whether to search enclave reports or community reports.
+        :param int page_number: the page number to get.
+        :param int page_size: the size of the page to be returned.
         :return: The list of IDs of reports that correlated.
 
         Example:
@@ -263,7 +265,9 @@ class ReportClient(object):
         params = {
             'indicators': indicators,
             'enclaveIds': enclave_ids,
-            'distributionType': distribution_type
+            'distributionType': distribution_type,
+            'pageNumber': page_number,
+            'pageSize': page_size
         }
         resp = self._client.get("reports/correlated", params=params)
 
