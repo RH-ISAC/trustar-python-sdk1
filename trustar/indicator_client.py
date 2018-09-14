@@ -251,7 +251,9 @@ class IndicatorClient(object):
         :param indicators: a list of |Indicator| objects to query.  Values are required, types are optional.  Types
             might be required to distinguish in a case where one indicator value has been associated with multiple types
             based on different contexts.
-        :return: A list of |Indicator| objects.
+        :return: A list of |Indicator| objects.  The following attributes of the objects will be returned:  
+            correlation_count, last_seen, sightings, notes, tags, enclave_ids.  All other attributes of the Indicator
+            objects will have Null values.  
         """
 
         params = {
