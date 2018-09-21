@@ -82,9 +82,9 @@ class ReportClient(object):
         distribution_type = None
 
         # explicitly compare to True and False to distinguish from None (which is treated as False in a conditional)
-        if is_enclave == True:
+        if is_enclave:
             distribution_type = DistributionType.ENCLAVE
-        elif is_enclave == False:
+        elif not is_enclave:
             distribution_type = DistributionType.COMMUNITY
 
         if enclave_ids is None:
