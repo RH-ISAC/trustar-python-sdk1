@@ -114,7 +114,7 @@ class EnclavePermissions(Enclave):
         d.update({
             'read': self.read,
             'create': self.create,
-            'updated': self.update
+            'update': self.update
         })
 
         return d

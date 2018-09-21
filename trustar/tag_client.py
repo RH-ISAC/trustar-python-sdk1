@@ -52,9 +52,9 @@ class TagClient(object):
         """
         Deletes a tag from a specific report, in a specific enclave.
 
-        :param report_id: The ID of the report
-        :param tag_id: ID of the tag to delete
-        :param id_type: indicates whether the ID internal or an external ID provided by the user
+        :param string report_id: The ID of the report
+        :param string tag_id: ID of the tag to delete
+        :param string id_type: indicates whether the ID internal or an external ID provided by the user
         :return: The response body.
         """
 
@@ -68,7 +68,7 @@ class TagClient(object):
         Retrieves all tags present in the given enclaves. If the enclave list is empty, the tags returned include all
         tags for all enclaves the user has access to.
 
-        :param enclave_ids: list of enclave IDs
+        :param (string) list enclave_ids: list of enclave IDs
         :return: The list of |Tag| objects.
         """
 
@@ -80,7 +80,7 @@ class TagClient(object):
         """
         Get all indicator tags for a set of enclaves.
 
-        :param enclave_ids: list of enclave IDs
+        :param (string) list enclave_ids: list of enclave IDs
         :return: The list of |Tag| objects.
         """
 
