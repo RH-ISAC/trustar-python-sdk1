@@ -54,10 +54,9 @@ class IndicatorClient(object):
         }
         self._client.post("indicators", data=json.dumps(body))
 
-
-    def get_indicators( self, from_time=None, to_time=None, enclave_ids=None,
+    def get_indicators(self, from_time=None, to_time=None, enclave_ids=None,
                        included_tag_ids=None, excluded_tag_ids=None,
-                       start_page=0, page_size=None ):
+                       start_page=0, page_size=None):
         """
         Creates a generator from the |get_indicators_page| method that returns each successive indicator as an
         |Indicator| object containing values for the 'value' and 'type' attributes only; all
@@ -85,13 +84,13 @@ class IndicatorClient(object):
             page_number=start_page,
             page_size=page_size
         )
-            
-        indicators_generator = Page.get_generator( page_generator=indicators_page_generator )
-        
+
+        indicators_generator = Page.get_generator(page_generator=indicators_page_generator)
+
         return indicators_generator
 
-    def _get_indicators_page_generator( self, from_time=None, to_time=None, page_number=0, page_size=None,
-                                       enclave_ids=None, included_tag_ids=None, excluded_tag_ids=None ):
+    def _get_indicators_page_generator(self, from_time=None, to_time=None, page_number=0, page_size=None,
+                                       enclave_ids=None, included_tag_ids=None, excluded_tag_ids=None):
         """
         Creates a generator from the |get_indicators_page| method that returns each successive page.
 
@@ -115,11 +114,10 @@ class IndicatorClient(object):
             included_tag_ids=included_tag_ids,
             excluded_tag_ids=excluded_tag_ids
         )
-        return Page.get_page_generator( get_page, page_number, page_size )
+        return Page.get_page_generator(get_page, page_number, page_size)
 
-    
-    def get_indicators_page( self, from_time=None, to_time=None, page_number=None, page_size=None,
-                            enclave_ids=None, included_tag_ids=None, excluded_tag_ids=None ):
+    def get_indicators_page(self, from_time=None, to_time=None, page_number=None, page_size=None,
+                            enclave_ids=None, included_tag_ids=None, excluded_tag_ids=None):
         """
         Get a page of indicators matching the provided filters.
 
@@ -143,14 +141,13 @@ class IndicatorClient(object):
             'excludedTagIds': excluded_tag_ids
         }
 
-        resp = self._client.get( "indicators", params=params )
+        resp = self._client.get("indicators", params=params)
 
-        page_of_indicators = Page.from_dict( resp.json(), content_type=Indicator )
-        
+        page_of_indicators = Page.from_dict(resp.json(), content_type=Indicator)
+
         return page_of_indicators
 
-    
-    def search_indicators( self, search_term, enclave_ids=None ):
+    def search_indicators(self, search_term, enclave_ids=None):
         """
         Uses the |search_indicators_page| method to create a generator that returns each successive indicator.
 
@@ -161,7 +158,6 @@ class IndicatorClient(object):
         """
 
         return Page.get_generator(page_generator=self._search_indicators_page_generator(search_term, enclave_ids))
-
 
     def _search_indicators_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None):
         """
@@ -201,8 +197,6 @@ class IndicatorClient(object):
 
         return Page.from_dict(resp.json(), content_type=Indicator)
 
-
-
     def get_related_indicators(self, indicators=None, enclave_ids=None):
         """
         Uses the |get_related_indicators_page| method to create a generator that returns each successive report.
@@ -214,7 +208,6 @@ class IndicatorClient(object):
 
         return Page.get_generator(page_generator=self._get_related_indicators_page_generator(indicators, enclave_ids))
 
-    
     def get_indicators_for_report(self, report_id):
         """
         Creates a generator that returns each successive indicator for a given report.
@@ -224,8 +217,7 @@ class IndicatorClient(object):
         """
 
         return Page.get_generator(page_generator=self._get_indicators_for_report_page_generator(report_id))
-    
-        
+
     def get_indicator_metadata(self, value):
         """
         Provide metadata associated with a single indicators, including value, indicatorType, noteCount,
@@ -312,7 +304,6 @@ class IndicatorClient(object):
 
         return Page.get_generator(page_generator=self._get_whitelist_page_generator())
 
-
     def add_terms_to_whitelist(self, terms):
         """
         Add a list of terms to the user's company's whitelist.
@@ -355,7 +346,6 @@ class IndicatorClient(object):
         # parse items in response as indicators
         return [Indicator.from_dict(indicator) for indicator in body]
 
-
     def get_whitelist_page(self, page_number=None, page_size=None):
         """
         Gets a paginated list of indicators that the user's company has whitelisted.
@@ -371,7 +361,6 @@ class IndicatorClient(object):
         }
         resp = self._client.get("whitelist", params=params)
         return Page.from_dict(resp.json(), content_type=Indicator)
-
     
     def get_indicators_for_report_page(self, report_id, page_number=None, page_size=None):
         """
@@ -389,7 +378,6 @@ class IndicatorClient(object):
         }
         resp = self._client.get("reports/%s/indicators" % report_id, params=params)
         return Page.from_dict(resp.json(), content_type=Indicator)
-
 
     def get_related_indicators_page(self, indicators=None, enclave_ids=None, page_size=None, page_number=None):
         """
@@ -413,9 +401,6 @@ class IndicatorClient(object):
 
         return Page.from_dict(resp.json(), content_type=Indicator)
 
-
-
-
     def _get_indicators_for_report_page_generator(self, report_id, start_page=0, page_size=None):
         """
         Creates a generator from the |get_indicators_for_report_page| method that returns each successive page.
@@ -428,8 +413,6 @@ class IndicatorClient(object):
 
         get_page = functools.partial(self.get_indicators_for_report_page, report_id=report_id)
         return Page.get_page_generator(get_page, start_page, page_size)
-
-
 
     def _get_related_indicators_page_generator(self, indicators=None, enclave_ids=None, start_page=0, page_size=None):
         """
@@ -446,7 +429,6 @@ class IndicatorClient(object):
         get_page = functools.partial(self.get_related_indicators_page, indicators, enclave_ids)
         return Page.get_page_generator(get_page, start_page, page_size)
 
-
     def _get_whitelist_page_generator(self, start_page=0, page_size=None):
         """
         Creates a generator from the |get_whitelist_page| method that returns each successive page.
@@ -457,5 +439,3 @@ class IndicatorClient(object):
         """
 
         return Page.get_page_generator(self.get_whitelist_page, start_page, page_size)
-
-
