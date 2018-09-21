@@ -39,9 +39,9 @@ class Enclave(ModelBase):
         :return: The enclave object.
         """
 
-        return Enclave(id=enclave['id'],
-                       name=enclave['name'],
-                       type=EnclaveType.from_string(enclave['type']))
+        return Enclave(id=enclave.get('id'),
+                       name=enclave.get('name'),
+                       type=EnclaveType.from_string(enclave.get('type')))
 
     def to_dict(self, remove_nones=False):
         """

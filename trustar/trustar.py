@@ -261,7 +261,7 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         """
 
         resp = self._client.get("enclaves")
-        return [EnclavePermissions.from_dict(indicator) for indicator in resp.json()]
+        return [EnclavePermissions.from_dict(enclave) for enclave in resp.json()]
 
     def get_request_quotas(self):
         """
