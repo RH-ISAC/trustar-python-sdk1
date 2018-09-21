@@ -22,15 +22,23 @@ class IndicatorClient(object):
 
     def submit_indicators(self, indicators, enclave_ids=None, tags=None):
         """
-        Submit indicators directly.  Indicator value is required, other metadata is optional: firstSeen, lastSeen,
-        sightings, notes, and source. The submission must specify enclaves for the indicators to be submitted to, and
-        can optionally specify tags to assign to all the indicators in the submission, and/or include individual tags in
-        each Indicator (which will take precedence over the submission tags). The tags can be existing or new,
-        and are identified by name and enclaveId.
+        Submit indicators directly.  The indicator field ``value`` is required; all other metadata fields are optional:
+        ``firstSeen``, ``lastSeen``, ``sightings``, ``notes``, and ``source``. The submission must specify enclaves for
+        the indicators to be submitted to, and can optionally specify tags to assign to all the indicators in the
+        submission, and/or include individual tags in each Indicator (which will take precedence over the submission tags).
+        The tags can be existing or new, and are identified by ``name`` and ``enclaveId``.
+        (Passing the GUID of an existing tag is not allowed.  ``name`` and ``enclaveId`` must be specified for each tag.)
 
-        :param list(Indicator) indicators: a list of |Indicator| objects.
+        This function uses the API endpoint discussed here:  https://docs.trustar.co/api/v13/indicators/submit_indicators.html
+        Note that |Indicator| class attribute names are often slightly different from the API endpoint's parameters.
+        (EX: The |Indicator| class's ``first_seen`` attribute corresponds to the API endpoint's ``firstSeen`` parameter.)
+
+        :param list(Indicator) indicators: a list of |Indicator| objects.  Indicator's ``value`` is required, all other
+            attributes can be Null.  These |Indicator| attributes can be modified / updated using this function:
+            ``value``, ``first_seen``, ``last_seen``, ``sightings``, ``source``, ``notes``, and ``tags``.  No other |Indicator| attributes
+            can be modified in TruSTAR by using this function.
         :param list(string) enclave_ids: a list of enclave IDs.
-        :param list(string) tags: a list of |Tag| objects that will be applied to all indicators in the submission.
+        :param list(string) tags: a list of |Tag| objects that will be applied to ALL indicators in the submission.
         """
 
         if enclave_ids is None:
