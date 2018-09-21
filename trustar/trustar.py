@@ -47,7 +47,9 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         'client_metatag': None,
         'verify': True,
         'retry': True,
-        'max_wait_time': 60
+        'max_wait_time': 60,
+        'http_proxy': None,
+        'https_proxy': None
     }
 
     def __init__(self, config_file="trustar.conf", config_role="trustar", config=None):
@@ -85,6 +87,10 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         | ``client_version``      | No        | the version of the Python SDK in use             | the version of the client being used                   |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``client_metatag``      | No        | ``None``                                         | any additional information (ex. email address of user) |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | ``http_proxy``          | No        | ``None``                                         | http proxy being used - http(s)://user:pwd@{ip}:{port} |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | ``https_proxy``         | No        | ``None``                                         | https proxy being used - http(s)://user:pwd@{ip}:{port}|
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
 
         :param str config_file: Path to configuration file (conf, json, or yaml).

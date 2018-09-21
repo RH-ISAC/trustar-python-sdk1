@@ -54,6 +54,10 @@ class ApiClient(object):
         +-------------------------+--------------------------------------------------------+
         | ``client_metatag``      | any additional information (ex. email address of user) |
         +-------------------------+--------------------------------------------------------+
+        | ``http_proxy``          | http proxy being used - http(s)://user:pwd@{ip}:{port} |
+        +-------------------------+--------------------------------------------------------+
+        | ``https_proxy``         | https proxy being used - http(s)://user:pwd@{ip}:{port}|
+        +-------------------------+--------------------------------------------------------+
 
         :param dict config: A dictionary of configuration options.
         """
@@ -69,6 +73,13 @@ class ApiClient(object):
         self.verify = config.get('verify')
         self.retry = config.get('retry')
         self.max_wait_time = config.get('max_wait_time')
+
+        # To support proxy
+        self.proxies = dict()
+        if config.get('http_proxy'):
+            self.proxies['http'] = config.get('http_proxy')
+        if config.get('https_proxy'):
+            self.proxies['https'] = config.get('https_proxy')
 
         # initialize token property
         self.token = None
@@ -95,7 +106,7 @@ class ApiClient(object):
 
         # make request
         post_data = {"grant_type": "client_credentials"}
-        response = requests.post(self.auth, auth=client_auth, data=post_data)
+        response = requests.post(self.auth, auth=client_auth, data=post_data, proxies=self.proxies)
 
         # raise exception if status code indicates an error
         if 400 <= response.status_code < 600:
@@ -179,6 +190,7 @@ class ApiClient(object):
                                         verify=self.verify,
                                         params=params,
                                         data=data,
+                                        proxies=self.proxies,
                                         **kwargs)
 
             attempted = True
