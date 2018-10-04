@@ -101,23 +101,22 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         # attempt to use configuration file if one exists
         if config is None:
             config = self.config_from_file(config_file, config_role)
+        else:
+            # copy so that the dictionary that was passed is not mutated
+            config = config.copy()
 
         # remap config keys names
         for k, v in self.REMAPPED_KEYS.items():
             if k in config and v not in config:
                 config[v] = config[k]
 
+        # coerce value to boolean
         verify = config.get('verify')
-        if verify is not None and verify.lower() == 'false':
-            config['verify'] = False
-        else:
-            config['verify'] = True
+        config['verify'] = self.parse_boolean(verify)
 
+        # coerce value to boolean
         retry = config.get('retry')
-        if retry is not None and retry.lower() == 'false':
-            config['retry'] = False
-        else:
-            config['retry'] = True
+        config['retry'] = self.parse_boolean(retry)
 
         max_wait_time = config.get('max_wait_time')
         if max_wait_time is not None:
@@ -162,6 +161,27 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
 
         # initialize token property
         self.token = None
+
+    @staticmethod
+    def parse_boolean(value):
+        """
+        Coerce a value to boolean.
+
+        :param value: the value, could be a string, boolean, or None
+        :return: the value as coerced to a boolean
+        """
+
+        if value is None:
+            return None
+
+        if isinstance(value, string_types):
+            value = value.lower()
+            if value == 'false':
+                return False
+            if value == 'true':
+                return True
+
+        raise ValueError("Could not convert value to boolean: {}".format(value))
 
     @staticmethod
     def config_from_file(config_file_path, config_role):
