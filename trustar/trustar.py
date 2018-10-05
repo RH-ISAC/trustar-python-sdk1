@@ -174,6 +174,9 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         if value is None:
             return None
 
+        if isinstance(value, bool):
+            return value
+
         if isinstance(value, string_types):
             value = value.lower()
             if value == 'false':
