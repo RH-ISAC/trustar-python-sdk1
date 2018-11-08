@@ -5,9 +5,6 @@ import time
 import random
 
 
-CONFIG_FILE_PATH = '/usr/local/etc/trustar.conf'
-CONFIG_ROLE = 'trustar'
-
 DAY = 24 * 60 * 60 * 1000
 
 current_time = int(time.time()) * 1000
@@ -28,7 +25,7 @@ class TruStarTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ts = TruStar(config_file=CONFIG_FILE_PATH, config_role=CONFIG_ROLE)
+        cls.ts = TruStar()
 
     def test_ping(self):
         pong = self.ts.ping()

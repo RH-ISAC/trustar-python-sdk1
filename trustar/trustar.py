@@ -52,7 +52,7 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         'https_proxy': None
     }
 
-    def __init__(self, config_file="trustar.conf", config_role="trustar", config=None):
+    def __init__(self, config_file=None, config_role=None, config=None):
 
         """
         Constructs and configures the instance.  Initially attempts to use ``config``; if it is ``None``,
@@ -93,14 +93,35 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         | ``https_proxy``         | No        | ``None``                                         | https proxy being used - http(s)://user:pwd@{ip}:{port}|
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
 
-        :param str config_file: Path to configuration file (conf, json, or yaml).
-        :param str config_role: The section in the configuration file to use.
-        :param dict config: A dictionary of configuration options.
+        :param str config_file: Path to configuration file (conf, json, or yaml).  If no value is passed, the environment
+            variable TRUSTAR_PYTHON_CONFIG_FILE will be used.  If that is not defined, defaults to "trustar.conf".
+        :param str config_role: The section in the configuration file to use.  If no value is passed, the environment
+            variable TRUSTAR_PYTHON_CONFIG_ROLE will be used.  If that is not defined, defaults to "trustar".
+        :param dict config: A dictionary of configuration options.  This will override the config file path passed in
+            the ``config_file`` parameter.
         """
 
         # attempt to use configuration file if one exists
         if config is None:
+
+            # look for config path in environment variable
+            if config_file is None:
+                config_file = os.environ.get('TRUSTAR_PYTHON_CONFIG_PATH')
+
+            # fallback to config file in current working directory
+            if config_file is None:
+                config_file = 'trustar.conf'
+
+            # look for config role in environment variable
+            if config_role is None:
+                config_role = os.environ.get('TRUSTAR_PYTHON_CONFIG_ROLE')
+
+            # fallback to config role 'trustar'
+            if config_role is None:
+                config_role = 'trustar'
+
             config = self.config_from_file(config_file, config_role)
+
         else:
             # copy so that the dictionary that was passed is not mutated
             config = config.copy()
