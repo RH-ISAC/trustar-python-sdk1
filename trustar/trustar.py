@@ -8,6 +8,7 @@ from six import string_types
 import configparser
 import os
 import yaml
+import logging
 
 # package imports
 from .api_client import ApiClient
@@ -15,17 +16,17 @@ from .report_client import ReportClient
 from .indicator_client import IndicatorClient
 from .tag_client import TagClient
 from .models import EnclavePermissions, RequestQuota
-from .utils import normalize_timestamp, get_logger
+from .utils import normalize_timestamp
 
 from .version import __version__, __api_version__
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
 
-logger = get_logger(__name__)
-
 
 class TruStar(ReportClient, IndicatorClient, TagClient):
+
+    logger = logging.getLogger(__name__)
 
     # raise exception if any of these config keys are missing
     REQUIRED_KEYS = ['api_key', 'api_secret']
@@ -176,9 +177,9 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
 
         # if API version does not match expected version, log a warning
         if api_version.strip(BETA_TAG) != __api_version__.strip(BETA_TAG):
-            logger.warn("This version (%s) of the TruStar Python SDK is only compatible with version %s of"
-                        " the TruStar Rest API, but is attempting to contact version %s of the Rest API."
-                        % (__version__, __api_version__, api_version))
+            self.logger.warning("This version (%s) of the TruStar Python SDK is only compatible with version %s of"
+                                " the TruStar Rest API, but is attempting to contact version %s of the Rest API."
+                                % (__version__, __api_version__, api_version))
 
         # initialize token property
         self.token = None
@@ -226,7 +227,7 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
             roles = dict(config_parser)
         elif ext in ['.json', '.yml', '.yaml']:
             with open(config_file_path, 'r') as f:
-                roles = yaml.load(f)
+                roles = yaml.safe_load(f)
         else:
             raise IOError("Unrecognized filetype for config file '%s'" % config_file_path)
 

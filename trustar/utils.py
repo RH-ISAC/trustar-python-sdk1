@@ -86,28 +86,7 @@ def get_logger(name=None):
     :return: The logger.
     """
 
-    class InfoFilter(logging.Filter):
-        def filter(self, rec):
-            return rec.levelno <= logging.INFO
-
-    # configure STDOUT handler
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-    stdout_handler.setLevel(logging.INFO)
-    stdout_handler.addFilter(InfoFilter())
-
-    # configure STDERR handler
-    stderr_handler = logging.StreamHandler(sys.stderr)
-    stderr_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-    stderr_handler.setLevel(logging.INFO)
-
-    # configure logger
-    log = logging.getLogger(name)
-    log.setLevel(logging.DEBUG)
-    log.addHandler(stdout_handler)
-    log.addHandler(stderr_handler)
-
-    return log
+    return logging.getLogger(name)
 
 
 def get_time_based_page_generator(get_page, get_next_to_time, from_time=None, to_time=None):

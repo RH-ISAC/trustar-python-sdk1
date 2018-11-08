@@ -9,17 +9,18 @@ import requests.auth
 import time
 from math import ceil
 from requests import HTTPError
+import logging
 
 # package imports
 from .utils import get_logger
-
-logger = get_logger(__name__)
 
 
 class ApiClient(object):
     """
     This class is used to make HTTP requests to the TruStar API.
     """
+
+    logger = logging.getLogger(__name__)
 
     def __init__(self, config=None):
         """
@@ -183,17 +184,21 @@ class ApiClient(object):
             if headers is not None:
                 base_headers.update(headers)
 
+            url = "{}/{}".format(self.base, path)
+
             # make request
             response = requests.request(method=method,
-                                        url="{}/{}".format(self.base, path),
+                                        url=url,
                                         headers=base_headers,
                                         verify=self.verify,
                                         params=params,
                                         data=data,
                                         proxies=self.proxies,
                                         **kwargs)
-
             attempted = True
+
+            # log request
+            self.logger.debug("%s %s. Trace-Id: %s. Params: %s", method, url, response.headers.get('Trace-Id'), params)
 
             # refresh token if expired
             if self._is_expired_token_response(response):
@@ -202,7 +207,7 @@ class ApiClient(object):
             # if "too many requests" status code received, wait until next request will be allowed and retry
             elif retry and response.status_code == 429:
                 wait_time = ceil(response.json().get('waitTime') / 1000)
-                logger.debug("Waiting %d seconds until next request allowed." % wait_time)
+                self.logger.debug("Waiting %d seconds until next request allowed." % wait_time)
 
                 # if wait time exceeds max wait time, allow the exception to be thrown
                 if wait_time <= self.max_wait_time:
