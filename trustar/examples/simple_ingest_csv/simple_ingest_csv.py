@@ -2,10 +2,11 @@
 Reads reports from a CSV and submits them to TruSTAR.
 """
 
-from trustar import TruStar, Report, get_logger
+from trustar import TruStar, Report
 import csv
+import logging
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 # mapping of CSV column names to report fields
 MAPPING = {

@@ -3,15 +3,15 @@ from __future__ import print_function
 from builtins import object, str
 from future import standard_library
 from six import string_types
+import logging
 
 # package imports
 from .models import Tag
-from .utils import get_logger
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class TagClient(object):

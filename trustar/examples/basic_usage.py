@@ -8,11 +8,12 @@ from __future__ import print_function
 
 import sys
 import time
+import logging
 from random import randint
 
-from trustar import TruStar, Report, get_logger
+from trustar import TruStar, Report
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 do_latest_reports = True
 do_correlated = True

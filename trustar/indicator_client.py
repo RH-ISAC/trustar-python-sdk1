@@ -7,15 +7,15 @@ from six import string_types
 # external imports
 import functools
 import json
+import logging
 
 # package imports
 from .models import Indicator, Page, Tag
-from .utils import get_logger
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class IndicatorClient(object):

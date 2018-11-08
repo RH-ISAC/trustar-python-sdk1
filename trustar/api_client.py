@@ -11,9 +11,6 @@ from math import ceil
 from requests import HTTPError
 import logging
 
-# package imports
-from .utils import get_logger
-
 
 class ApiClient(object):
     """

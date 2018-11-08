@@ -1,13 +1,14 @@
-from trustar import TruStar, get_logger, datetime_to_millis
+from trustar import TruStar, datetime_to_millis
 from datetime import datetime, timedelta
 import csv
+import logging
 
 
 # initialize SDK
 ts = TruStar()
 
 # initialize logger
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 # set 'from' to the start of yesterday and 'to' to the end of yesterday
 to_time = datetime.now()

@@ -3,7 +3,6 @@ from __future__ import print_function
 from six import string_types
 
 # external imports
-import sys
 import logging
 import time
 from datetime import datetime
@@ -52,8 +51,8 @@ def normalize_timestamp(date_time):
     # if timestamp is none of the formats above, error message is printed and timestamp is set to current time by
     # default
     except Exception as e:
-        logger.warn(e)
-        logger.warn("Using current time as replacement.")
+        logger.warning(e)
+        logger.warning("Using current time as replacement.")
         datetime_dt = datetime.now()
 
     # if timestamp is timezone naive, add timezone
@@ -109,4 +108,28 @@ def get_time_based_page_generator(get_page, get_next_to_time, from_time=None, to
         to_time = new_to_time
 
 
-logger = get_logger(__name__)
+def parse_boolean(value):
+    """
+    Coerce a value to boolean.
+
+    :param value: the value, could be a string, boolean, or None
+    :return: the value as coerced to a boolean
+    """
+
+    if value is None:
+        return None
+
+    if isinstance(value, bool):
+        return value
+
+    if isinstance(value, string_types):
+        value = value.lower()
+        if value == 'false':
+            return False
+        if value == 'true':
+            return True
+
+    raise ValueError("Could not convert value to boolean: {}".format(value))
+
+
+logger = logging.getLogger(__name__)

@@ -8,15 +8,16 @@ from six import string_types
 import json
 from datetime import datetime
 import functools
+import logging
 
 # package imports
 from .models import Page, Report, DistributionType, IdType
-from .utils import get_logger, get_time_based_page_generator
+from .utils import get_time_based_page_generator
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ReportClient(object):
