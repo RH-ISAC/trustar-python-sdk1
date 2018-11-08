@@ -184,6 +184,7 @@ class TruStar(ReportClient, IndicatorClient, TagClient):
         # initialize token property
         self.token = None
 
+
     @staticmethod
     def parse_boolean(value):
         """

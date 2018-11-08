@@ -80,7 +80,7 @@ def datetime_to_millis(dt):
 
 def get_logger(name=None):
     """
-    Configures a logger to log to STDOUT or STDERR based on the logging level of the message.
+    Get a logger.  (Deprecated)
     :param name: The name of the logger.
     :return: The logger.
     """
