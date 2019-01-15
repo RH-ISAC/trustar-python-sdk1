@@ -101,11 +101,10 @@ class TagClient(object):
         has no publicly-available API endpoint that will allow a user
         to tag an IOC whose value contains special characters without
         "submitting" it.
-
         It's perfectly valid to "submit" an IOC that already exists
         in the enclave.  Its "sightings" attribute will be incremented,
         and its "lastSeen" attribute will be updated to present time.
-
+        
         
         Adds a tag to a specific indicator, for a specific enclave.
 
