@@ -93,6 +93,20 @@ class TagClient(object):
 
     def add_indicator_tag(self, indicator_value, name, enclave_id):
         """
+        **NOTE:  THIS FUNCTION FAILS IF THE 'indicator_value' ARGUMENT
+        CONTAINS A SPECIAL CHARACTER (most URL & DOMAIN IOCs) **
+        The workaround to this problem is to use the "submit_indicators"
+        function from "indicator_client.py" to submit the indicator and
+        tag it at the same time. TruSTAR currently (as of 14 Jan 2019)
+        has no publicly-available API endpoint that will allow a user
+        to tag an IOC whose value contains special characters without
+        "submitting" it.
+
+        It's perfectly valid to "submit" an IOC that already exists
+        in the enclave.  Its "sightings" attribute will be incremented,
+        and its "lastSeen" attribute will be updated to present time.
+
+        
         Adds a tag to a specific indicator, for a specific enclave.
 
         :param indicator_value: The value of the indicator
