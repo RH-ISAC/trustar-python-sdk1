@@ -81,6 +81,8 @@ class ApiClient(object):
 
         # initialize token property
         self.token = None
+        # initialize last_response property
+        self.last_response = None
 
     def _get_token(self):
         """
@@ -105,6 +107,7 @@ class ApiClient(object):
         # make request
         post_data = {"grant_type": "client_credentials"}
         response = requests.post(self.auth, auth=client_auth, data=post_data, proxies=self.proxies)
+        self.last_response = response
 
         # raise exception if status code indicates an error
         if 400 <= response.status_code < 600:
@@ -192,6 +195,7 @@ class ApiClient(object):
                                         data=data,
                                         proxies=self.proxies,
                                         **kwargs)
+            self.last_response = response
             attempted = True
 
             # log request
@@ -240,6 +244,24 @@ class ApiClient(object):
             raise HTTPError(message, response=response)
 
         return response
+
+    def get_last_trace_id(self):
+        """
+        The TruSTAR API responds to all requests with a header "Trace-Id", which contains an ID that can be correlated
+        against all logs for a request across TruSTAR's platform.  This method returns the trace ID for the most recent
+        request made by this SDK.
+
+        :return: The trace ID.
+
+        .. warning:: This method is not thread-safe.  Do not use the same instance of this class in multiple threads.
+        """
+        # find the last response stored in the thread context
+        if self.last_response is None:
+            return None
+
+        # find the trace ID in the last response, if it exists
+        trace_id = self.last_response.headers.get('Trace-Id')
+        return trace_id if trace_id is not None else None
 
     def get(self, path, params=None, **kwargs):
         """
