@@ -111,9 +111,10 @@ class ApiClient(object):
 
         # raise exception if status code indicates an error
         if 400 <= response.status_code < 600:
-            message = "{} {} Error: {}".format(response.status_code,
-                                               "Client" if response.status_code < 500 else "Server",
-                                               "unable to get token")
+            message = "{} {} Error (Trace-Id: {}): {}".format(response.status_code,
+                                                              "Client" if response.status_code < 500 else "Server",
+                                                              self._get_trace_id(response),
+                                                              "unable to get token")
             raise HTTPError(message, response=response)
 
         # set token property to the received token
@@ -237,9 +238,10 @@ class ApiClient(object):
                 reason = "unknown cause"
 
             # construct error message
-            message = "{} {} Error: {}".format(response.status_code,
-                                               "Client" if response.status_code < 500 else "Server",
-                                               reason)
+            message = "{} {} Error (Trace-Id: {}): {}".format(response.status_code,
+                                                              "Client" if response.status_code < 500 else "Server",
+                                                              self._get_trace_id(response),
+                                                              reason)
             # raise HTTPError
             raise HTTPError(message, response=response)
 
@@ -260,7 +262,12 @@ class ApiClient(object):
             return None
 
         # find the trace ID in the last response, if it exists
-        trace_id = self.last_response.headers.get('Trace-Id')
+        return self._get_trace_id(self.last_response)
+
+    @staticmethod
+    def _get_trace_id(response):
+        # find the trace ID in the response, if it exists
+        trace_id = response.headers.get('Trace-Id')
         return trace_id if trace_id is not None else None
 
     def get(self, path, params=None, **kwargs):
