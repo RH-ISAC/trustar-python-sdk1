@@ -256,15 +256,16 @@ class IndicatorClient(object):
             objects will have Null values.  
         """
 
+        data = [i.value for i in indicators]
+
         params = {
-            'values': [i.value for i in indicators],
             'types': [i.type for i in indicators]
         }
 
         if len(params.get('types')) == 0:
             params['types'] = None
 
-        resp = self._client.get("indicators/metadata", params=params)
+        resp = self._client.post("indicators/metadata", params=params, data=json.dumps(data))
 
         return [Indicator.from_dict(x) for x in resp.json()]
 

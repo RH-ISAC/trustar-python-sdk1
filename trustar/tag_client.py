@@ -4,6 +4,7 @@ from builtins import object, str
 from future import standard_library
 from six import string_types
 import logging
+import json
 
 # package imports
 from .models import Tag
@@ -101,11 +102,15 @@ class TagClient(object):
         :return: A |Tag| object representing the tag that was created.
         """
 
-        params = {
-            'name': name,
-            'enclaveId': enclave_id
+        data = {
+            'value': indicator_value,
+            'tag': {
+                'name': name,
+                'enclaveId': enclave_id
+            }
         }
-        resp = self._client.post("indicators/%s/tags" % indicator_value, params=params)
+
+        resp = self._client.post("indicators/tags", data=json.dumps(data))
         return Tag.from_dict(resp.json())
 
     def delete_indicator_tag(self, indicator_value, tag_id):
@@ -116,4 +121,8 @@ class TagClient(object):
         :param tag_id: ID of the tag to delete
         """
 
-        self._client.delete("indicators/%s/tags/%s" % (indicator_value, tag_id))
+        params = {
+            'value': indicator_value
+        }
+
+        self._client.delete("indicators/tags/%s" % tag_id, params=params)
