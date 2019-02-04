@@ -163,13 +163,16 @@ class ReportClient(object):
 
     def update_report(self, report):
         """
-        Updates the report identified by the ``report.id`` field; if this field does not exist, then
-        ``report.external_id`` will be used if it exists.  Any other fields on ``report`` that are not ``None``
-        will overwrite values on the report in TruSTAR's system.   Any fields that are  ``None`` will simply be ignored;
-        their values will be unchanged.
-
-        :param report: A |Report| object with the updated values.
-        :return: The |Report| object.
+        This method updates the report identified by the ``report.id`` field; if the report.id field contains no value
+        (``None`` / null), then ``report.external_id`` will be used if it exists.  The report object must have a valid
+        value in either the 'id' attribute or the 'external_id' attribute.  Additionally, ``report.body``,
+        ``report.title``, and ``report.enclave_ids`` attributes must all contain values / cannot be null/``None``.
+        Any of ``report``'s attributes that is not ``None`` will overwrite that attribute's value on the report in
+        the Station platform.  Any fields that are ``None`` will simply be ignored; their values will remain unchanged.
+        
+        :param report: A |Report| object with the values to update to.  ``body``, ``title``, ``enclave_ids``, and either
+        ``id`` or ``external_id`` must all contain values.  All others can be ``None``.
+        :return: The same |Report| object passed as the argument to ``report`` parameter.
 
         Example:
 
@@ -186,20 +189,34 @@ class ReportClient(object):
         if report.id is not None:
             id_type = IdType.INTERNAL
             report_id = report.id
+            
         # if no ID field is present, but external ID field is, default to external ID type
         elif report.external_id is not None:
             id_type = IdType.EXTERNAL
             report_id = report.external_id
+            
         # if no ID fields exist, raise exception
         else:
             raise Exception("Cannot update report without either an ID or an external ID.")
 
+        # if no list of enclave_ids, raise exception.
+        if report.enclave_ids is None:
+            raise Exception("Cannot update report with an empty 'enclave_ids' attribute.")
+
+        # if no report body, raise exception.
+        if report.body is None:
+            raise Exception("Cannot update report with an empty (null/None) 'body' attribute.")
+
+        # if no title, raise exception.
+        if report.title is None:
+            raise Exception("Cannot update report with an empty (null/None) 'title' attribute.")
+        
         # not allowed to update value of 'reportId', so remove it
-        report_dict = {k: v for k, v in report.to_dict().items() if k != 'reportId'}
+        report_dict = {k: v for k, v in report.to_dict( remove_nones=True ).items() if k != 'reportId'}
 
         params = {'idType': id_type}
 
-        data = json.dumps(report.to_dict())
+        data = json.dumps(report_dict)
         self._client.put("reports/%s" % report_id, data=data, params=params)
 
         return report
