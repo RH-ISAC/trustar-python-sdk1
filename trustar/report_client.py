@@ -159,7 +159,7 @@ class ReportClient(object):
 
         report.id = report_id
 
-        return report
+        return self.get_report_details( report.id )
 
     def update_report(self, report):
         """
@@ -218,8 +218,8 @@ class ReportClient(object):
 
         data = json.dumps(report_dict)
         self._client.put("reports/%s" % report_id, data=data, params=params)
-
-        return report
+        
+        return self.get_report_details( report.id )
 
     def delete_report(self, report_id, id_type=None):
         """
