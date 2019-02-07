@@ -24,6 +24,14 @@ def normalize_timestamp(date_time):
     :return If input is an int, will return milliseconds since epoch.  Otherwise, will return a normalized isoformat
     timestamp.
     """
+
+    # TO DO:
+    # -get rid of this function and all references to it / uses of it.
+    
+    # if timestamp is null, just return the same null. 
+    if not date_time:
+        return date_time
+
     datetime_dt = datetime.now()
 
     # get current time in seconds-since-epoch
