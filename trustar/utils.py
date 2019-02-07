@@ -16,6 +16,7 @@ DAY = 24 * 60 * 60 * 1000
 
 def normalize_timestamp(date_time):
     """
+    TODO: get rid of this function and all references to it / uses of it.
     Attempt to convert a string timestamp in to a TruSTAR compatible format for submission.
     Will return current time with UTC time zone if None
     :param date_time: int that is seconds or milliseconds since epoch, or string/datetime object containing date, time,
@@ -25,9 +26,6 @@ def normalize_timestamp(date_time):
     timestamp.
     """
 
-    # TO DO:
-    # -get rid of this function and all references to it / uses of it.
-    
     # if timestamp is null, just return the same null. 
     if not date_time:
         return date_time
