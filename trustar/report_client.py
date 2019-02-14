@@ -330,25 +330,29 @@ class ReportClient(object):
         details in the "from_time" and "to_time" explanations below.
         
 
-        :param boolean is_enclave: Optional.  Defaults to None / False, but most use cases will be best served by
-            passing "True" to this parameter.  If an argument of "True" is passed to this
-            parameter, the generator will return only reports from the enclaves whose IDs are passed as arguments to
-            the "enclave_ids" parameter.  If a "False" or "None" argument is passed to this parameter, or if no
-            argument at all is passed to this parameter in the method call, the generator will return reports from
-            the Community enclave, in addition to any enclaves whose IDs you pass as arguments to the "enclave_ids"
-            parameter.              
+        :param boolean is_enclave: Optional.  If omitted, defaults to None, but most use cases will be best served by
+            passing "True" to this parameter.  If an argument of "True" is passed to this parameter, the generator
+            will return only reports from the enclaves whose IDs are passed as arguments to the "enclave_ids"
+            parameter.  If a "False" or "None" argument is passed to this parameter, or if no argument at all is
+            passed to this parameter in the method call, the generator will return reports from the Community
+            enclave, in addition to any enclaves whose IDs you pass as arguments to the "enclave_ids" parameter.              
         :param list(str) enclave_ids: list of enclave IDs from which the generator should return reports.  This
-            parameter is optional.  If ommitted in the method call, the method will return a generator that returns
+            parameter is optional.  If omitted in the method call, the method will return a generator that returns
             reports from all enclaves the user has access to (private, open-source, closed-source, and researcher
             enclaves).
         :param list(str) tag: a list of strings (not Tag objects), each string containing a tag name; only reports
             containing ALL of the tag names in this list will be returned by the generator.
             If a tag name in this list exists in more than one enclave in the list passed as argument to the
-            ``enclave_ids`` parameter, the request will fail.  Handle this by making separate requests for each
-            enclave ID if necessary.  Optional.  
+            ``enclave_ids`` parameter, Station will return a 500 error and an exception will be thrown.  Handle /
+            avoid this by calling this method multiple times, passing it a list of one enclave ID each time.
+            This parameter is optional.  If omitted, the generator will return all reports that meet time window
+            & enclave criteria and are not linked to any of the tags in the argument to the 'excluded_tags'
+            parameter will be returned. 
         :param list(str) excluded_tags: a list of strings (not Tag objects), each string containing a tag name;
-            reports containing ANY of these tag names will not be returned.  Optional.  
-        :param int from_time: start of time window in milliseconds since epoch (optional - if ommitted, this
+            reports containing ANY of these tag names will not be returned.  Optional.  If omitted, the generator
+            will return all reports that meet time window & enclave criteria and contain all the tags in the
+            argument to the 'tag' parameter.
+        :param int from_time: start of time window in milliseconds since epoch (optional - if omitted, this
             method will return only reports whose 'updated' attribute timestamp falls in the period of time 24 hours
             preceding the argument passed to the "to_time" parameter).  "from_time" values that are greater than 2
             weeks prior to the "to_time" will be changed by the Station application to a timestamp precisely 2 weeks
@@ -363,8 +367,8 @@ class ReportClient(object):
         report will not be returned by this function.
 
         Explanation of 'from_time' & 'to_time' behaviors:
-        'from_time' & 'to_time' both ommitted:  last 24 hours only. 
-        'from_time' ommitted, 'to_time' specified:  24 hours prior to 'to_time'.
+        'from_time' & 'to_time' both omitted:  last 24 hours only. 
+        'from_time' omitted, 'to_time' specified:  24 hours prior to 'to_time'.
         'from_time' specified, 'to_time' ommitted:  'from_time' --> present, no more than the 2 weeks preceding
             present moment.
         'from_time' & 'to_time' both specified:  'from_time' --> 'to_time', no more than 2 weeks preceding present
