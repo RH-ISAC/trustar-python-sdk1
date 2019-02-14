@@ -326,24 +326,50 @@ class ReportClient(object):
     def get_reports(self, is_enclave=None, enclave_ids=None, tag=None, excluded_tags=None, from_time=None, to_time=None):
         """
         Uses the |get_reports_page| method to create a generator that returns each successive report as a trustar
-        report object.
+        report object.  This function (the API endpoint it uses) returns reports between a maximum of 2 weeks (more
+        details in the "from_time" and "to_time" explanations below.
+        
 
-        :param boolean is_enclave: restrict reports to specific distribution type (optional - by default all accessible
-            reports are returned).
-        :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific
-            enclaves (optional - by default reports from all enclaves are returned)
-        :param list(str) tag: a list of tags; only reports containing ALL of these tags will be returned. 
-            If a tag with this name exists in more than one enclave in the list passed as the ``enclave_ids``
-            argument, the request will fail.  Handle this by making separate requests for each
-            enclave ID if necessary.
-        :param list(str) excluded_tags: a list of tags; reports containing ANY of these tags will not be returned. 
-        :param int from_time: start of time window in milliseconds since epoch (optional)
-        :param int to_time: end of time window in milliseconds since epoch (optional)
+        :param boolean is_enclave: Optional.  Defaults to None / False, but most use cases will be best served by
+            passing "True" to this parameter.  If an argument of "True" is passed to this
+            parameter, the generator will return only reports from the enclaves whose IDs are passed as arguments to
+            the "enclave_ids" parameter.  If a "False" or "None" argument is passed to this parameter, or if no
+            argument at all is passed to this parameter in the method call, the generator will return reports from
+            the Community enclave, in addition to any enclaves whose IDs you pass as arguments to the "enclave_ids"
+            parameter.              
+        :param list(str) enclave_ids: list of enclave IDs from which the generator should return reports.  This
+            parameter is optional.  If ommitted in the method call, the method will return a generator that returns
+            reports from all enclaves the user has access to (private, open-source, closed-source, and researcher
+            enclaves).
+        :param list(str) tag: a list of strings (not Tag objects), each string containing a tag name; only reports
+            containing ALL of the tag names in this list will be returned by the generator.
+            If a tag name in this list exists in more than one enclave in the list passed as argument to the
+            ``enclave_ids`` parameter, the request will fail.  Handle this by making separate requests for each
+            enclave ID if necessary.  Optional.  
+        :param list(str) excluded_tags: a list of strings (not Tag objects), each string containing a tag name;
+            reports containing ANY of these tag names will not be returned.  Optional.  
+        :param int from_time: start of time window in milliseconds since epoch (optional - if ommitted, this
+            method will return only reports whose 'updated' attribute timestamp falls in the period of time 24 hours
+            preceding the argument passed to the "to_time" parameter).  "from_time" values that are greater than 2
+            weeks prior to the "to_time" will be changed by the Station application to a timestamp precisely 2 weeks
+            before the "to_time", and Station does not warn the user that it made that adjustment.    
+        :param int to_time: end of time window in milliseconds since epoch (optional - if ommitted, this function 
+            will return all reports whose "updated" attribute (the timestamp the report was last updated) falls
+            between the value passed as argument to this function's "from_time" parameter and present time.  
         :return: A generator of Report objects.
 
         Note:  If a report contains all of the tags in the list passed as argument to the 'tag' parameter and also 
         contains any (1 or more) of the tags in the list passed as argument to the 'excluded_tags' parameter, that 
-        report will not be returned by this function.  
+        report will not be returned by this function.
+
+        Explanation of 'from_time' & 'to_time' behaviors:
+        'from_time' & 'to_time' both ommitted:  last 24 hours only. 
+        'from_time' ommitted, 'to_time' specified:  24 hours prior to 'to_time'.
+        'from_time' specified, 'to_time' ommitted:  'from_time' --> present, no more than the 2 weeks preceding
+            present moment.
+        'from_time' & 'to_time' both specified:  'from_time' --> 'to_time', no more than 2 weeks preceding present
+            moment. 
+        
         
         Example:
 
