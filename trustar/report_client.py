@@ -274,26 +274,46 @@ class ReportClient(object):
 
         return Page.from_dict(resp.json(), content_type=Report)
 
-    def search_reports_page(self, search_term, enclave_ids=None, page_size=None, page_number=None):
+    def search_reports_page(self, search_term=None,
+                            enclave_ids=None,
+                            from_time=None,
+                            to_time=None,
+                            tags=None,
+                            excluded_tags=None,
+                            page_size=None,
+                            page_number=None):
         """
         Search for reports containing a search term.
 
-        :param str search_term: The term to search for.  This string must be minimum 3 characters in length.
+        :param str search_term: The term to search for.  If empty, no search term will be applied.  Otherwise, must
+            be at least 3 characters.
         :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific enclaves (optional - by
             default reports from all of user's enclaves are returned)
-        :param int page_number: the page number to get.
+        :param int from_time: start of time window in milliseconds since epoch (optional)
+        :param int to_time: end of time window in milliseconds since epoch (optional)
+        :param list(str) tags: Name (or list of names) of tag(s) to filter reports by.  Only reports containing
+            ALL of these tags will be returned. (optional)
+        :param list(str) excluded_tags: Reports containing ANY of these tags will be excluded from the results.
+        :param int page_number: the page number to get. (optional)
         :param int page_size: the size of the page to be returned.
         :return: a |Page| of |Report| objects.  *NOTE*:  The bodies of these reports will be ``None``.
         """
 
+        body = {
+            'searchTerm': search_term
+        }
+
         params = {
-            'searchTerm': search_term,
             'enclaveIds': enclave_ids,
+            'from': from_time,
+            'to': to_time,
+            'tags': tags,
+            'excludedTags': excluded_tags,
             'pageSize': page_size,
             'pageNumber': page_number
         }
 
-        resp = self._client.get("reports/search", params=params)
+        resp = self._client.post("reports/search", params=params, data=json.dumps(body))
         page = Page.from_dict(resp.json(), content_type=Report)
 
         return page
@@ -389,29 +409,56 @@ class ReportClient(object):
                                                                                              enclave_ids,
                                                                                              is_enclave))
     
-    def _search_reports_page_generator(self, search_term, enclave_ids=None, start_page=0, page_size=None):
+    def _search_reports_page_generator(self, search_term=None,
+                                       enclave_ids=None,
+                                       from_time=None,
+                                       to_time=None,
+                                       tags=None,
+                                       excluded_tags=None,
+                                       start_page=0,
+                                       page_size=None):
         """
         Creates a generator from the |search_reports_page| method that returns each successive page.
 
-        :param str search_term: The term to search for.
+        :param str search_term: The term to search for.  If empty, no search term will be applied.  Otherwise, must
+            be at least 3 characters.
         :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific enclaves (optional - by
             default reports from all of user's enclaves are returned)
+        :param int from_time: start of time window in milliseconds since epoch (optional)
+        :param int to_time: end of time window in milliseconds since epoch (optional)
+        :param list(str) tags: Name (or list of names) of tag(s) to filter reports by.  Only reports containing
+            ALL of these tags will be returned. (optional)
+        :param list(str) excluded_tags: Reports containing ANY of these tags will be excluded from the results.
         :param int start_page: The page to start on.
         :param page_size: The size of each page.
         :return: The generator.
         """
 
-        get_page = functools.partial(self.search_reports_page, search_term, enclave_ids)
+        get_page = functools.partial(self.search_reports_page, search_term, enclave_ids, from_time, to_time, tags,
+                                     excluded_tags)
         return Page.get_page_generator(get_page, start_page, page_size)
 
-    def search_reports(self, search_term, enclave_ids=None):
+    def search_reports(self, search_term=None,
+                       enclave_ids=None,
+                       from_time=None,
+                       to_time=None,
+                       tags=None,
+                       excluded_tags=None):
         """
         Uses the |search_reports_page| method to create a generator that returns each successive report.
 
-        :param str search_term: The term to search for.  This string must be at least 3 characters in length.
+        :param str search_term: The term to search for.  If empty, no search term will be applied.  Otherwise, must
+            be at least 3 characters.
         :param list(str) enclave_ids: list of enclave ids used to restrict reports to specific enclaves (optional - by
             default reports from all of user's enclaves are returned)
+        :param int from_time: start of time window in milliseconds since epoch (optional)
+        :param int to_time: end of time window in milliseconds since epoch (optional)
+        :param list(str) tags: Name (or list of names) of tag(s) to filter reports by.  Only reports containing
+            ALL of these tags will be returned. (optional)
+        :param list(str) excluded_tags: Reports containing ANY of these tags will be excluded from the results.
         :return: The generator of Report objects.  Note that the body attributes of these reports will be ``None``.
         """
 
-        return Page.get_generator(page_generator=self._search_reports_page_generator(search_term, enclave_ids))
+        return Page.get_generator(page_generator=self._search_reports_page_generator(search_term, enclave_ids,
+                                                                                     from_time, to_time, tags,
+                                                                                     excluded_tags))
