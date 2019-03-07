@@ -151,6 +151,7 @@ class IndicatorClient(object):
                           enclave_ids=None,
                           from_time=None,
                           to_time=None,
+                          indicator_types=None,
                           tags=None,
                           excluded_tags=None):
         """
@@ -162,6 +163,7 @@ class IndicatorClient(object):
             default indicators from all of user's enclaves are returned)
         :param int from_time: start of time window in milliseconds since epoch (optional)
         :param int to_time: end of time window in milliseconds since epoch (optional)
+        :param list(str) indicator_types: a list of indicator types to filter by (optional)
         :param list(str) tags: Name (or list of names) of tag(s) to filter indicators by.  Only indicators containing
             ALL of these tags will be returned. (optional)
         :param list(str) excluded_tags: Indicators containing ANY of these tags will be excluded from the results.
@@ -169,13 +171,15 @@ class IndicatorClient(object):
         """
 
         return Page.get_generator(page_generator=self._search_indicators_page_generator(search_term, enclave_ids,
-                                                                                        from_time, to_time, tags,
+                                                                                        from_time, to_time,
+                                                                                        indicator_types, tags,
                                                                                         excluded_tags))
 
     def _search_indicators_page_generator(self, search_term=None,
                                           enclave_ids=None,
                                           from_time=None,
                                           to_time=None,
+                                          indicator_types=None,
                                           tags=None,
                                           excluded_tags=None,
                                           start_page=0,
@@ -189,6 +193,7 @@ class IndicatorClient(object):
             default indicators from all of user's enclaves are returned)
         :param int from_time: start of time window in milliseconds since epoch (optional)
         :param int to_time: end of time window in milliseconds since epoch (optional)
+        :param list(str) indicator_types: a list of indicator types to filter by (optional)
         :param list(str) tags: Name (or list of names) of tag(s) to filter indicators by.  Only indicators containing
             ALL of these tags will be returned. (optional)
         :param list(str) excluded_tags: Indicators containing ANY of these tags will be excluded from the results.
@@ -198,13 +203,14 @@ class IndicatorClient(object):
         """
 
         get_page = functools.partial(self.search_indicators_page, search_term, enclave_ids,
-                                     from_time, to_time, tags, excluded_tags)
+                                     from_time, to_time, indicator_types, tags, excluded_tags)
         return Page.get_page_generator(get_page, start_page, page_size)
 
     def search_indicators_page(self, search_term=None,
                                enclave_ids=None,
                                from_time=None,
                                to_time=None,
+                               indicator_types=None,
                                tags=None,
                                excluded_tags=None,
                                page_size=None,
@@ -218,6 +224,7 @@ class IndicatorClient(object):
             enclaves (optional - by default reports from all of the user's enclaves are used)
         :param int from_time: start of time window in milliseconds since epoch (optional)
         :param int to_time: end of time window in milliseconds since epoch (optional)
+        :param list(str) indicator_types: a list of indicator types to filter by (optional)
         :param list(str) tags: Name (or list of names) of tag(s) to filter indicators by.  Only indicators containing
             ALL of these tags will be returned. (optional)
         :param list(str) excluded_tags: Indicators containing ANY of these tags will be excluded from the results.
@@ -234,6 +241,7 @@ class IndicatorClient(object):
             'enclaveIds': enclave_ids,
             'from': from_time,
             'to': to_time,
+            'entityTypes': indicator_types,
             'tags': tags,
             'excludedTags': excluded_tags,
             'pageSize': page_size,
