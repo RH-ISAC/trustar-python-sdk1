@@ -119,9 +119,9 @@ class ReportClient(object):
             report.body (str):  required.
             report.is_enclave (bool):  required.  If True, then the report will only be submitted
                 to the enclaves specified in the 'enclave_ids' attribute.  If False, then the
-                report will be submitted to all of the user's private enclaves.  
+                report will be submitted to all of the user's private enclaves.
             report.enclave_ids (list of strs):  required if 'is_enclave' is True.  Ignored if
-                'is_enclave' is False / None. 
+                'is_enclave' is False / None.
             report.external_id (str):  optional.
             report.external_url (str):  optional.
             report.time_began (int): optional.  Time in milliseconds you want to assign to this
@@ -134,7 +134,7 @@ class ReportClient(object):
             report.updated (int):  ignored by this method.  This is an attribute that is
                 automatically set by Station to the timestamp at which the report is created
                 or updated.
-                
+
         :return: The |Report| object as it was saved in Station, with the following attributes:
             report.title:  should be same as the argument's.
             report.body:  should be same as the argument's.
@@ -148,8 +148,8 @@ class ReportClient(object):
                 object returned by the method will contain the value for this attribute set
                 automatically by Station.
             report.created:  same explanation as report.created.
-                    
-            
+
+
         Example:
 
         >>> report = Report(title="Suspicious Activity",
@@ -190,8 +190,8 @@ class ReportClient(object):
         if isinstance(report_id, bytes):
             report_id = report_id.decode('utf-8')
 
-        # get the report as it was saved in Station.     
-        report_from_station = get_report_details( report_id )
+        # get the report as it was saved in Station.
+        report_from_station = self.get_report_details(report_id)
 
         return report_from_station
 
@@ -413,7 +413,7 @@ class ReportClient(object):
 
         return Page.get_generator(page_generator=self._get_reports_page_generator(is_enclave, enclave_ids, tag,
                                                                                   excluded_tags, from_time, to_time))
-    
+
     def _get_correlated_reports_page_generator(self, indicators, enclave_ids=None, is_enclave=True,
                                                start_page=0, page_size=None):
         """
@@ -442,7 +442,7 @@ class ReportClient(object):
         return Page.get_generator(page_generator=self._get_correlated_reports_page_generator(indicators,
                                                                                              enclave_ids,
                                                                                              is_enclave))
-    
+
     def _search_reports_page_generator(self, search_term=None,
                                        enclave_ids=None,
                                        from_time=None,
