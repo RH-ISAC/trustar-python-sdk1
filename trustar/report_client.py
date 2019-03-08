@@ -110,45 +110,12 @@ class ReportClient(object):
         Submits a report.
 
         * If ``report.is_enclave`` is ``True``, then the report will be submitted to the enclaves
-          identified by ``report.enclaves``; if that field is ``None``, then the enclave IDs
-          registered with this |TruStar| object will be used.
+          identified by ``report.enclaves``; if that field is ``None``, then the enclave IDs registered with this
+          |TruStar| object will be used.
         * If ``report.time_began`` is ``None``, then the current time will be used.
 
-        :param report: a |Report| object, with the following attributes:
-            report.title (str): required.
-            report.body (str):  required.
-            report.is_enclave (bool):  required.  If True, then the report will only be submitted
-                to the enclaves specified in the 'enclave_ids' attribute.  If False, then the
-                report will be submitted to all of the user's private enclaves.
-            report.enclave_ids (list of strs):  required if 'is_enclave' is True.  Ignored if
-                'is_enclave' is False / None.
-            report.external_id (str):  optional.
-            report.external_url (str):  optional.
-            report.time_began (int): optional.  Time in milliseconds you want to assign to this
-                report.  This is the only timestamp the user can manually set.  Station will
-                set this attribute to present time if the user submits a report object with no
-                value for this attribute.
-            report.created (int):  ignored by this method.  This is an attribute that is
-                automatically set by Station to the timestamp at which the report object is
-                created in the Station platform.
-            report.updated (int):  ignored by this method.  This is an attribute that is
-                automatically set by Station to the timestamp at which the report is created
-                or updated.
-
-        :return: The |Report| object as it was saved in Station, with the following attributes:
-            report.title:  should be same as the argument's.
-            report.body:  should be same as the argument's.
-            report.is_enclave:  should be same as the argument's.
-            report.enclave_ids:  may differ from the argument's if the argument's 'is_enclave'
-                attribute was None/False.
-            report.external_id:  should be same as the argument's.
-            report.external_url:  should be same as argument's.
-            report.time_began:  should be same as argument's.
-            report.created:  may differ from argument's, because this attribute in the the Report
-                object returned by the method will contain the value for this attribute set
-                automatically by Station.
-            report.created:  same explanation as report.created.
-
+        :param report: The |Report| object that was submitted, with the ``id`` field updated based
+            on values from the response.
 
         Example:
 
@@ -190,10 +157,9 @@ class ReportClient(object):
         if isinstance(report_id, bytes):
             report_id = report_id.decode('utf-8')
 
-        # get the report as it was saved in Station.
-        report_from_station = self.get_report_details(report_id)
+        report.id = report_id
 
-        return report_from_station
+        return report
 
     def update_report(self, report):
         """
