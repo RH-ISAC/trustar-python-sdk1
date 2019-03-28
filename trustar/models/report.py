@@ -63,12 +63,9 @@ class Report(ModelBase):
         if is_enclave is None:
             is_enclave = True
 
-        time_began = normalize_timestamp(time_began)
-
         self.id = id
         self.title = title
         self.body = body
-        self.time_began = time_began
         self.external_id = external_id
         self.external_url = external_url
         self.is_enclave = is_enclave
@@ -76,8 +73,13 @@ class Report(ModelBase):
         self.created = created
         self.updated = updated
 
+        self.set_time_began(time_began)
+
         if isinstance(self.enclave_ids, string_types):
             self.enclave_ids = [self.enclave_ids]
+
+    def set_time_began(self, time_began):
+        self.time_began = normalize_timestamp(time_began)
 
     def _get_distribution_type(self):
         """

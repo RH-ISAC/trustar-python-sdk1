@@ -146,7 +146,7 @@ class ReportClient(object):
 
         # default time began is current time
         if report.time_began is None:
-            report.time_began = datetime.now()
+            report.set_time_began(datetime.now())
 
         data = json.dumps(report.to_dict())
         resp = self._client.post("reports", data=data, timeout=60)
