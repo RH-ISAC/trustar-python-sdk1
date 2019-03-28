@@ -1,2 +1,2 @@
-__version__ = "0.3.17.2"
+__version__ = "0.3.18"
 __api_version__ = "1.3"
