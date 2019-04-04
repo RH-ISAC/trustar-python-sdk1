@@ -89,6 +89,7 @@ class Indicator(ModelBase):
                          reason=indicator.get('reason'),
                          first_seen=indicator.get('firstSeen'),
                          last_seen=indicator.get('lastSeen'),
+                         sightings=indicator.get('sightings'),
                          source=indicator.get('source'),
                          notes=indicator.get('notes'),
                          tags=tags,
