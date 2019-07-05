@@ -144,7 +144,7 @@ class Page(ModelBase):
     @staticmethod
     def get_time_based_page_generator(get_page, get_next_to_time, from_time=None, to_time=None):
         return get_time_based_page_generator(get_page=get_page,
-                                             get_next_to_time=lambda page: get_next_to_time(page.items),
+                                             get_next_to_time=lambda page, to_time: get_next_to_time(page.items, to_time),
                                              from_time=from_time,
                                              to_time=to_time)
 

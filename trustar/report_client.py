@@ -12,7 +12,7 @@ import logging
 
 # package imports
 from .models import Page, Report, DistributionType, IdType
-from .utils import get_time_based_page_generator
+from .utils import get_time_based_page_generator, DAY
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
@@ -335,10 +335,26 @@ class ReportClient(object):
         :return: The generator.
         """
 
+        def get_next_to_time(result, to_time):
+            """
+            For each page, get the timestamp of the earliest report in the result set.  The next query will use this
+            timestamp as the end of its interval.  This endpoint limits queries to 1 day.  If the result set is
+            empty, subtract 1 dat from the to_time for the next interval.
+
+            :param result: the result set of the previous call
+            :param to_time: the to_time of the previous call
+            :return: the next to_time
+            """
+
+            if len(result.items) > 0:
+                return result.items[-1].updated - 1
+            else:
+                return to_time - DAY
+
         get_page = functools.partial(self.get_reports_page, is_enclave, enclave_ids, tag, excluded_tags)
         return get_time_based_page_generator(
             get_page=get_page,
-            get_next_to_time=lambda x: x.items[-1].updated if len(x.items) > 0 else None,
+            get_next_to_time=get_next_to_time,
             from_time=from_time,
             to_time=to_time
         )

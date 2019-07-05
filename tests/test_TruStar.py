@@ -276,7 +276,9 @@ class TruStarTests(unittest.TestCase):
         self.ts.submit_indicators(indicators=indicators, tags=tags)
 
     def test_get_indicators(self):
-        indicators = self.ts.get_indicators(from_time=0, to_time=get_current_time_millis())
+        now = get_current_time_millis()
+        from_time = now - 60
+        indicators = self.ts.get_indicators(from_time=from_time, to_time=now)
         print(list(indicators))
 
     def test_get_indicator_metadata(self):

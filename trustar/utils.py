@@ -95,22 +95,38 @@ def get_logger(name=None):
 
 
 def get_time_based_page_generator(get_page, get_next_to_time, from_time=None, to_time=None):
+    """
+    A page generator that uses time-based pagination.
 
+    :param get_page: a function to get the next page, given values for from_time and to_time
+    :param get_next_to_time: get the to_time for the next query, given the result set and to_time for the previous query
+    :param from_time: the initial from_time
+    :param to_time: the initial to_time
+    :return: a generator that yields each successive page
+    """
+
+    # default to_time to current time
     if to_time is None:
         to_time = get_current_time_millis()
 
+    # default from_time to 1 day before to_time
     if from_time is None:
         from_time = to_time - DAY
 
+    # stop iteration if get_next_to_time returns either None, or a to_time before from_time
     while to_time is not None and from_time <= to_time:
+        # query the API for the next page
         result = get_page(from_time, to_time)
+        # return the page
         yield result
-        new_to_time = get_next_to_time(result)
+        # use the given function to calculate the to_time of the next query
+        new_to_time = get_next_to_time(result, to_time)
+        # to_time should never increase between pages
         if new_to_time is not None:
             if new_to_time > to_time:
                 raise Exception("to_time should not increase between page iterations.  "
                                 "This can result in an endless loop.")
-            new_to_time -= 1
+        # set the to_time for the next query
         to_time = new_to_time
 
 
