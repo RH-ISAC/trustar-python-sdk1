@@ -329,7 +329,8 @@ class IndicatorClient(object):
             TruSTAR system.  In order to perform a fuzzy match, you must first use the |search_indicators| method to lookup
             the exact indicator values, then provide them to this endpoint.
         :param list(string) enclave_ids: The enclaves to search for indicator summaries in.  These should be enclaves
-            containing data from sources on the TruSTAR Marketplace.
+            containing data from sources on the TruSTAR Marketplace.  This parameter is optional, if not provided then
+            all of the user's enclaves will be used.
         :param int start_page: the page to start on.
         :param int page_size: the size of the page to be returned.
 
@@ -386,7 +387,7 @@ class IndicatorClient(object):
 
         resp = self._client.post("indicators/summaries", json=values, params=params)
 
-        return [IndicatorSummary.from_dict(summary) for summary in resp.json()]
+        return Page.from_dict(resp.json(), IndicatorSummary)
 
     def get_indicator_details(self, indicators, enclave_ids=None):
         """

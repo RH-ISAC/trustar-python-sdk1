@@ -6,7 +6,6 @@ from six import string_types
 
 # package imports
 from .base import ModelBase
-from .enum import IndicatorType
 from .intelligence_source import IntelligenceSource
 
 
@@ -16,7 +15,7 @@ class IndicatorSummary(ModelBase):
     body of a report, from an intelligence source, that gives details about a specific indicator.
 
     The score field will only be populated if the source contained information that can be interpreted as a type of score.
-    The attributes field is a list of |IndicatorAttribute| objects for fields that are specific to this source's.
+    The attributes field is a list of |IndicatorAttribute| objects for fields that are specific to this source.
 
     :ivar str value: The indicator's value.
     :ivar IndicatorType indicator_type: The indicator's type.
@@ -64,12 +63,20 @@ class IndicatorSummary(ModelBase):
 
         attributes = [IndicatorAttribute.from_dict(attribute) for attribute in indicator_summary.get('attributes', [])]
 
+        source = indicator_summary.get('source')
+        if source:
+            source = IntelligenceSource.from_dict(indicator_summary.get('source'))
+            
+        score = indicator_summary.get('score')
+        if score:
+            score = IndicatorScore.from_dict(indicator_summary.get('score'))
+
         return IndicatorSummary(value=indicator_summary.get('value'),
                                 indicator_type=indicator_summary.get('type'),
                                 report_id=indicator_summary.get('reportId'),
                                 enclave_id=indicator_summary.get('enclaveId'),
-                                source=IntelligenceSource.from_dict(indicator_summary.get('source')),
-                                score=IndicatorScore.from_dict(indicator_summary.get('score')),
+                                source=source,
+                                score=score,
                                 created=indicator_summary.get('created'),
                                 updated=indicator_summary.get('updated'),
                                 description=indicator_summary.get('description'),
@@ -88,11 +95,11 @@ class IndicatorSummary(ModelBase):
 
         source = None
         if self.source is not None:
-            source = source.to_dict()
+            source = self.source.to_dict()
 
         score = None
         if self.score is not None:
-            score = score.to_dict()
+            score = self.score.to_dict()
 
         attributes = None
         if self.attributes is not None:
