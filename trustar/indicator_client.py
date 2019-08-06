@@ -10,7 +10,7 @@ import json
 import logging
 
 # package imports
-from .models import Indicator, Page, Tag
+from .models import Indicator, Page, Tag, IndicatorSummary
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
@@ -319,6 +319,74 @@ class IndicatorClient(object):
         resp = self._client.post("indicators/metadata", data=json.dumps(data))
 
         return [Indicator.from_dict(x) for x in resp.json()]
+
+    def get_indicator_summaries(self, values, enclave_ids=None, start_page=0, page_size=None):
+        """
+        Creates a generator from the |get_indicator_summaries_page| method that returns each successive indicator
+        summary.
+
+        :param list(string) values: A list of indicator values to query.  These must **exactly match** values in the
+            TruSTAR system.  In order to perform a fuzzy match, you must first use the |search_indicators| method to lookup
+            the exact indicator values, then provide them to this endpoint.
+        :param list(string) enclave_ids: The enclaves to search for indicator summaries in.  These should be enclaves
+            containing data from sources on the TruSTAR Marketplace.
+        :param int start_page: the page to start on.
+        :param int page_size: the size of the page to be returned.
+
+        :return: A generator of |IndicatorSummary| objects.
+        """
+
+        indicator_summaries_page_generator = self._get_indicator_summaries_page_generator(
+            values=values,
+            enclave_ids=enclave_ids,
+            start_page=start_page,
+            page_size=page_size
+        )
+
+        return Page.get_generator(page_generator=indicator_summaries_page_generator)
+
+    def _get_indicator_summaries_page_generator(self, values, enclave_ids=None, start_page=0, page_size=None):
+        """
+        Creates a generator from the |get_indicator_summaries_page| method that returns each successive page.
+
+        :param list(string) values: A list of indicator values to query.  These must **exactly match** values in the
+            TruSTAR system.  In order to perform a fuzzy match, you must first use the |search_indicators| method to lookup
+            the exact indicator values, then provide them to this endpoint.
+        :param list(string) enclave_ids: The enclaves to search for indicator summaries in.  These should be enclaves
+            containing data from sources on the TruSTAR Marketplace.
+        :param int start_page: the page to start on.
+        :param int page_size: the size of the page to be returned.
+
+        :return: A generator of |IndicatorSummary| objects.
+        """
+
+        get_page = functools.partial(self.get_indicator_summaries_page, values=values, enclave_ids=enclave_ids)
+        return Page.get_page_generator(get_page, start_page, page_size)
+
+    def get_indicator_summaries_page(self, values, enclave_ids=None, page_number=0, page_size=None):
+        """
+        Provides structured summaries about indicators, which are derived from intelligence sources on the TruSTAR Marketplace.
+
+        :param list(string) values: A list of indicator values to query.  These must **exactly match** values in the
+            TruSTAR system.  In order to perform a fuzzy match, you must first use the |search_indicators| method to lookup
+            the exact indicator values, then provide them to this endpoint.
+        :param list(string) enclave_ids: The enclaves to search for indicator summaries in.  These should be enclaves
+            containing data from sources on the TruSTAR Marketplace.
+        :param int page_number: the page to get.
+        :param int page_size: the size of the page to be returned.
+
+        :return: A generator of |IndicatorSummary| objects.
+        """
+
+        params = {
+            'enclaveIds': enclave_ids,
+            'pageNumber': page_number,
+            'pageSize': page_size
+        }
+
+        resp = self._client.post("indicators/summaries", json=values, params=params)
+
+        return [IndicatorSummary.from_dict(summary) for summary in resp.json()]
 
     def get_indicator_details(self, indicators, enclave_ids=None):
         """
