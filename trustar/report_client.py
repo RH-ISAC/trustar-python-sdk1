@@ -1,8 +1,7 @@
 # python 2 backwards compatibility
 from __future__ import print_function
-from builtins import object, str
+from builtins import object
 from future import standard_library
-from six import string_types
 
 # external imports
 import json
@@ -11,7 +10,7 @@ import functools
 import logging
 
 # package imports
-from .models import Page, Report, DistributionType, IdType
+from .models import Page, Report, RedactedReport, DistributionType, IdType
 from .utils import get_time_based_page_generator, DAY
 
 # python 2 backwards compatibility
@@ -478,3 +477,22 @@ class ReportClient(object):
         return Page.get_generator(page_generator=self._search_reports_page_generator(search_term, enclave_ids,
                                                                                      from_time, to_time, tags,
                                                                                      excluded_tags))
+
+
+    def redact_report(self, title=None, report_body=None):
+        """
+        Redacts a report's title and body.
+
+        :param str title: The title of the report to apply redaction to.
+        :param str report_body: The body of the report to apply redaction to.
+        :return: a |RedactedReport| object.
+        """
+
+        body = {
+            'title': title,
+            'reportBody': report_body
+        }
+
+        resp = self._client.post("redaction/report", data=json.dumps(body))
+
+        return RedactedReport.from_dict(resp.json())

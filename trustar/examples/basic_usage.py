@@ -39,6 +39,7 @@ do_reports_by_enclave = True
 do_reports_mine = True
 do_search_reports = True
 do_search_indicators = True
+do_redact_report = True
 
 # search_string = "1.2.3.4 8.8.8.8 10.0.2.1 185.19.85.172 art-archiv.ru"
 search_string = ','.join([
@@ -439,6 +440,21 @@ def main():
 
         except Exception as e:
             logger.error("Could not search indicators, error: %s" % e)
+
+        print('')
+
+    if do_redact_report:
+
+        try:
+            logger.info("Redacting report:")
+
+            redacted_report = ts.redact_report(title="amazon phishing scam",
+                                               report_body="apple, microsoft, and amazon suffered "
+                                                           "from a phishing scam via evil@amazon.com")
+            logger.info(redacted_report)
+
+        except Exception as e:
+            logger.error("Could not redact report, error: %s" % e)
 
         print('')
 
