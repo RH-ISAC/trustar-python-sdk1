@@ -206,9 +206,11 @@ class TruStarTests(unittest.TestCase):
         tag = "some gibberish"
         self.ts.add_enclave_tag(report_id=report.id, name=tag, enclave_id=enclave_id)
 
-        to_time = get_current_time_millis()
+        # sleep to allow time to process
+        time.sleep(5)
 
         # get all reports with the tag just created
+        to_time = get_current_time_millis()
         report_ids = [r.id for r in self.ts.get_reports(tag=tag, from_time=from_time, to_time=to_time)]
 
         try:
