@@ -1,7 +1,8 @@
 # python 2 backwards compatibility
 from __future__ import print_function
-from builtins import object
+from builtins import object, str
 from future import standard_library
+from six import string_types
 
 # external imports
 import json

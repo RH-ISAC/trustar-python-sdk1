@@ -8,8 +8,6 @@ from .base import ModelBase
 
 class RedactedReport(ModelBase):
     """
-    Models a |RedactedReport_resource|.
-
     :ivar title: the report title
     :ivar body: the report body
     """
@@ -50,7 +48,7 @@ class RedactedReport(ModelBase):
         """
         Create a RedactedReport object from a dictionary.  This method is intended for internal use, to construct a
         :class:`RedactedReport` object from the body of a response json.  It expects the keys of the dictionary to match those
-        of the json that would be found in a response to an API call such as ``GET /report/{id}``.
+        of the json that would be found in a response to an API call such as ``POST redaction/report``.
 
         :param redacted_report: The dictionary.
         :return: The RedactionReport object.
