@@ -479,7 +479,6 @@ class ReportClient(object):
                                                                                      from_time, to_time, tags,
                                                                                      excluded_tags))
 
-
     def redact_report(self, title=None, report_body=None):
         """
         Redacts a report's title and body.

@@ -8,6 +8,8 @@ from .base import ModelBase
 
 class RedactedReport(ModelBase):
     """
+    Models the response of the `POST /redaction/report` endpoint.
+
     :ivar title: the report title
     :ivar body: the report body
     """
