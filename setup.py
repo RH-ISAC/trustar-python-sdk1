@@ -1,7 +1,3 @@
-# git tag 0.3.20 -m "Bump version" && git push --tags origin master
-# python setup.py sdist
-# twine upload --skip-existing dist/*
-
 from setuptools import setup, find_packages
 from glob import glob
 
