@@ -1,0 +1,14 @@
+# these modules are only used in example scripts
+
+cef==0.5
+certifi==2017.7.27.1
+chardet==3.0.4
+idna==2.6
+nose==1.3.7
+numpy==1.13.3
+pandas==0.21.0
+pdfminer==20140328; python_version < '3.0'
+python-dateutil==2.6.1
+pytz==2017.2
+PyYAML~>4.2b1
+unicodecsv==0.14.1

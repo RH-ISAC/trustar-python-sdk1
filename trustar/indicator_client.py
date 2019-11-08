@@ -297,7 +297,7 @@ class IndicatorClient(object):
         else:
             return None
 
-    def get_indicators_metadata(self, indicators):
+    def get_indicators_metadata(self, indicators, enclave_ids=None):
         """
         Provide metadata associated with an list of indicators, including value, indicatorType, noteCount, sightings,
         lastSeen, enclaveIds, and tags. The metadata is determined based on the enclaves the user making the request has
@@ -306,17 +306,22 @@ class IndicatorClient(object):
         :param indicators: a list of |Indicator| objects to query.  Values are required, types are optional.  Types
             might be required to distinguish in a case where one indicator value has been associated with multiple types
             based on different contexts.
+        :param enclave_ids: a list of enclave IDs to restrict to.  By default, uses all of the user's enclaves.
         :return: A list of |Indicator| objects.  The following attributes of the objects will be returned:  
             correlation_count, last_seen, sightings, notes, tags, enclave_ids.  All other attributes of the Indicator
             objects will have Null values.  
         """
+
+        params = {
+            'enclaveIds': enclave_ids
+        }
 
         data = [{
             'value': i.value,
             'indicatorType': i.type
         } for i in indicators]
 
-        resp = self._client.post("indicators/metadata", data=json.dumps(data))
+        resp = self._client.post("indicators/metadata", params=params, data=json.dumps(data))
 
         return [Indicator.from_dict(x) for x in resp.json()]
 
