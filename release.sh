@@ -23,4 +23,4 @@ git push --tags origin master
 # package and upload
 echo "Releasing version $VERSION"
 python setup.py sdist
-twine upload --skip-existing dist/*
+twine upload --skip-existing dist/trustar-${VERSION}.tar.gz
