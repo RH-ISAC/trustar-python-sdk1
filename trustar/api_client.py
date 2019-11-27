@@ -106,7 +106,7 @@ class ApiClient(object):
 
         # make request
         post_data = {"grant_type": "client_credentials"}
-        response = requests.post(self.auth, auth=client_auth, data=post_data, proxies=self.proxies)
+        response = requests.post(self.auth, auth=client_auth, data=post_data, verify=self.verify, proxies=self.proxies)
         self.last_response = response
 
         # raise exception if status code indicates an error

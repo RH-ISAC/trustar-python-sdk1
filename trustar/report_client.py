@@ -107,7 +107,7 @@ class ReportClient(object):
 
     def submit_report(self, report):
         """
-        Submits a report.
+        Submit a report.
 
         * If ``report.is_enclave`` is ``True``, then the report will be submitted to the enclaves
           identified by ``report.enclaves``; if that field is ``None``, then the enclave IDs registered with this
@@ -219,6 +219,75 @@ class ReportClient(object):
 
         params = {'idType': id_type}
         self._client.delete("reports/%s" % report_id, params=params)
+
+    def copy_report(self, src_report_id, dest_enclave_id, from_provided_submission=False, report=None, tags=None):
+        """
+        Copy a report to another enclave.  All properties of the report, including tags, will be copied.
+        A reference to the original report will still be stored on the child, allowing the system to track the
+        relationship between the original report and copies made from it.
+
+        If the ``from_provided_submission`` parameter is ``True``, then edits can be applied to the copied report.  This
+        is useful in cases where the body or title must be redacted first, or the list of tags needs to be altered for
+        the copy.  In this case, a |Report| object and a list of tag names must be provided, which will fill out the
+        copied report.  A reference to the original report will still be stored on the copy.
+        **NOTE:** Partial edits are not allowed.  ALL fields must be filled out on this object, and the
+        fields from the original report will completely ignored.
+
+        :param str src_report_id: the ID of the report to copy
+        :param str dest_enclave_id: the ID of the enclave to copy the report to
+        :param boolean from_provided_submission: whether to apply edits from a supplied report object and list of tags
+        :param Report report: (required if ``from_provided_submission`` is ``True``) a report object containing an edited version to use as the copy.
+            This allows information to be redacted, or other arbitrary edits to be made to the copied version.
+            **NOTE:** Partial edits are not allowed.  ALL fields must be filled out on this object, and the fields from
+            the original report will completely ignored.
+        :param list(str) tags: (required if ``from_provided_submission`` is ``True``) a list of tags to use if ``from_provided_submission`` is ``True``.
+            **NOTE:** if ``from_provided_submission`` is True, the tags from the source report will be completely
+            ignored, and this list of tags will be used instead.  MUST be provided if ``from_provided_submission`` is ``True``.
+        :return: the ID of the newly-created copy
+        """
+
+        params = {
+            'destEnclaveId': dest_enclave_id,
+            'copyFromProvidedSubmission': from_provided_submission
+        }
+
+        # determine if edits are being made to the copy
+        if from_provided_submission:
+            # ensure an edited version of the report has been provided
+            if not report:
+                raise Exception("Cannot copy from provided submission without providing a report object")
+            # ensure an edited list of tags has been provided
+            if not tags:
+                raise Exception("Cannot copy from provided submission without providing a list of tags")
+
+            # form the JSON dictionary of the report
+            body = report.to_dict()
+            # add the list of tags to the JSON
+            # NOTE: this field on the report object cannot be used in other endpoints on this API version
+            body['tags'] = tags
+        else:
+            body = None
+
+        response = self._client.post('reports/copy/{id}'.format(id=src_report_id), params=params, data=json.dumps(body))
+        return response.json().get('id')
+
+    def move_report(self, report_id, dest_enclave_id):
+        """
+        Move a report from one enclave to another.
+
+        **NOTE:** All tags will be moved, as well.
+
+        :param report_id: the ID of the report to move
+        :param dest_enclave_id: the ID of the enclave to move the report to
+        :return: the ID of the report
+        """
+
+        params = {
+            'destEnclaveId': dest_enclave_id
+        }
+
+        response = self._client.post('/reports/move/{id}'.format(id=report_id), params=params)
+        return response.json().get('id')
 
     def get_correlated_report_ids(self, indicators):
         """

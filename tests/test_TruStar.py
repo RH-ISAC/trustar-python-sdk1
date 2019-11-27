@@ -321,6 +321,109 @@ class TruStarTests(unittest.TestCase):
         tag = tags[0]
         self.ts.delete_indicator_tag(metadata.get('indicator').value, tag_id=tag.id)
 
+    def test_copy_report(self):
+
+        # create and submit report
+        original_report = Report(title="Report 1",
+                                 body="Blah blah blah",
+                                 time_began=yesterday_time,
+                                 enclave_ids=self.ts.enclave_ids)
+        original_tag = 'original_tag'
+        original_report = self.ts.submit_report(report=original_report)
+        self.ts.add_enclave_tag(original_report.id, original_tag, None)
+
+        # find an enclave the user has write access to other than the enclave of the original report
+        dest_enclave_id = None
+        enclaves = self.ts.get_user_enclaves()
+        for enclave in enclaves:
+            if enclave.id != self.ts.enclave_ids[0] and enclave.update:
+                dest_enclave_id = enclave.id
+                break
+
+        if not dest_enclave_id:
+            raise Exception("User does not have access to any other enclaves to copy report to")
+
+        # copy the report (without changes)
+        copied_report_id = self.ts.copy_report(src_report_id=original_report.id,
+                                               dest_enclave_id=dest_enclave_id,
+                                               from_provided_submission=False)
+
+        # find the copied report and check that the fields are equal to the original
+        time.sleep(1)
+        copied_report = self.ts.get_report_details(copied_report_id)
+        original_tags = self.ts.get_enclave_tags(copied_report_id)
+
+        self.assertEqual(original_report.title, copied_report.title)
+        self.assertEqual(original_report.body, copied_report.body)
+        self.assertEqual(copied_report.enclave_ids[0], dest_enclave_id)
+        self.assertSetEqual({original_tag}, set(t.name for t in original_tags))
+
+        # cleanup the copied report
+        self.ts.delete_report(copied_report_id)
+
+        # create an edited report to copy from
+        changed_report = Report(title='Changed Title',
+                                body='Changed body',
+                                time_began=current_time,
+                                enclave_ids=[dest_enclave_id])
+        changed_tags = ['changed_tag']
+
+        # copy report from a provided submission
+        copied_report_id = self.ts.copy_report(src_report_id=original_report.id,
+                                               dest_enclave_id=dest_enclave_id,
+                                               from_provided_submission=True,
+                                               report=changed_report,
+                                               tags=changed_tags)
+
+        # find the copied report and check that the fields are equal to the original
+        time.sleep(1)
+        copied_report = self.ts.get_report_details(copied_report_id)
+        copied_tags = self.ts.get_enclave_tags(copied_report_id)
+
+        self.assertEqual(copied_report.title, changed_report.title)
+        self.assertEqual(copied_report.body, changed_report.body)
+        self.assertEqual(copied_report.enclave_ids[0], dest_enclave_id)
+        self.assertSetEqual(set(changed_tags), set(t.name for t in copied_tags))
+
+    def test_move_report(self):
+
+        # create and submit report
+        original_report = Report(title="Report 1",
+                                 body="Blah blah blah",
+                                 time_began=yesterday_time,
+                                 enclave_ids=self.ts.enclave_ids)
+        original_tag = 'original_tag'
+        original_report = self.ts.submit_report(report=original_report)
+        self.ts.add_enclave_tag(original_report.id, original_tag, None)
+
+        # find an enclave the user has write access to other than the enclave of the original report
+        dest_enclave_id = None
+        enclaves = self.ts.get_user_enclaves()
+        for enclave in enclaves:
+            if enclave.id != self.ts.enclave_ids[0] and enclave.update:
+                dest_enclave_id = enclave.id
+                break
+
+        if not dest_enclave_id:
+            raise Exception("User does not have access to any other enclaves to copy report to")
+
+        # move the report
+        moved_report_id = self.ts.move_report(report_id=original_report.id,
+                                              dest_enclave_id=dest_enclave_id)
+
+        # find the copied report and check that the fields are equal to the original
+        time.sleep(1)
+        moved_report = self.ts.get_report_details(moved_report_id)
+        original_tags = self.ts.get_enclave_tags(moved_report_id)
+
+        self.assertEqual(original_report.title, moved_report.title)
+        self.assertEqual(original_report.body, moved_report.body)
+        self.assertEqual(moved_report.enclave_ids[0], dest_enclave_id)
+        self.assertSetEqual({original_tag}, set(t.name for t in original_tags))
+
+        # cleanup the copied report
+        self.ts.delete_report(moved_report_id)
+
 
 if __name__ == '__main__':
     unittest.main()
