@@ -27,6 +27,8 @@ class IndicatorSummary(ModelBase):
     :ivar int updated: The updated or last seen timestamp of the indicator, according to the source.
     :ivar str description: The description of the indicator, according to the source.
     :ivar list(Attribute) attributes: A list of attributes about the indicator, according to the source.
+    :ivar str severity_level: a normalized representation of the score from this source (if one exists).  This is
+        an integer between 0 and 3, with 0 being the lowest score and 3 being the highest.
     """
 
     def __init__(self,
@@ -39,7 +41,8 @@ class IndicatorSummary(ModelBase):
                  created=None,
                  updated=None,
                  description=None,
-                 attributes=None):
+                 attributes=None,
+                 severity_level=None):
 
         self.value = value
         self.indicator_type = indicator_type
@@ -51,6 +54,7 @@ class IndicatorSummary(ModelBase):
         self.updated = updated
         self.description = description
         self.attributes = attributes
+        self.severity_level = severity_level
 
     @classmethod
     def from_dict(cls, indicator_summary):
@@ -80,7 +84,8 @@ class IndicatorSummary(ModelBase):
                                 created=indicator_summary.get('created'),
                                 updated=indicator_summary.get('updated'),
                                 description=indicator_summary.get('description'),
-                                attributes=attributes)
+                                attributes=attributes,
+                                severity_level=indicator_summary.get('severityLevel'))
 
     def to_dict(self, remove_nones=False):
         """
@@ -115,7 +120,8 @@ class IndicatorSummary(ModelBase):
             'created': self.created,
             'updated': self.updated,
             'description': self.description,
-            'attributes': attributes
+            'attributes': attributes,
+            'severityLevel': self.severity_level
         }
 
 
