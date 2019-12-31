@@ -1,12 +1,28 @@
+
+# virtualenvs
+venv/
+venv2/
+venv3/
+
+# python generated files
 *.egg-info
-build/
-/dist/
-/.idea/
-MANIFEST
 *.pyc
-venv*
+
+# build files
+build/
+dist/
+
+# IDE files
+.idea/
+*.iml
+
+# misc
+MANIFEST
+
+# OS generated files
 .DS_Store
+*.*~
+
+# configs
 tests/config.yml
 **/trustar.conf
-*.*~
-*.iml
