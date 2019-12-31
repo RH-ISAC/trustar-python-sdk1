@@ -306,7 +306,6 @@ class TruStarTests(unittest.TestCase):
         metadata = self.ts.get_indicators_metadata(indicators)
         self.assertTrue(len(metadata) == 2)
 
-
     def test_add_tag_to_indicator(self):
         tag = self.ts.add_indicator_tag("blah.com", name="indicator_tag", enclave_id=self.ts.enclave_ids[0])
         print(tag)

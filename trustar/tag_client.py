@@ -22,47 +22,78 @@ class TagClient(object):
         Retrieves all enclave tags present in a specific report.
 
         :param report_id: the ID of the report
-        :param id_type: indicates whether the ID internal or an external ID provided by the user
-        :return: A list of  |Tag| objects.
+        :param id_type: indicates whether the ID is an internal or external ID
+        :return: A list of |Tag| objects.
         """
 
         params = {'idType': id_type}
         resp = self._client.get("reports/%s/tags" % report_id, params=params)
         return [Tag.from_dict(indicator) for indicator in resp.json()]
 
-    def add_enclave_tag(self, report_id, name, enclave_id, id_type=None):
+    def alter_report_tags(self, report_id, added_tags, removed_tags, id_type=None):
+        """
+        Bulk add/remove tags from a report.
+
+        :param report_id: the ID of the report
+        :param added_tags: a list of strings, the names of tags to add
+        :param removed_tags: a list of strings, the names of tags to remove
+        :return: the ID of the report
+        """
+
+        params = {'idType': id_type}
+        body = {
+            'addedTags': [{'name': tag_name} for tag_name in added_tags],
+            'removedTags': [{'name': tag_name} for tag_name in removed_tags]
+        }
+
+        resp = self._client.post("reports/{}/alter-tags".format(report_id), params=params, data=json.dumps(body))
+        return resp.json().get('id')
+
+    def add_enclave_tag(self, report_id, name, enclave_id=None, id_type=None):
         """
         Adds a tag to a specific report, for a specific enclave.
 
+        NOTE: This function is deprecated.  Use alter_report_tags instead.
+
         :param report_id: The ID of the report
         :param name: The name of the tag to be added
-        :param enclave_id: ID of the enclave where the tag will be added
-        :param id_type: indicates whether the ID internal or an external ID provided by the user
+        :param enclave_id: ID of the enclave where the tag will be added.
+            NOTE: This field is deprecated. Report tags are no longer enclave-specific.
+            This field will be ignored if it is filled out.
+        :param id_type: indicates whether the ID is an internal or external ID
         :return: The ID of the tag that was created.
         """
 
-        params = {
-            'idType': id_type,
-            'name': name,
-            'enclaveId': enclave_id
-        }
-        resp = self._client.post("reports/%s/tags" % report_id, params=params)
-        return str(resp.content)
+        # delegate to alter-tags endpoint
+        self.alter_report_tags(report_id=report_id,
+                               added_tags=[name],
+                               removed_tags=[],
+                               id_type=id_type)
+
+        # return the tag name to maintain backwards compatibility
+        # the old endpoint returned the tag ID, but tag IDs no longer exist
+        # the tag name is now used in place of its ID throughout all API endpoints
+        return name
 
     def delete_enclave_tag(self, report_id, tag_id, id_type=None):
         """
         Deletes a tag from a specific report, in a specific enclave.
 
+        NOTE: This function is deprecated.  Use alter_report_tags instead.
+
         :param string report_id: The ID of the report
-        :param string tag_id: ID of the tag to delete
+        :param string tag_id: name of the tag to delete.
+            NOTE: Report tags no longer have IDs, instead the name of the tag serves as its ID.
+            Pass the name of the tag to delete in this field.
         :param string id_type: indicates whether the ID internal or an external ID provided by the user
-        :return: The response body.
+        :return: The ID of the report.
         """
 
-        params = {
-            'idType': id_type
-        }
-        self._client.delete("reports/%s/tags/%s" % (report_id, tag_id), params=params)
+        # delegate to alter-tags endpoint
+        return self.alter_report_tags(report_id=report_id,
+                                      added_tags=[],
+                                      removed_tags=[tag_id],
+                                      id_type=id_type)
 
     def get_all_enclave_tags(self, enclave_ids=None):
         """
