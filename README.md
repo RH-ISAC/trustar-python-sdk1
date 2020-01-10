@@ -29,7 +29,7 @@ pip uninstall trustar
 ```
 
 
-## Running examples and tests
+## Tutorial and Examples
 
 For a quick tutorial on using this package, follow the guide at https://docs.trustar.co/sdk/quick_start.html.
 
