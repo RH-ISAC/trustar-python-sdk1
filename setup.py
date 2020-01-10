@@ -27,5 +27,7 @@ setup(
                       'PyYAML',
                       'six'
                       ],
+    include_package_data=True,
+    scripts=glob('trustar/examples/**/*.py') + glob('trustar/examples/*.py'),
     use_2to3=True
 )

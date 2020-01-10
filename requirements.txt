@@ -1,7 +1,0 @@
-configparser==3.5.0
-future==0.16.0
-pyyaml
-requests==2.20.0
-six==1.11.0
-tzlocal==1.4
-urllib3

@@ -5,82 +5,55 @@
 See https://docs.trustar.co/ for the official documentation to the TruSTAR Python SDK.
 
 
-## Installation/Upgrade
+## Installation
 
-### Pre-requisites
-
-Make sure you have the latest version of Requests package
+### Install
+To install, run
 
 ```bash
-$ sudo pip install requests --upgrade
+pip install trustar
 ```
 
-### Using pip (recommended)
+### Upgrade
+If the package has been previously installed, upgrade to the latest version with
 
 ```bash
-$ pip install trustar --upgrade
+pip install --upgrade trustar
 ```
 
+### Uninstall
+To uninstall, simply run
 
-### Manual Installation
-
-1. Get the latest SDK by downloading as a [ZIP](https://github.com/trustar/trustar-python/archive/master.zip) and extract locally.  You can also clone the repository directly from [GitHub](https://github.com/trustar/trustar-python)
-
-2. Install requirements
-
-* Python 2.7+:
 ```bash
-$ sudo pip install future python-dateutil pytz requests configparser
-```
-
-* Python 3:
-```bash
-$ sudo pip3 install future python-dateutil pytz requests configparser
-```
-
-3. Install SDK
-```bash
-$ cd trustar-python
-$ python setup.py install --force
-```
-
-Uninstallation
---------------
-```bash
-$ pip uninstall trustar
+pip uninstall trustar
 ```
 
 
-Running examples and tests
---------------------------
-- Retrieve or generate API credentials from the TruSTAR Station: https://station.trustar.co/settings/api
-- Inside the ``examples`` directory, create your own ``trustar.conf`` file from ``trustar.conf.example`` and Copy in your credentials and enclave IDs
+## Running examples and tests
 
-```bash
-$ cd examples
-$ python basic_usage.py
-$ python3 basic_usage.py
-```
+For a quick tutorial on using this package, follow the guide at https://docs.trustar.co/sdk/quick_start.html.
 
+More examples can be found within this repository under `trustar/examples`
 
 ## Development
 
-To setup this project for development:
+To setup this project for development, you must create a virtual environment and pip install the package in editable mode.
+This will also install any transitive requirements automatically.
 
 1. Create a virtualenv using python 3:
-```bash
-virtualenv --no-site-packages -p python3 venv3
-```
+    ```bash
+    virtualenv --no-site-packages -p python3 venv3
+    ```
+
 2. Activate the virtualenv:
-```bash
-source ./venv3/bin/activate
-```
+    ```bash
+    source ./venv3/bin/activate
+    ```
 3. Install this package in editable mode:
-```bash
-pip install -e .
-```
-4. Although step 3 will install the core requirements for the package, some additional packages are used during
-development (specifically, ``nose``).  To install these, run
-```bash
-pip install -r requirements.txt
-```
+    ```bash
+    pip install -e .
+    ```
+
+### Python 2/3 Compatibility
+
+This package is compatible with both Python 2 and 3.  Ensure that any changes made maintain this cross-compatibility.
