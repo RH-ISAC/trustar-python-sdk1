@@ -25,7 +25,7 @@ class TruStarTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.ts = TruStar()
+        cls.ts = TruStar(config_role='staging')
 
     def test_ping(self):
         pong = self.ts.ping()
