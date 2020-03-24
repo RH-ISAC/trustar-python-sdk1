@@ -83,3 +83,10 @@ class EnclaveType(Enum):
             return cls.CLOSED
         else:
             return super(cls, EnclaveType).from_string(string)
+
+
+class TriageStatus(Enum):
+
+    UNRESOLVED = "UNRESOLVED"
+    CONFIRMED = "CONFIRMED"
+    IGNORED = "IGNORED"
