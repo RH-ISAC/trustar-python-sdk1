@@ -112,7 +112,7 @@ class PhishingTriageClient(object):
 
         resp = self._client.post("triage/submissions", params=params)
 
-        page_of_phishing_submissions = Page.from_dict(resp.jsonn(), content_type=PhishingSubmission)
+        page_of_phishing_submissions = Page.from_dict(resp.json(), content_type=PhishingSubmission)
 
         return page_of_phishing_submissions
 
