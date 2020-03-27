@@ -408,7 +408,7 @@ class ReportClient(object):
             """
             For each page, get the timestamp of the earliest report in the result set.  The next query will use this
             timestamp as the end of its interval.  This endpoint limits queries to 1 day.  If the result set is
-            empty, subtract 1 dat from the to_time for the next interval.
+            empty, subtract 1 day from the to_time for the next interval.
 
             :param result: the result set of the previous call
             :param to_time: the to_time of the previous call
