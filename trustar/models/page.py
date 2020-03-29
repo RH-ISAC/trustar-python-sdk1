@@ -149,22 +149,29 @@ class Page(ModelBase):
                                              to_time=to_time)
 
     @staticmethod
-    def get_cursor_based_page_generator(get_page, get_next_cursor, cursor=None):
+    def get_cursor_based_page_generator(get_page, cursor=None):
         """
         A page generator that uses cursor-based paginantion.
 
         :param get_page: a function to get the next page, given values for from_time and to_time
-        :param get_next_cursor: a function to get the Base-64 cursor for the next query
         :param cursor: A Base64-encoded string that contains information on how to retrieve the next page.
                        If a cursor isn't passed, it will default to pageSize: 25, pageNumber: 0
         :return: a generator that yields each successive page
         """
 
+        def get_next_cursor(result):
+            """
+            Retrieves the Base-64 encoded cursor string from a page.
+            """
+
+            return result.responseMetaData.nextCursor
+
         # Yields result until an empty string is returned
-        while cursor:
-            result = get_page(cursor)
-            yield result
+        while cursor != "":
+            # If cursor is None, no cursor value will be sent with request
+            result = get_page(cursor=cursor)
             cursor = get_next_cursor(result)
+            yield result
 
     @classmethod
     def get_generator(cls, page_generator):
