@@ -104,7 +104,7 @@ class PhishingTriageClient(object):
         if enclave_ids is None:
             enclave_ids = self.enclave_ids
 
-        params = self.remove_nones({
+        data = self.remove_nones({
             'from': from_time,
             'to': to_time,
             'normalizedTriageScore': normalized_triage_score,
@@ -115,7 +115,7 @@ class PhishingTriageClient(object):
 
         params = self.remove_nones(params)
 
-        resp = self._client.post("triage/submissions", data=json.dumps(params))
+        resp = self._client.post("triage/submissions", data=json.dumps(data))
 
         page_of_phishing_submissions = CursorPage.from_dict(resp.json(), content_type=PhishingSubmission)
 
@@ -229,7 +229,7 @@ class PhishingTriageClient(object):
         if enclave_ids is None:
             enclave_ids = self.enclave_ids
 
-        params = self.remove_nones({
+        data = self.remove_nones({
             'from': from_time,
             'to': to_time,
             'normalizedSourceScore': normalized_source_score,
@@ -239,7 +239,7 @@ class PhishingTriageClient(object):
             'cursor': cursor
         })
 
-        resp = self._client.post("triage/indicators", data=json.dumps(params))
+        resp = self._client.post("triage/indicators", data=json.dumps(data))
 
         page_of_phishing_indicators = CursorPage.from_dict(resp.json(), content_type=PhishingIndicator)
 
