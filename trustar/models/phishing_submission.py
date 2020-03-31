@@ -25,7 +25,8 @@ class PhishingSubmission(ModelBase):
                  submission_id=None,
                  title=None,
                  normalized_triage_score=None,
-                 context=None):
+                 context=None,
+                 response_metadata=None):
         """
         Constructs a PhishingSubmission object.
 
@@ -34,6 +35,7 @@ class PhishingSubmission(ModelBase):
         self.title = title
         self.normalized_triage_score = normalized_triage_score
         self.context = context
+        self.response_metadata = response_metadata
 
     @classmethod
     def from_dict(cls, phishing_submission):
@@ -48,10 +50,11 @@ class PhishingSubmission(ModelBase):
         if context is not None:
             context = [PhishingIndicator.from_dict(entity) for entity in context]
 
-        return PhishingSubmission(submission_id=phishing_submission.get('submission_id'),
+        return PhishingSubmission(submission_id=phishing_submission.get('submissionId'),
                                   title=phishing_submission.get('title'),
-                                  normalized_triage_score=phishing_submission.get('normalized_triage_score'),
-                                  context=context)
+                                  normalized_triage_score=phishing_submission.get('normalizedTriageScore'),
+                                  context=context,
+                                  response_metadata=phishing_submission.get('responseMetadata'))
 
     def to_dict(self, remove_nones=False):
         """
@@ -65,10 +68,11 @@ class PhishingSubmission(ModelBase):
             return super().to_dict(remove_nones=True)
 
         phishing_submission_dict = {
-            'submissionn_id': self.submission_id,
+            'submissionId': self.submission_id,
             'title': self.title,
-            'normalized_triage_score': self.normalized_triage_score,
-            'context': self.context
+            'normalizedTriageScore': self.normalized_triage_score,
+            'context': self.context,
+            'responseMetadata': self.response_metadata
         }
 
         return phishing_submission_dict
@@ -79,7 +83,7 @@ class PhishingIndicator(ModelBase):
     Models a |PhishingIndicator_resource|.
 
     :ivar indicator_type: The type of the extracted entity (e.g. URL, IP, ...)
-    :ivar indicator_value: The value of an extracted entity (e.g. www.badsite.com, etc.)
+    :ivar value: The value of an extracted entity (e.g. www.badsite.com, etc.)
     :ivar source_key: A string that is associated with the closed source providing context
                        (e.g. 'virustotal', 'crowdstrike_indicator')
     :ivar normalized_source_score: The normalized score associated with a context entity
@@ -87,16 +91,18 @@ class PhishingIndicator(ModelBase):
 
     def __init__(self,
                  indicator_type=None,
-                 indicator_value=None,
+                 value=None,
                  source_key=None,
-                 normalized_source_score=None):
+                 normalized_source_score=None,
+                 response_metadata=None):
         """
         Constructs a PhishingIndicator object.
         """
         self.indicator_type = indicator_type
-        self.indicator_value = indicator_value
+        self.value = value
         self.source_key = source_key
         self.normalized_source_score = normalized_source_score
+        self.response_metadata = response_metadata
 
     @classmethod
     def from_dict(cls, phishing_indicator):
@@ -106,10 +112,11 @@ class PhishingIndicator(ModelBase):
         :param phishing_indicator: The phishing indicator dictionary.
         """
 
-        return PhishingIndicator(indicator_type=phishing_indicator.get('indicator_type'),
-                                 indicator_value=phishing_indicator.get('indicator_value'),
-                                 source_key=phishing_indicator.get('source_key'),
-                                 normalized_source_score=phishing_indicator.get('normalized_source_score'))
+        return PhishingIndicator(indicator_type=phishing_indicator.get('indicatorType'),
+                                 value=phishing_indicator.get('value'),
+                                 source_key=phishing_indicator.get('sourceKey'),
+                                 normalized_source_score=phishing_indicator.get('normalizedSourceScore'),
+                                 response_metadata=phishing_indicator.get('responseMetadata'))
 
     def to_dict(self, remove_nones=False):
         """
@@ -123,10 +130,11 @@ class PhishingIndicator(ModelBase):
             return super().to_dict(remove_nones=True)
 
         phishing_indicator_dict = {
-            'indicator_type': self.indicator_type,
-            'indicator_value': self.indicator_value,
-            'source_key': self.source_key,
-            'normalized_source_score': self.normalized_source_score
+            'indicatorType': self.indicator_type,
+            'value': self.value,
+            'sourceKey': self.source_key,
+            'normalizedSourceScore': self.normalized_source_score,
+            'responseMetadata': self.response_metadata
         }
 
         return phishing_indicator_dict
