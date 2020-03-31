@@ -1,13 +1,9 @@
 # python 2 backwards compatibility
 from __future__ import print_function
 from builtins import object, super
-from future import standard_library
-from six import string_types
 
 # package imports
-from ..utils import normalize_timestamp
 from .base import ModelBase
-from .enum import *
 
 
 class PhishingSubmission(ModelBase):
