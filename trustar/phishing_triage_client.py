@@ -2,17 +2,14 @@
 from __future__ import print_function
 from builtins import object, str
 from future import standard_library
-from six import string_types
 
 # external imports
 import json
-from datetime import datetime
 import functools
 import logging
 
 # package imports
-from .models import Page, PhishingIndicator, PhishingSubmission, TriageStatus
-from .utils import get_time_based_page_generator, DAY
+from .models import CursorPage, PhishingIndicator, PhishingSubmission
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
@@ -57,7 +54,7 @@ class PhishingTriageClient(object):
             cursor=cursor
         )
 
-        phishing_submissions_generator = Page.get_generator(page_generator=phishing_submissions_page_generator)
+        phishing_submissions_generator = CursorPage.get_generator(page_generator=phishing_submissions_page_generator)
 
         return phishing_submissions_generator
 
@@ -86,7 +83,7 @@ class PhishingTriageClient(object):
             status=status,
         )
 
-        return Page.get_cursor_based_page_generator(get_page, cursor=cursor)
+        return CursorPage.get_cursor_based_page_generator(get_page, cursor=cursor)
 
     def get_phishing_submissions_page(self, from_time=None, to_time=None, normalized_triage_score=None,
                                       enclave_ids=None, status=None, cursor=None):
@@ -120,7 +117,7 @@ class PhishingTriageClient(object):
 
         resp = self._client.post("triage/submissions", data=json.dumps(params))
 
-        page_of_phishing_submissions = Page.from_dict(resp.json(), content_type=PhishingSubmission)
+        page_of_phishing_submissions = CursorPage.from_dict(resp.json(), content_type=PhishingSubmission)
 
         return page_of_phishing_submissions
 
@@ -176,7 +173,7 @@ class PhishingTriageClient(object):
             cursor=cursor
         )
 
-        phishing_indicators_generator = Page.get_generator(page_generator=phishing_indicators_page_generator)
+        phishing_indicators_generator = CursorPage.get_generator(page_generator=phishing_indicators_page_generator)
 
         return phishing_indicators_generator
 
@@ -209,7 +206,7 @@ class PhishingTriageClient(object):
             status=status,
         )
 
-        return Page.get_cursor_based_page_generator(get_page, cursor=cursor)
+        return CursorPage.get_cursor_based_page_generator(get_page, cursor=cursor)
 
     def get_phishing_indicators_page(self, from_time=None, to_time=None, normalized_source_score=None,
                                      normalized_triage_score=None, enclave_ids=None, status=None, cursor=None):
@@ -218,6 +215,8 @@ class PhishingTriageClient(object):
 
         :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago).
         :param int to_time: End of time window in milliseconds since epoch (defaults to current time).
+        :param list(int) normalized_source_score: List of desired scores of intel sources on a scale of 0-3
+                                                  (default: [3]).
         :param list(int) normalized_triage_score: List of desired scores of phishing indicators on a scale of 0-3
                                              (default: [3]).
         :param list(string) enclave_ids: A list of enclave IDs to filter by.
@@ -242,6 +241,6 @@ class PhishingTriageClient(object):
 
         resp = self._client.post("triage/indicators", data=json.dumps(params))
 
-        page_of_phishing_indicators = Page.from_dict(resp.json(), content_type=PhishingIndicator)
+        page_of_phishing_indicators = CursorPage.from_dict(resp.json(), content_type=PhishingIndicator)
 
         return page_of_phishing_indicators
