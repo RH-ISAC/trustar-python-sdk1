@@ -85,8 +85,6 @@ class EnclaveType(Enum):
             return super(cls, EnclaveType).from_string(string)
 
 
-class TriageStatus(Enum):
+class DefaultPageSize(Enum):
 
-    UNRESOLVED = "UNRESOLVED"
-    CONFIRMED = "CONFIRMED"
-    IGNORED = "IGNORED"
+    DEFAULT_PAGE_SIZE = 25
