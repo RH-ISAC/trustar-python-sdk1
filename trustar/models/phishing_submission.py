@@ -60,14 +60,12 @@ class PhishingSubmission(ModelBase):
         if remove_nones:
             return super().to_dict(remove_nones=True)
 
-        phishing_submission_dict = {
+        return {
             'submissionId': self.submission_id,
             'title': self.title,
             'normalizedTriageScore': self.normalized_triage_score,
             'context': self.context,
         }
-
-        return phishing_submission_dict
 
 
 class PhishingIndicator(ModelBase):
