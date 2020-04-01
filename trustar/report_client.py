@@ -11,7 +11,7 @@ import functools
 import logging
 
 # package imports
-from .models import Page, Report, RedactedReport, DistributionType, IdType
+from .models import NumberedPage, Report, RedactedReport, DistributionType, IdType
 from .utils import get_time_based_page_generator, DAY
 
 # python 2 backwards compatibility
@@ -76,7 +76,7 @@ class ReportClient(object):
         :param int from_time: start of time window in milliseconds since epoch (optional)
         :param int to_time: end of time window in milliseconds since epoch (optional)
 
-        :return: A |Page| of |Report| objects.
+        :return: A |NumberedPage| of |Report| objects.
 
         """
 
@@ -100,9 +100,9 @@ class ReportClient(object):
             'excludedTags': excluded_tags
         }
         resp = self._client.get("reports", params=params)
-        result = Page.from_dict(resp.json(), content_type=Report)
+        result = NumberedPage.from_dict(resp.json(), content_type=Report)
 
-        # create a Page object from the dict
+        # create a NumberedPage object from the dict
         return result
 
     def submit_report(self, report):
@@ -341,7 +341,7 @@ class ReportClient(object):
         }
         resp = self._client.get("reports/correlated", params=params)
 
-        return Page.from_dict(resp.json(), content_type=Report)
+        return NumberedPage.from_dict(resp.json(), content_type=Report)
 
     def search_reports_page(self, search_term=None,
                             enclave_ids=None,
@@ -365,7 +365,7 @@ class ReportClient(object):
         :param list(str) excluded_tags: Reports containing ANY of these tags will be excluded from the results.
         :param int page_number: the page number to get. (optional)
         :param int page_size: the size of the page to be returned.
-        :return: a |Page| of |Report| objects.  *NOTE*:  The bodies of these reports will be ``None``.
+        :return: a |NumberedPage| of |Report| objects.  *NOTE*:  The bodies of these reports will be ``None``.
         """
 
         body = {
@@ -383,7 +383,7 @@ class ReportClient(object):
         }
 
         resp = self._client.post("reports/search", params=params, data=json.dumps(body))
-        page = Page.from_dict(resp.json(), content_type=Report)
+        page = NumberedPage.from_dict(resp.json(), content_type=Report)
 
         return page
 
@@ -462,7 +462,7 @@ class ReportClient(object):
 
         """
 
-        return Page.get_generator(page_generator=self._get_reports_page_generator(is_enclave, enclave_ids, tag,
+        return NumberedPage.get_generator(page_generator=self._get_reports_page_generator(is_enclave, enclave_ids, tag,
                                                                                   excluded_tags, from_time, to_time))
 
     def _get_correlated_reports_page_generator(self, indicators, enclave_ids=None, is_enclave=True,
@@ -478,7 +478,7 @@ class ReportClient(object):
         """
 
         get_page = functools.partial(self.get_correlated_reports_page, indicators, enclave_ids, is_enclave)
-        return Page.get_page_generator(get_page, start_page, page_size)
+        return NumberedPage.get_page_generator(get_page, start_page, page_size)
 
     def get_correlated_reports(self, indicators, enclave_ids=None, is_enclave=True):
         """
@@ -490,7 +490,7 @@ class ReportClient(object):
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self._get_correlated_reports_page_generator(indicators,
+        return NumberedPage.get_generator(page_generator=self._get_correlated_reports_page_generator(indicators,
                                                                                              enclave_ids,
                                                                                              is_enclave))
 
@@ -521,7 +521,7 @@ class ReportClient(object):
 
         get_page = functools.partial(self.search_reports_page, search_term, enclave_ids, from_time, to_time, tags,
                                      excluded_tags)
-        return Page.get_page_generator(get_page, start_page, page_size)
+        return NumberedPage.get_page_generator(get_page, start_page, page_size)
 
     def search_reports(self, search_term=None,
                        enclave_ids=None,
@@ -544,7 +544,7 @@ class ReportClient(object):
         :return: The generator of Report objects.  Note that the body attributes of these reports will be ``None``.
         """
 
-        return Page.get_generator(page_generator=self._search_reports_page_generator(search_term, enclave_ids,
+        return NumberedPage.get_generator(page_generator=self._search_reports_page_generator(search_term, enclave_ids,
                                                                                      from_time, to_time, tags,
                                                                                      excluded_tags))
 

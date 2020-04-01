@@ -10,7 +10,7 @@ from .enum import DefaultPageSize
 import math
 
 
-class CursorPage(ModelBase):
+class CursorPage(Page):
     """
     This class models a page of items that would be found in the body of a response from an endpoint that uses
     pagination. Unlike the |Page| class, it uses cursor-based pagination instead of number-based pagination.
@@ -24,16 +24,11 @@ class CursorPage(ModelBase):
                           since data can change between queries.
     """
 
-    # Copy methods from Page
-    get_generator = Page.get_generator
-    __iter__ = Page.__iter__
-    __getitem__ = Page.__getitem__
-
     def __init__(self, items=None, response_metadata=None):
         """
         Instantiates an instance of the |CursorPage| class.
         """
-        self.items = items
+        super().__init__(items=items)
         self.response_metadata = response_metadata
 
     def get_total_pages(self):

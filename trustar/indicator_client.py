@@ -10,7 +10,7 @@ import json
 import logging
 
 # package imports
-from .models import Indicator, Page, Tag, IndicatorSummary
+from .models import Indicator, NumberedPage, Tag, IndicatorSummary
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
@@ -70,7 +70,7 @@ class IndicatorClient(object):
         :param int start_page: see 'page_size' explanation.
         :param int page_size: Passing the integer 1000 as the argument to this parameter should result in your script 
         making fewer API calls because it returns the largest quantity of indicators with each API call.  An API call 
-        has to be made to fetch each |Page|.   
+        has to be made to fetch each |NumberedPage|.   
         :return: A generator of |Indicator| objects containing values for the "value" and "type" attributes only.
         All other attributes of the |Indicator| object will contain Null values. 
         
@@ -85,7 +85,7 @@ class IndicatorClient(object):
             page_size=page_size
         )
 
-        indicators_generator = Page.get_generator(page_generator=indicators_page_generator)
+        indicators_generator = NumberedPage.get_generator(page_generator=indicators_page_generator)
 
         return indicators_generator
 
@@ -101,7 +101,7 @@ class IndicatorClient(object):
         :param list(string) enclave_ids: a list of enclave IDs to filter by
         :param list(string) included_tag_ids: only indicators containing ALL of these tags will be returned
         :param list(string) excluded_tag_ids: only indicators containing NONE of these tags will be returned
-        :return: a |Page| of |Indicator| objects
+        :return: a |NumberedPage| of |Indicator| objects
         """
 
         get_page = functools.partial(
@@ -114,7 +114,7 @@ class IndicatorClient(object):
             included_tag_ids=included_tag_ids,
             excluded_tag_ids=excluded_tag_ids
         )
-        return Page.get_page_generator(get_page, page_number, page_size)
+        return NumberedPage.get_page_generator(get_page, page_number, page_size)
 
     def get_indicators_page(self, from_time=None, to_time=None, page_number=None, page_size=None,
                             enclave_ids=None, included_tag_ids=None, excluded_tag_ids=None):
@@ -128,7 +128,7 @@ class IndicatorClient(object):
         :param list(string) enclave_ids: a list of enclave IDs to filter by
         :param list(string) included_tag_ids: only indicators containing ALL of these tags will be returned
         :param list(string) excluded_tag_ids: only indicators containing NONE of these tags will be returned
-        :return: a |Page| of indicators
+        :return: a |NumberedPage| of indicators
         """
 
         params = {
@@ -143,7 +143,7 @@ class IndicatorClient(object):
 
         resp = self._client.get("indicators", params=params)
 
-        page_of_indicators = Page.from_dict(resp.json(), content_type=Indicator)
+        page_of_indicators = NumberedPage.from_dict(resp.json(), content_type=Indicator)
 
         return page_of_indicators
 
@@ -170,7 +170,7 @@ class IndicatorClient(object):
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self._search_indicators_page_generator(search_term, enclave_ids,
+        return NumberedPage.get_generator(page_generator=self._search_indicators_page_generator(search_term, enclave_ids,
                                                                                         from_time, to_time,
                                                                                         indicator_types, tags,
                                                                                         excluded_tags))
@@ -204,7 +204,7 @@ class IndicatorClient(object):
 
         get_page = functools.partial(self.search_indicators_page, search_term, enclave_ids,
                                      from_time, to_time, indicator_types, tags, excluded_tags)
-        return Page.get_page_generator(get_page, start_page, page_size)
+        return NumberedPage.get_page_generator(get_page, start_page, page_size)
 
     def search_indicators_page(self, search_term=None,
                                enclave_ids=None,
@@ -230,7 +230,7 @@ class IndicatorClient(object):
         :param list(str) excluded_tags: Indicators containing ANY of these tags will be excluded from the results.
         :param int page_number: the page number to get.
         :param int page_size: the size of the page to be returned.
-        :return: a |Page| of |Indicator| objects.
+        :return: a |NumberedPage| of |Indicator| objects.
         """
 
         body = {
@@ -250,7 +250,7 @@ class IndicatorClient(object):
 
         resp = self._client.post("indicators/search", params=params, data=json.dumps(body))
 
-        return Page.from_dict(resp.json(), content_type=Indicator)
+        return NumberedPage.from_dict(resp.json(), content_type=Indicator)
 
     def get_related_indicators(self, indicators=None, enclave_ids=None):
         """
@@ -261,7 +261,7 @@ class IndicatorClient(object):
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self._get_related_indicators_page_generator(indicators, enclave_ids))
+        return NumberedPage.get_generator(page_generator=self._get_related_indicators_page_generator(indicators, enclave_ids))
 
     def get_indicators_for_report(self, report_id):
         """
@@ -271,7 +271,7 @@ class IndicatorClient(object):
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self._get_indicators_for_report_page_generator(report_id))
+        return NumberedPage.get_generator(page_generator=self._get_indicators_for_report_page_generator(report_id))
 
     def get_indicator_metadata(self, value):
         """
@@ -349,7 +349,7 @@ class IndicatorClient(object):
             page_size=page_size
         )
 
-        return Page.get_generator(page_generator=indicator_summaries_page_generator)
+        return NumberedPage.get_generator(page_generator=indicator_summaries_page_generator)
 
     def _get_indicator_summaries_page_generator(self, values, enclave_ids=None, start_page=0, page_size=None):
         """
@@ -367,7 +367,7 @@ class IndicatorClient(object):
         """
 
         get_page = functools.partial(self.get_indicator_summaries_page, values=values, enclave_ids=enclave_ids)
-        return Page.get_page_generator(get_page, start_page, page_size)
+        return NumberedPage.get_page_generator(get_page, start_page, page_size)
 
     def get_indicator_summaries_page(self, values, enclave_ids=None, page_number=0, page_size=None):
         """
@@ -392,7 +392,7 @@ class IndicatorClient(object):
 
         resp = self._client.post("indicators/summaries", json=values, params=params)
 
-        return Page.from_dict(resp.json(), IndicatorSummary)
+        return NumberedPage.from_dict(resp.json(), IndicatorSummary)
 
     def get_indicator_details(self, indicators, enclave_ids=None):
         """
@@ -428,7 +428,7 @@ class IndicatorClient(object):
         :return: The generator.
         """
 
-        return Page.get_generator(page_generator=self._get_whitelist_page_generator())
+        return NumberedPage.get_generator(page_generator=self._get_whitelist_page_generator())
 
     def add_terms_to_whitelist(self, terms):
         """
@@ -478,7 +478,7 @@ class IndicatorClient(object):
 
         :param int page_number: the page number to get.
         :param int page_size: the size of the page to be returned.
-        :return: A |Page| of |Indicator| objects.
+        :return: A |NumberedPage| of |Indicator| objects.
         """
 
         params = {
@@ -486,7 +486,7 @@ class IndicatorClient(object):
             'pageSize': page_size
         }
         resp = self._client.get("whitelist", params=params)
-        return Page.from_dict(resp.json(), content_type=Indicator)
+        return NumberedPage.from_dict(resp.json(), content_type=Indicator)
     
     def get_indicators_for_report_page(self, report_id, page_number=None, page_size=None):
         """
@@ -495,7 +495,7 @@ class IndicatorClient(object):
         :param str report_id: the ID of the report to get the indicators for
         :param int page_number: the page number to get.
         :param int page_size: the size of the page to be returned.
-        :return: A |Page| of |Indicator| objects.
+        :return: A |NumberedPage| of |Indicator| objects.
         """
 
         params = {
@@ -503,7 +503,7 @@ class IndicatorClient(object):
             'pageSize': page_size
         }
         resp = self._client.get("reports/%s/indicators" % report_id, params=params)
-        return Page.from_dict(resp.json(), content_type=Indicator)
+        return NumberedPage.from_dict(resp.json(), content_type=Indicator)
 
     def get_related_indicators_page(self, indicators=None, enclave_ids=None, page_size=None, page_number=None):
         """
@@ -513,7 +513,7 @@ class IndicatorClient(object):
         :param enclave_ids: list of IDs of enclaves to search in
         :param page_size: number of results per page
         :param page_number: page to start returning results on
-        :return: A |Page| of |Report| objects.
+        :return: A |NumberedPage| of |Report| objects.
         """
 
         params = {
@@ -525,7 +525,7 @@ class IndicatorClient(object):
 
         resp = self._client.get("indicators/related", params=params)
 
-        return Page.from_dict(resp.json(), content_type=Indicator)
+        return NumberedPage.from_dict(resp.json(), content_type=Indicator)
 
     def _get_indicators_for_report_page_generator(self, report_id, start_page=0, page_size=None):
         """
@@ -538,7 +538,7 @@ class IndicatorClient(object):
         """
 
         get_page = functools.partial(self.get_indicators_for_report_page, report_id=report_id)
-        return Page.get_page_generator(get_page, start_page, page_size)
+        return NumberedPage.get_page_generator(get_page, start_page, page_size)
 
     def _get_related_indicators_page_generator(self, indicators=None, enclave_ids=None, start_page=0, page_size=None):
         """
@@ -553,7 +553,7 @@ class IndicatorClient(object):
         """
 
         get_page = functools.partial(self.get_related_indicators_page, indicators, enclave_ids)
-        return Page.get_page_generator(get_page, start_page, page_size)
+        return NumberedPage.get_page_generator(get_page, start_page, page_size)
 
     def _get_whitelist_page_generator(self, start_page=0, page_size=None):
         """
@@ -564,4 +564,4 @@ class IndicatorClient(object):
         :return: The generator.
         """
 
-        return Page.get_page_generator(self.get_whitelist_page, start_page, page_size)
+        return NumberedPage.get_page_generator(self.get_whitelist_page, start_page, page_size)
