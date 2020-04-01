@@ -54,9 +54,7 @@ class PhishingTriageClient(object):
             cursor=cursor
         )
 
-        phishing_submissions_generator = CursorPage.get_generator(page_generator=phishing_submissions_page_generator)
-
-        return phishing_submissions_generator
+        return CursorPage.get_generator(page_generator=phishing_submissions_page_generator)
 
     def _get_phishing_submissions_page_generator(self, from_time=None, to_time=None, normalized_triage_score=None,
                                                  enclave_ids=None, status=None, cursor=None):
@@ -115,9 +113,7 @@ class PhishingTriageClient(object):
 
         resp = self._client.post("triage/submissions", data=json.dumps(data))
 
-        page_of_phishing_submissions = CursorPage.from_dict(resp.json(), content_type=PhishingSubmission)
-
-        return page_of_phishing_submissions
+        return CursorPage.from_dict(resp.json(), content_type=PhishingSubmission)
 
     def mark_triage_status(self, submission_id=None, status=None):
         """
@@ -171,9 +167,7 @@ class PhishingTriageClient(object):
             cursor=cursor
         )
 
-        phishing_indicators_generator = CursorPage.get_generator(page_generator=phishing_indicators_page_generator)
-
-        return phishing_indicators_generator
+        return CursorPage.get_generator(page_generator=phishing_indicators_page_generator)
 
     def _get_phishing_indicators_page_generator(self, from_time=None, to_time=None, normalized_source_score=None,
                                                 normalized_triage_score=None, enclave_ids=None, status=None,
@@ -239,6 +233,4 @@ class PhishingTriageClient(object):
 
         resp = self._client.post("triage/indicators", data=json.dumps(data))
 
-        page_of_phishing_indicators = CursorPage.from_dict(resp.json(), content_type=PhishingIndicator)
-
-        return page_of_phishing_indicators
+        return CursorPage.from_dict(resp.json(), content_type=PhishingIndicator)
