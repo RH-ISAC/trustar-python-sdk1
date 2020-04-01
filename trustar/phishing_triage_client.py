@@ -124,13 +124,6 @@ class PhishingTriageClient(object):
         if submission_id is None or not isinstance(submission_id, str):
             raise Exception("Please include ID of phishing email submission to mark triage status")
 
-        if status is None or not isinstance(status, str):
-            raise Exception("Please include a triage status to mark phishing submission ('CONFIRMED' or 'IGNORED')")
-
-        status = status.upper()
-        if status != "CONFIRMED" and status != "IGNORED":
-            raise Exception("Triage status options are 'CONFIRMED' or 'IGNORED'")
-
         params = {'status': status}
 
         return self._client.post("triage/submissions/{submission_id}/status"
