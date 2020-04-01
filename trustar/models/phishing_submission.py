@@ -116,11 +116,9 @@ class PhishingIndicator(ModelBase):
         if remove_nones:
             return super().to_dict(remove_nones=True)
 
-        phishing_indicator_dict = {
+        return {
             'indicatorType': self.indicator_type,
             'value': self.value,
             'sourceKey': self.source_key,
             'normalizedSourceScore': self.normalized_source_score,
         }
-
-        return phishing_indicator_dict
