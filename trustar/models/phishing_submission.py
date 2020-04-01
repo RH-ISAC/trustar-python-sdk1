@@ -10,7 +10,7 @@ class PhishingSubmission(ModelBase):
     """
     Models a |PhishingSubmission_resource|
 
-    :ivar submission_id: The guid of the email submission
+    :ivar submission_id: The id of the email submission
     :ivar title: The title of the email submission (email subject)
     :ivar normalized_triage_score: The score of the email submission
     :ivar context: A list containing dicts which represent IOCs, sources, and scores
