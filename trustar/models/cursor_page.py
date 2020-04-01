@@ -76,7 +76,7 @@ class CursorPage(Page):
         :return: a generator that yields each successive page
         """
 
-        def get_next_cursor(page):
+        def get_next_cursor(page=None):
             """
             Retrieves the Base-64 encoded cursor string from a page.
             """
