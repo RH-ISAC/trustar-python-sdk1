@@ -1,6 +1,6 @@
 # python 2 backwards compatibility
 from __future__ import print_function
-from builtins import object, super
+from builtins import super
 
 # package imports
 from .base import ModelBase
@@ -21,8 +21,7 @@ class PhishingSubmission(ModelBase):
                  submission_id=None,
                  title=None,
                  normalized_triage_score=None,
-                 context=None,
-                 response_metadata=None):
+                 context=None):
         """
         Constructs a PhishingSubmission object.
 
@@ -31,7 +30,6 @@ class PhishingSubmission(ModelBase):
         self.title = title
         self.normalized_triage_score = normalized_triage_score
         self.context = context
-        self.response_metadata = response_metadata
 
     @classmethod
     def from_dict(cls, phishing_submission):
@@ -49,8 +47,7 @@ class PhishingSubmission(ModelBase):
         return PhishingSubmission(submission_id=phishing_submission.get('submissionId'),
                                   title=phishing_submission.get('title'),
                                   normalized_triage_score=phishing_submission.get('normalizedTriageScore'),
-                                  context=context,
-                                  response_metadata=phishing_submission.get('responseMetadata'))
+                                  context=context)
 
     def to_dict(self, remove_nones=False):
         """
@@ -68,7 +65,6 @@ class PhishingSubmission(ModelBase):
             'title': self.title,
             'normalizedTriageScore': self.normalized_triage_score,
             'context': self.context,
-            'responseMetadata': self.response_metadata
         }
 
         return phishing_submission_dict
@@ -89,8 +85,7 @@ class PhishingIndicator(ModelBase):
                  indicator_type=None,
                  value=None,
                  source_key=None,
-                 normalized_source_score=None,
-                 response_metadata=None):
+                 normalized_source_score=None):
         """
         Constructs a PhishingIndicator object.
         """
@@ -98,7 +93,6 @@ class PhishingIndicator(ModelBase):
         self.value = value
         self.source_key = source_key
         self.normalized_source_score = normalized_source_score
-        self.response_metadata = response_metadata
 
     @classmethod
     def from_dict(cls, phishing_indicator):
@@ -111,8 +105,7 @@ class PhishingIndicator(ModelBase):
         return PhishingIndicator(indicator_type=phishing_indicator.get('indicatorType'),
                                  value=phishing_indicator.get('value'),
                                  source_key=phishing_indicator.get('sourceKey'),
-                                 normalized_source_score=phishing_indicator.get('normalizedSourceScore'),
-                                 response_metadata=phishing_indicator.get('responseMetadata'))
+                                 normalized_source_score=phishing_indicator.get('normalizedSourceScore'))
 
     def to_dict(self, remove_nones=False):
         """
@@ -130,7 +123,6 @@ class PhishingIndicator(ModelBase):
             'value': self.value,
             'sourceKey': self.source_key,
             'normalizedSourceScore': self.normalized_source_score,
-            'responseMetadata': self.response_metadata
         }
 
         return phishing_indicator_dict
