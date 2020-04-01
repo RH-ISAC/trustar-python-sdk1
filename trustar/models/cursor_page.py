@@ -31,20 +31,6 @@ class CursorPage(Page):
         super().__init__(items=items)
         self.response_metadata = response_metadata
 
-    def get_total_pages(self):
-        """
-        :return: The total number of pages on the server.
-        """
-
-        if self.response_metadata is None:
-            return None
-
-        total_items = self.response_metadata.get('totalItems')
-        if not total_items:
-            return None
-
-        return math.ceil(float(self.total_items) / float(DefaultPageSize.DEFAULT_PAGE_SIZE))
-
     @staticmethod
     def from_dict(page, content_type=None):
         """

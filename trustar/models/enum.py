@@ -83,8 +83,3 @@ class EnclaveType(Enum):
             return cls.CLOSED
         else:
             return super(cls, EnclaveType).from_string(string)
-
-
-class DefaultPageSize(Enum):
-
-    DEFAULT_PAGE_SIZE = 25
