@@ -4,7 +4,6 @@ from __future__ import print_function
 # package imports
 from .base import ModelBase
 from .page import Page
-from .enum import DefaultPageSize
 
 # external imports
 import math
