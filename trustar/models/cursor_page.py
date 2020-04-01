@@ -5,7 +5,6 @@ from __future__ import print_function
 from .base import ModelBase
 from .page import Page
 from .enum import DefaultPageSize
-from ..utils import get_time_based_page_generator
 
 # external imports
 import math
