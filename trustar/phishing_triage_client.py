@@ -113,8 +113,6 @@ class PhishingTriageClient(object):
             'cursor': cursor
         })
 
-        params = self.remove_nones(params)
-
         resp = self._client.post("triage/submissions", data=json.dumps(data))
 
         page_of_phishing_submissions = CursorPage.from_dict(resp.json(), content_type=PhishingSubmission)
