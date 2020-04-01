@@ -99,9 +99,6 @@ class PhishingTriageClient(object):
                               If a cursor isn't passed, it will default to pageSize: 25, pageNumber: 0
         """
 
-        if enclave_ids is None:
-            enclave_ids = self.enclave_ids
-
         data = self.remove_nones({
             'from': from_time,
             'to': to_time,
@@ -217,9 +214,6 @@ class PhishingTriageClient(object):
         :param string cursor: A Base64-encoded string that contains information on how to retrieve the next page.
                               If a cursor isn't passed, it will default to pageSize: 25, pageNumber: 0
         """
-
-        if enclave_ids is None:
-            enclave_ids = self.enclave_ids
 
         data = self.remove_nones({
             'from': from_time,
