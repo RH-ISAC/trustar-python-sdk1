@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 # package imports
+from .base import ModelBase
 from .page import Page
 from ..utils import get_time_based_page_generator
 
