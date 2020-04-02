@@ -14,6 +14,7 @@ DAY = 24 * 60 * 60 * 1000
 current_time = int(time.time()) * 1000
 yesterday_time = current_time - DAY
 old_time = current_time - DAY * 365 * 3
+MILLISECONDS_IN_A_DAY = 24 * 60 * 60 * 1000
 
 # Default Phishing Triage parameters to include all options
 normalized_triage_scores = [3, 2, 1]
@@ -274,10 +275,10 @@ class TruStarTests(unittest.TestCase):
     def test_submit_indicators(self):
         indicators = [
             Indicator(value="1.5.8.7",
-                      first_seen=get_current_time_millis() - 24 * 60 * 60 * 1000, last_seen=get_current_time_millis(),
+                      first_seen=get_current_time_millis() - MILLISECONDS_IN_A_DAY, last_seen=get_current_time_millis(),
                       sightings=100, source="Somewhere", notes="This is a note."),
             Indicator(value="1.5.8.9",
-                      first_seen=get_current_time_millis() - 2 * 24 * 60 * 60 * 1000,
+                      first_seen=get_current_time_millis() - MILLISECONDS_IN_A_DAY,
                       last_seen=get_current_time_millis(),
                       sightings=50, source="Somewhere else", notes="This is another note.")
         ]
