@@ -38,8 +38,7 @@ class ModelBase(object):
         """
         :return: A json representation of the object.
         """
-
-        return json.dumps(self.to_dict(remove_nones=True), indent=2)
+        return str(self.to_dict(remove_nones=True))
 
     def __repr__(self):
         """
