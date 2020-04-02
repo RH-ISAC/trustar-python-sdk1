@@ -55,7 +55,7 @@ class NumberedPage(Page):
         # otherwise, try to compute whether or not more pages exist
         total_pages = self.get_total_pages()
         if self.page_number is None or total_pages is None:
-            return None
+            return
         else:
             return self.page_number + 1 < total_pages
 
