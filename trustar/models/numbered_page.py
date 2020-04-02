@@ -39,7 +39,7 @@ class NumberedPage(Page):
         """
 
         if self.total_elements is None or self.page_size is None:
-            return None
+            return
 
         return math.ceil(float(self.total_elements) / float(self.page_size))
 
