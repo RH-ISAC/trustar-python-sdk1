@@ -90,10 +90,11 @@ class CursorPage(Page):
                 next_cursor = response_metadata.get('nextCursor')
             return next_cursor
 
-        # Yields result until an empty string is returned
-        while cursor != "":
+        finished = False
+        while not finished:
             # If cursor is None, no cursor value will be sent with request
             page = get_page(cursor=cursor)
             cursor = get_next_cursor(page)
+            # If there are no more pages, cursor == "", therefore -> not "" == True
+            finished = not cursor
             yield page
-
