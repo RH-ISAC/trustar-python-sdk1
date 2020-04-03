@@ -14,6 +14,7 @@ import logging
 from .api_client import ApiClient
 from .report_client import ReportClient
 from .indicator_client import IndicatorClient
+from .phishing_triage_client import PhishingTriageClient
 from .tag_client import TagClient
 from .models import EnclavePermissions, RequestQuota
 from .utils import normalize_timestamp
@@ -24,7 +25,7 @@ from .version import __version__, __api_version__
 standard_library.install_aliases()
 
 
-class TruStar(ReportClient, IndicatorClient, TagClient):
+class TruStar(ReportClient, IndicatorClient, TagClient, PhishingTriageClient):
 
     logger = logging.getLogger(__name__)
 
