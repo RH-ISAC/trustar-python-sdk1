@@ -21,6 +21,7 @@ class PhishingSubmission(ModelBase):
                  submission_id=None,
                  title=None,
                  normalized_triage_score=None,
+                 status=None,
                  context=None):
         """
         Constructs a PhishingSubmission object.
@@ -29,6 +30,7 @@ class PhishingSubmission(ModelBase):
         self.submission_id = submission_id
         self.title = title
         self.normalized_triage_score = normalized_triage_score
+        self.status = status
         self.context = context
 
     @classmethod
@@ -47,6 +49,7 @@ class PhishingSubmission(ModelBase):
         return PhishingSubmission(submission_id=phishing_submission.get('submissionId'),
                                   title=phishing_submission.get('title'),
                                   normalized_triage_score=phishing_submission.get('normalizedTriageScore'),
+                                  status=phishing_submission.get('status'),
                                   context=context)
 
     def to_dict(self, remove_nones=False):
@@ -64,6 +67,7 @@ class PhishingSubmission(ModelBase):
             'submissionId': self.submission_id,
             'title': self.title,
             'normalizedTriageScore': self.normalized_triage_score,
+            'status': self.status,
             'context': self.context,
         }
 
