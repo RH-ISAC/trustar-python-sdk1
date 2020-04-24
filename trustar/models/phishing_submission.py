@@ -8,11 +8,12 @@ from .base import ModelBase
 
 class PhishingSubmission(ModelBase):
     """
-    Models a |PhishingSubmission_resource|
+    Models a PhishingSubmission
 
     :ivar submission_id: The id of the email submission
     :ivar title: The title of the email submission (email subject)
     :ivar normalized_triage_score: The score of the email submission
+    :ivar status: The current triage status of a submission ("UNRESOLVED", "CONFIRMED", or "IGNORED")
     :ivar context: A list containing dicts which represent IOCs, sources, and scores
                     that contributed to to the triage score.
     """
@@ -74,7 +75,7 @@ class PhishingSubmission(ModelBase):
 
 class PhishingIndicator(ModelBase):
     """
-    Models a |PhishingIndicator_resource|.
+    Models a PhishingIndicator.
 
     :ivar indicator_type: The type of the extracted entity (e.g. URL, IP, ...)
     :ivar value: The value of an extracted entity (e.g. www.badsite.com, etc.)

@@ -13,7 +13,7 @@ import math
 class NumberedPage(Page):
     """
     This class models a page of items that would be found in the body of a response from an endpoint that uses number-
-    based pagination.  Not all paginated endpoints will use ``page_number``.  For instance, the |get_reports_page|
+    based pagination. Not all paginated endpoints will use ``page_number``. For instance, the |get_reports_page|
     method requires pagination to be performed by continuously adjusting the ``from`` and ``to`` parameters.
 
     :ivar items: The list of items of the page; i.e. a list of indicators, reports, etc.
