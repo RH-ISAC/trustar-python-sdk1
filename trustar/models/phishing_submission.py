@@ -43,15 +43,11 @@ class PhishingSubmission(ModelBase):
         :return: The PhishingSubmission object.
         """
 
-        context = phishing_submission.get('context')
-        if context is not None:
-            context = [PhishingIndicator.from_dict(entity) for entity in context]
-
         return PhishingSubmission(submission_id=phishing_submission.get('submissionId'),
                                   title=phishing_submission.get('title'),
                                   normalized_triage_score=phishing_submission.get('normalizedTriageScore'),
                                   status=phishing_submission.get('status'),
-                                  context=context)
+                                  context=phishing_submission.get('context'))
 
     def to_dict(self, remove_nones=False):
         """
