@@ -8,11 +8,12 @@ from .base import ModelBase
 
 class PhishingSubmission(ModelBase):
     """
-    Models a |PhishingSubmission_resource|
+    Models a PhishingSubmission
 
     :ivar submission_id: The id of the email submission
     :ivar title: The title of the email submission (email subject)
     :ivar normalized_triage_score: The score of the email submission
+    :ivar status: The current triage status of a submission ("UNRESOLVED", "CONFIRMED", or "IGNORED")
     :ivar context: A list containing dicts which represent IOCs, sources, and scores
                     that contributed to to the triage score.
     """
@@ -21,6 +22,7 @@ class PhishingSubmission(ModelBase):
                  submission_id=None,
                  title=None,
                  normalized_triage_score=None,
+                 status=None,
                  context=None):
         """
         Constructs a PhishingSubmission object.
@@ -29,6 +31,7 @@ class PhishingSubmission(ModelBase):
         self.submission_id = submission_id
         self.title = title
         self.normalized_triage_score = normalized_triage_score
+        self.status = status
         self.context = context
 
     @classmethod
@@ -40,14 +43,11 @@ class PhishingSubmission(ModelBase):
         :return: The PhishingSubmission object.
         """
 
-        context = phishing_submission.get('context')
-        if context is not None:
-            context = [PhishingIndicator.from_dict(entity) for entity in context]
-
         return PhishingSubmission(submission_id=phishing_submission.get('submissionId'),
                                   title=phishing_submission.get('title'),
                                   normalized_triage_score=phishing_submission.get('normalizedTriageScore'),
-                                  context=context)
+                                  status=phishing_submission.get('status'),
+                                  context=phishing_submission.get('context'))
 
     def to_dict(self, remove_nones=False):
         """
@@ -64,13 +64,14 @@ class PhishingSubmission(ModelBase):
             'submissionId': self.submission_id,
             'title': self.title,
             'normalizedTriageScore': self.normalized_triage_score,
+            'status': self.status,
             'context': self.context,
         }
 
 
 class PhishingIndicator(ModelBase):
     """
-    Models a |PhishingIndicator_resource|.
+    Models a PhishingIndicator.
 
     :ivar indicator_type: The type of the extracted entity (e.g. URL, IP, ...)
     :ivar value: The value of an extracted entity (e.g. www.badsite.com, etc.)
