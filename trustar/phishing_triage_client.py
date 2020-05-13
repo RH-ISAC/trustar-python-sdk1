@@ -28,14 +28,14 @@ class PhishingTriageClient(object):
         """
         return {k: v for k, v in d.items() if v is not None}
 
-    def get_phishing_submissions(self, from_time=None, to_time=None, normalized_triage_score=None,
+    def get_phishing_submissions(self, from_time=None, to_time=None, priority_event_score=None,
                                  enclave_ids=None, status=None, cursor=None):
         """
         Fetches all phishing submissions that fit a given criteria.
 
         :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago)
         :param int to_time: End of time window in milliseconds since epoch (defaults to current time)
-        :param list(int) normalized_triage_score: List of desired scores of phishing submission on a scale of 0-3
+        :param list(int) priority_event_score: List of desired scores of phishing submission on a scale of 0-3
                                              (default: [3]).
         :param list(string) enclave_ids: List of enclave ids to pull submissions from.
                                          (defaults to all of a user's enclaves).
@@ -48,7 +48,7 @@ class PhishingTriageClient(object):
         phishing_submissions_page_generator = self._get_phishing_submissions_page_generator(
             from_time=from_time,
             to_time=to_time,
-            normalized_triage_score=normalized_triage_score,
+            priority_event_score=priority_event_score,
             enclave_ids=enclave_ids,
             status=status,
             cursor=cursor
@@ -56,14 +56,14 @@ class PhishingTriageClient(object):
 
         return CursorPage.get_generator(page_generator=phishing_submissions_page_generator)
 
-    def _get_phishing_submissions_page_generator(self, from_time=None, to_time=None, normalized_triage_score=None,
+    def _get_phishing_submissions_page_generator(self, from_time=None, to_time=None, priority_event_score=None,
                                                  enclave_ids=None, status=None, cursor=None):
         """
         Creates a generator from the |get_indicators_page| method that returns each successive page.
 
         :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago).
         :param int to_time: End of time window in milliseconds since epoch (defaults to current time).
-        :param list(int) normalized_triage_score: List of desired scores of phishing submission on a scale of 0-3
+        :param list(int) priority_event_score: List of desired scores of phishing submission on a scale of 0-3
                                                   (default: [3]).
         :param list(string) enclave_ids: A list of enclave IDs to filter by. (defaults to all of a user's enclaves)
         :param list(string) status: List of statuses to filter submissions by. Options are 'UNRESOLVED', 'CONFIRMED',
@@ -76,21 +76,21 @@ class PhishingTriageClient(object):
             self.get_phishing_submissions_page,
             from_time=from_time,
             to_time=to_time,
-            normalized_triage_score=normalized_triage_score,
+            priority_event_score=priority_event_score,
             enclave_ids=enclave_ids,
             status=status,
         )
 
         return CursorPage.get_cursor_based_page_generator(get_page, cursor=cursor)
 
-    def get_phishing_submissions_page(self, from_time=None, to_time=None, normalized_triage_score=None,
+    def get_phishing_submissions_page(self, from_time=None, to_time=None, priority_event_score=None,
                                       enclave_ids=None, status=None, cursor=None):
         """
         Get a page of phishing submissions that match the given criteria.
 
         :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago).
         :param int to_time: End of time window in milliseconds since epoch (defaults to current time).
-        :param list(int) normalized_triage_score: List of desired scores of phishing submission on a scale of 0-3
+        :param list(int) priority_event_score: List of desired scores of phishing submission on a scale of 0-3
                                              (default: [3]).
         :param list(string) enclave_ids: A list of enclave IDs to filter by. (defaults to all of a user's enclaves)
         :param list(string) status: List of statuses to filter submissions by. Options are 'UNRESOLVED', 'CONFIRMED',
@@ -102,7 +102,7 @@ class PhishingTriageClient(object):
         data = self.remove_nones({
             'from': from_time,
             'to': to_time,
-            'normalizedTriageScore': normalized_triage_score,
+            'priorityEventScore': priority_event_score,
             'enclaveIds': enclave_ids,
             'status': status,
             'cursor': cursor
@@ -129,16 +129,16 @@ class PhishingTriageClient(object):
         return self._client.post("triage/submissions/{submission_id}/status"
                                  .format(submission_id=submission_id), params=params)
 
-    def get_phishing_indicators(self, from_time=None, to_time=None, normalized_source_score=None,
-                                normalized_triage_score=None, status=None, enclave_ids=None, cursor=None):
+    def get_phishing_indicators(self, from_time=None, to_time=None, normalized_indicator_score=None,
+                                priority_event_score=None, status=None, enclave_ids=None, cursor=None):
         """
         Get a page of phishing indicators that match the given criteria.
 
         :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago).
         :param int to_time: End of time window in milliseconds since epoch (defaults to current time).
-        :param list(int) normalized_source_score: List of desired scores of intel sources on a scale of 0-3
+        :param list(int) normalized_indicator_score: List of desired scores of intel sources on a scale of 0-3
                                                   (default: [3]).
-        :param list(int) normalized_triage_score: List of desired scores of phishing indicators on a scale of 0-3
+        :param list(int) priority_event_score: List of desired scores of phishing indicators on a scale of 0-3
                                                   (default: [3]).
         :param list(string) enclave_ids: A list of enclave IDs to filter by. (defaults to all of a user's enclaves)
         :param list(string) status: List of statuses to filter indicators by. Options are 'UNRESOLVED', 'CONFIRMED',
@@ -150,8 +150,8 @@ class PhishingTriageClient(object):
         phishing_indicators_page_generator = self._get_phishing_indicators_page_generator(
             from_time=from_time,
             to_time=to_time,
-            normalized_source_score=normalized_source_score,
-            normalized_triage_score=normalized_triage_score,
+            normalized_indicator_score=normalized_indicator_score,
+            priority_event_score=priority_event_score,
             enclave_ids=enclave_ids,
             status=status,
             cursor=cursor
@@ -159,17 +159,17 @@ class PhishingTriageClient(object):
 
         return CursorPage.get_generator(page_generator=phishing_indicators_page_generator)
 
-    def _get_phishing_indicators_page_generator(self, from_time=None, to_time=None, normalized_source_score=None,
-                                                normalized_triage_score=None, enclave_ids=None, status=None,
+    def _get_phishing_indicators_page_generator(self, from_time=None, to_time=None, normalized_indicator_score=None,
+                                                priority_event_score=None, enclave_ids=None, status=None,
                                                 cursor=None):
         """
         Creates a generator from the |get_indicators_page| method that returns each successive page.
 
         :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago).
         :param int to_time: End of time window in milliseconds since epoch (defaults to current time).
-        :param list(int) normalized_source_score: List of desired scores of intel sources on a scale of 0-3
+        :param list(int) normalized_indicator_score: List of desired scores of intel sources on a scale of 0-3
                                                   (default: [3]).
-        :param list(int) normalized_triage_score: List of desired scores of phishing indicators on a scale of 0-3
+        :param list(int) priority_event_score: List of desired scores of phishing indicators on a scale of 0-3
                                                   (default: [3]).
         :param list(string) enclave_ids: A list of enclave IDs to filter by. (defaults to all of a user's enclaves)
         :param list(string) status: List of statuses to filter indicators by. Options are 'UNRESOLVED', 'CONFIRMED',
@@ -182,24 +182,24 @@ class PhishingTriageClient(object):
             self.get_phishing_indicators_page,
             from_time=from_time,
             to_time=to_time,
-            normalized_source_score=normalized_source_score,
-            normalized_triage_score=normalized_triage_score,
+            normalized_indicator_score=normalized_indicator_score,
+            priority_event_score=priority_event_score,
             enclave_ids=enclave_ids,
             status=status,
         )
 
         return CursorPage.get_cursor_based_page_generator(get_page, cursor=cursor)
 
-    def get_phishing_indicators_page(self, from_time=None, to_time=None, normalized_source_score=None,
-                                     normalized_triage_score=None, enclave_ids=None, status=None, cursor=None):
+    def get_phishing_indicators_page(self, from_time=None, to_time=None, normalized_indicator_score=None,
+                                     priority_event_score=None, enclave_ids=None, status=None, cursor=None):
         """
         Get a page of phishing indicators that match the given criteria.
 
         :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago).
         :param int to_time: End of time window in milliseconds since epoch (defaults to current time).
-        :param list(int) normalized_source_score: List of desired scores of intel sources on a scale of 0-3
+        :param list(int) normalized_indicator_score: List of desired scores of intel sources on a scale of 0-3
                                                   (default: [3]).
-        :param list(int) normalized_triage_score: List of desired scores of phishing indicators on a scale of 0-3
+        :param list(int) priority_event_score: List of desired scores of phishing indicators on a scale of 0-3
                                              (default: [3]).
         :param list(string) enclave_ids: A list of enclave IDs to filter by.
         :param list(string) status: List of statuses to filter indicators by. Options are 'UNRESOLVED', 'CONFIRMED',
@@ -211,8 +211,8 @@ class PhishingTriageClient(object):
         data = self.remove_nones({
             'from': from_time,
             'to': to_time,
-            'normalizedSourceScore': normalized_source_score,
-            'normalizedTriageScore': normalized_triage_score,
+            'normalizedIndicatorScore': normalized_indicator_score,
+            'priorityEventScore': priority_event_score,
             'enclaveIds': enclave_ids,
             'status': status,
             'cursor': cursor

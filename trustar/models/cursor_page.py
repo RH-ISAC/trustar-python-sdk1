@@ -12,8 +12,7 @@ import math
 class CursorPage(Page):
     """
     This class models a page of items that would be found in the body of a response from an endpoint that uses
-    pagination. Unlike the |Page| class, it uses cursor-based pagination instead of number-based pagination.
-    |CursorPage| only borrows three methods from |Page| and therefore does not inherit from it.
+    pagination. Unlike the Page class, it uses cursor-based pagination instead of number-based pagination.
 
     :ivar items: The list of items of the page; i.e. a list of indicators, reports, etc.
     :ivar cursor: A Base64-encoded string that contains information on how to retrieve the next page.
