@@ -10,20 +10,15 @@ class PhishingSubmission(ModelBase):
     """
     Models a PhishingSubmission
 
+    ``context`` is a dictionary containing these fields:
+    indicatorType, indicatorValue, sourceKey, normalizedIndicatorScore
+
     :ivar submission_id: The id of the email submission
     :ivar title: The title of the email submission (email subject)
     :ivar priority_event_score: The score of the email submission
     :ivar status: The current triage status of a submission ("UNRESOLVED", "CONFIRMED", or "IGNORED")
     :ivar context: A list containing dicts which represent IOCs, sources, and scores
                     that contributed to to the triage score.
-
-    Example `context` dict:
-                 {
-                  "indicatorType": "URL",
-                  "indicatorValue":"clickhere.com",
-                  "sourceKey":"crowdstrike_indicator",
-                  "normalizedIndicatorScore":1
-                 }
     """
 
     def __init__(self,
