@@ -43,8 +43,7 @@ class PhishingTriageClient(object):
                                     and 'IGNORED'. (default: ['UNRESOLVED']).
         :param string cursor: A Base64-encoded string that contains information on how to retrieve the next page.
                               If a cursor isn't passed, it will default to pageSize: 25, pageNumber: 0
-
-        :return CursorPage.generator - A generator object which can be used to paginate through |PhishingSubmission| data.
+        :return: CursorPage.generator - A generator object which can be used to paginate through |PhishingSubmission| data.
         """
 
         phishing_submissions_page_generator = self._get_phishing_submissions_page_generator(
@@ -99,8 +98,7 @@ class PhishingTriageClient(object):
                                     and 'IGNORED'. (default: ['UNRESOLVED']).
         :param string cursor: A Base64-encoded string that contains information on how to retrieve the next page.
                               If a cursor isn't passed, it will default to pageSize: 25, pageNumber: 0
-
-        :return |CursorPage| - An object representing a single page of |PhishingSubmission| objects.
+        :return: |CursorPage| - An object representing a single page of |PhishingSubmission| objects.
         """
 
         data = self.remove_nones({
@@ -148,8 +146,7 @@ class PhishingTriageClient(object):
                                     and 'IGNORED'. (default: ['UNRESOLVED']).
         :param string cursor: A Base64-encoded string that contains information on how to retrieve the next page.
                               If a cursor isn't passed, it will default to pageSize: 25, pageNumber: 0
-
-        :return CursorPage.generator - A generator object which can be used to paginate through |PhishingIndicator| data.
+        :return: CursorPage.generator - A generator object which can be used to paginate through |PhishingIndicator| data.
         """
 
         phishing_indicators_page_generator = self._get_phishing_indicators_page_generator(
@@ -211,8 +208,7 @@ class PhishingTriageClient(object):
                                     and 'IGNORED'. (default: ['UNRESOLVED']).
         :param string cursor: A Base64-encoded string that contains information on how to retrieve the next page.
                               If a cursor isn't passed, it will default to pageSize: 25, pageNumber: 0
-
-        :return |CursorPage| - An object representing a single page of |PhishingIndicator| objects.
+        :return: |CursorPage| - An object representing a single page of |PhishingIndicator| objects.
         """
 
         data = self.remove_nones({

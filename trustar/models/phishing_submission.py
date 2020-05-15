@@ -8,7 +8,7 @@ from .base import ModelBase
 
 class PhishingSubmission(ModelBase):
     """
-    Models a PhishingSubmission
+    Models a |PhishingSubmission_resource|
 
     ``context`` is a dictionary containing these fields:
     indicatorType, indicatorValue, sourceKey, normalizedIndicatorScore
@@ -28,8 +28,7 @@ class PhishingSubmission(ModelBase):
                  status=None,
                  context=None):
         """
-        Constructs a PhishingSubmission object.
-
+        Constructs a |PhishingSubmission| object.
         """
         self.submission_id = submission_id
         self.title = title
@@ -43,7 +42,7 @@ class PhishingSubmission(ModelBase):
         Creates a phishing submission object from a dictionary.
 
         :param phishing_submission: The phishing submission dictionary.
-        :return: The PhishingSubmission object.
+        :return: The |PhishingSubmission| object.
         """
 
         return PhishingSubmission(submission_id=phishing_submission.get('submissionId'),
@@ -57,7 +56,7 @@ class PhishingSubmission(ModelBase):
         Creates a dictionary representation of a phishing submission.
 
         :param remove_nones: Whether ``None`` values should be filtered out of the dictionary.  Defaults to ``False``.
-        :return: A PhishingSubmission object.
+        :return: A |PhishingSubmission| object.
         """
 
         if remove_nones:
@@ -74,7 +73,7 @@ class PhishingSubmission(ModelBase):
 
 class PhishingIndicator(ModelBase):
     """
-    Models a PhishingIndicator.
+    Models a |PhishingIndicator_resource|.
 
     :ivar indicator_type: The type of the extracted entity (e.g. URL, IP, ...)
     :ivar value: The value of an extracted entity (e.g. www.badsite.com, etc.)
@@ -91,7 +90,7 @@ class PhishingIndicator(ModelBase):
                  normalized_indicator_score=None,
                  original_indicator_score=None):
         """
-        Constructs a PhishingIndicator object.
+        Constructs a |PhishingIndicator| object.
         """
         self.indicator_type = indicator_type
         self.value = value
@@ -118,7 +117,7 @@ class PhishingIndicator(ModelBase):
         Creates a dictionary representation of a phishing indicator.
 
         :param remove_nones: Whether ``None`` values should be filtered out of the dictionary.  Defaults to ``False``.
-        :return: A PhishingIndicator object.
+        :return: A |PhishingIndicator| object.
         """
 
         if remove_nones:
