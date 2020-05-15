@@ -122,7 +122,6 @@ class PhishingTriageClient(object):
 
         :param string submission_id: ID of the email submission.
         :param string status: Triage status of submission.
-        :return: Nothing
         """
 
         if submission_id is None or not isinstance(submission_id, str):
