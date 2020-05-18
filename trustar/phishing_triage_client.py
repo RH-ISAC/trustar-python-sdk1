@@ -33,8 +33,8 @@ class PhishingTriageClient(object):
         """
         Fetches all phishing submissions that fit a given criteria.
 
-        :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago)
-        :param int to_time: End of time window in milliseconds since epoch (defaults to current time)
+        :param int from_time: Start of time window in milliseconds since epoch (optional
+        :param int to_time: End of time window in milliseconds since epoch (optional)
         :param list(int) priority_event_score: List of desired scores of phishing submission on a scale of 0-3
                                              (default: [3]).
         :param list(string) enclave_ids: List of enclave ids to pull submissions from.
@@ -62,8 +62,8 @@ class PhishingTriageClient(object):
         """
         Creates a generator from the |get_indicators_page| method that returns each successive page.
 
-        :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago).
-        :param int to_time: End of time window in milliseconds since epoch (defaults to current time).
+        :param int from_time: Start of time window in milliseconds since epoch (optional).
+        :param int to_time: End of time window in milliseconds since epoch (optional).
         :param list(int) priority_event_score: List of desired scores of phishing submission on a scale of 0-3
                                                   (default: [3]).
         :param list(string) enclave_ids: A list of enclave IDs to filter by. (defaults to all of a user's enclaves)
@@ -89,8 +89,8 @@ class PhishingTriageClient(object):
         """
         Get a page of phishing submissions that match the given criteria.
 
-        :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago).
-        :param int to_time: End of time window in milliseconds since epoch (defaults to current time).
+        :param int from_time: Start of time window in milliseconds since epoch (optional).
+        :param int to_time: End of time window in milliseconds since epoch (optional).
         :param list(int) priority_event_score: List of desired scores of phishing submission on a scale of 0-3
                                              (default: [3]).
         :param list(string) enclave_ids: A list of enclave IDs to filter by. (defaults to all of a user's enclaves)
@@ -135,8 +135,8 @@ class PhishingTriageClient(object):
         """
         Get a page of phishing indicators that match the given criteria.
 
-        :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago).
-        :param int to_time: End of time window in milliseconds since epoch (defaults to current time).
+        :param int from_time: Start of time window in milliseconds since epoch (optional).
+        :param int to_time: End of time window in milliseconds since epoch (optional).
         :param list(int) normalized_indicator_score: List of desired scores of intel sources on a scale of 0-3
                                                   (default: [3]).
         :param list(int) priority_event_score: List of desired scores of phishing indicators on a scale of 0-3
@@ -167,8 +167,8 @@ class PhishingTriageClient(object):
         """
         Creates a generator from the |get_indicators_page| method that returns each successive page.
 
-        :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago).
-        :param int to_time: End of time window in milliseconds since epoch (defaults to current time).
+        :param int from_time: Start of time window in milliseconds since epoch (optional).
+        :param int to_time: End of time window in milliseconds since epoch (optional).
         :param list(int) normalized_indicator_score: List of desired scores of intel sources on a scale of 0-3
                                                   (default: [3]).
         :param list(int) priority_event_score: List of desired scores of phishing indicators on a scale of 0-3
@@ -197,8 +197,8 @@ class PhishingTriageClient(object):
         """
         Get a page of phishing indicators that match the given criteria.
 
-        :param int from_time: Start of time window in milliseconds since epoch (defaults to 7 days ago).
-        :param int to_time: End of time window in milliseconds since epoch (defaults to current time).
+        :param int from_time: Start of time window in milliseconds since epoch (optional).
+        :param int to_time: End of time window in milliseconds since epoch (optional).
         :param list(int) normalized_indicator_score: List of desired scores of intel sources on a scale of 0-3
                                                   (default: [3]).
         :param list(int) priority_event_score: List of desired scores of phishing indicators on a scale of 0-3
