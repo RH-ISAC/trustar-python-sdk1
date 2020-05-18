@@ -33,7 +33,7 @@ class PhishingTriageClient(object):
         """
         Fetches all phishing submissions that fit a given criteria.
 
-        :param int from_time: Start of time window in milliseconds since epoch (optional
+        :param int from_time: Start of time window in milliseconds since epoch (optional)
         :param int to_time: End of time window in milliseconds since epoch (optional)
         :param list(int) priority_event_score: List of desired scores of phishing submission on a scale of 0-3
                                              (default: [3]).
