@@ -26,3 +26,4 @@ MANIFEST
 # configs
 tests/config.yml
 **/trustar.conf
+.vscode/
