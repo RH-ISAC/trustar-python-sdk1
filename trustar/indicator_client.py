@@ -38,11 +38,36 @@ class IndicatorClient(object):
             ``value``, ``first_seen``, ``last_seen``, ``sightings``, ``source``, ``notes``, and ``tags``.  No other |Indicator| attributes
             can be modified in TruSTAR by using this function.
         :param list(string) enclave_ids: a list of enclave IDs.
-        :param list(string) tags: a list of |Tag| objects that will be applied to ALL indicators in the submission.
+        :param list(Tag) tags: a list of |Tag| objects that will be applied to ALL indicators in the submission.
+            All tags' "id" attribute must be None.  All tags' "enclave_id" attribute must contain at least one enclave ID.
         """
 
         if enclave_ids is None:
             enclave_ids = self.enclave_ids
+
+        tag_guid_msg = ("'id' attribute on all Tag objects in "
+                        "submit_indicators(..) method must be None.")
+        tag_enclave_id_msg = ("'enclave_id' attribute for all Tag objects in "
+                              "submit_indicators(..) method must contain at "
+                              "least one enclave ID.")
+
+        # check entire-submission tag for 'id' & 'enclave_id' compliance.
+        if tags:
+            for tag in tags:
+                if tag.id:
+                    raise Exception(tag_guid_msg)
+                if not tag.enclave_id:
+                    raise Exception(tag_enclave_id_msg)
+
+        # check tags on each indicator for 'id' & 'enclave_id' compliance.
+        for indicator in indicators:
+            if indicator.tags:
+                for tag in indicator.tags:
+                    if tag.id:
+                        raise Exception(tag_guid_msg)
+                    if not tag.enclave_id:
+                        raise Exception(tag_enclave_id_msg)
+
 
         if tags is not None:
             tags = [tag.to_dict() for tag in tags]
