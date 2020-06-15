@@ -104,7 +104,7 @@ class Indicator(ModelBase):
         """
 
         if remove_nones:
-            return super().to_dict(remove_nones=True)
+            return super(Indicator, self).to_dict(remove_nones=True)
 
         tags = None
         if self.tags is not None:

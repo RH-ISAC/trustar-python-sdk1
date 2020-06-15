@@ -100,7 +100,7 @@ class Report(ModelBase):
         """
 
         if remove_nones:
-            report_dict = super().to_dict(remove_nones=True)
+            report_dict = super(Report, self).to_dict(remove_nones=True)
         else:
             report_dict = {
                 'title': self.title,

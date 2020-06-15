@@ -60,7 +60,7 @@ class PhishingSubmission(ModelBase):
         """
 
         if remove_nones:
-            return super().to_dict(remove_nones=True)
+            return super(PhishingSubmission, self).to_dict(remove_nones=True)
 
         return {
             'submissionId': self.submission_id,
@@ -121,7 +121,7 @@ class PhishingIndicator(ModelBase):
         """
 
         if remove_nones:
-            return super().to_dict(remove_nones=True)
+            return super(PhishingIndicator, self).to_dict(remove_nones=True)
 
         return {
             'indicatorType': self.indicator_type,

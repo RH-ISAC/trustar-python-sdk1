@@ -50,7 +50,7 @@ class Enclave(ModelBase):
         """
 
         if remove_nones:
-            return super().to_dict(remove_nones=True)
+            return super(Enclave, self).to_dict(remove_nones=True)
 
         return {
             'id': self.id,
@@ -76,7 +76,7 @@ class EnclavePermissions(Enclave):
         :param update: Whether the associated user/company has update access.
         """
 
-        super().__init__(id, name, type)
+        super(EnclavePermissions, self).__init__(id, name, type)
         self.read = read
         self.create = create
         self.update = update
@@ -107,7 +107,7 @@ class EnclavePermissions(Enclave):
         :return: A dictionary representation of the EnclavePermissions object.
         """
 
-        d = super().to_dict(remove_nones=remove_nones)
+        d = super(EnclavePermissions, self).to_dict(remove_nones=remove_nones)
 
         d.update({
             'read': self.read,

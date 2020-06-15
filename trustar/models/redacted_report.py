@@ -36,7 +36,7 @@ class RedactedReport(ModelBase):
         """
 
         if remove_nones:
-            redacted_report_dict = super().to_dict(remove_nones=True)
+            redacted_report_dict = super(RedactedReport, self).to_dict(remove_nones=True)
         else:
             redacted_report_dict = {
                 'title': self.title,

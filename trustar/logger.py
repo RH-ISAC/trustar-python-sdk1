@@ -17,7 +17,7 @@ class InfoFilter(logging.Filter):
     """
 
     def __init__(self, below):
-        super().__init__()
+        super(InfoFilter, self).__init__()
         self.below = below
 
     def filter(self, rec):

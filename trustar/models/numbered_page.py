@@ -27,7 +27,7 @@ class NumberedPage(Page):
     """
 
     def __init__(self, items=None, page_number=None, page_size=None, total_elements=None, has_next=None):
-        super().__init__(items=items)
+        super(NumberedPage, self).__init__(items=items)
         self.page_number = page_number
         self.page_size = page_size
         self.total_elements = total_elements

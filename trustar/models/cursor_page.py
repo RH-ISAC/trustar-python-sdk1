@@ -26,7 +26,7 @@ class CursorPage(Page):
         """
         Instantiates an instance of the |CursorPage| class.
         """
-        super().__init__(items=items)
+        super(CursorPage, self).__init__(items=items)
         self.response_metadata = response_metadata
 
     @staticmethod

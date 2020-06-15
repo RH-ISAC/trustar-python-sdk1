@@ -54,7 +54,7 @@ class Tag(ModelBase):
         """
 
         if remove_nones:
-            d = super().to_dict(remove_nones=True)
+            d = super(Tag, self).to_dict(remove_nones=True)
         else:
             d = {
                 'name': self.name,

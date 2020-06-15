@@ -31,7 +31,7 @@ class RequestQuota(ModelBase):
     def to_dict(self, remove_nones=False):
 
         if remove_nones:
-            return super().to_dict(remove_nones=True)
+            return super(RequestQuota, self).to_dict(remove_nones=True)
 
         d = {
             'guid': self.guid,

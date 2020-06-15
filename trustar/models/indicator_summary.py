@@ -96,7 +96,7 @@ class IndicatorSummary(ModelBase):
         """
 
         if remove_nones:
-            return super().to_dict(remove_nones=True)
+            return super(IndicatorSummary, self).to_dict(remove_nones=True)
 
         source = None
         if self.source is not None:
