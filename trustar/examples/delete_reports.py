@@ -3,15 +3,15 @@ This script will delete all reports for your enclaves that were submitted yester
 This is just an example, DO NOT RUN THIS UNLESS YOU ARE SURE YOU REALLY WANT TO!!!
 """
 
-import logging
-from trustar import TruStar, datetime_to_millis
 from datetime import datetime, timedelta
+
+from trustar import datetime_to_millis, logging, TruStar
 
 # initialize SDK
 ts = TruStar()
 
 # initialize logger
-logger = logging.getLogger(__name__)
+logger = logging.get_logger(__name__)
 
 # set 'from' to the start of yesterday and 'to' to the end of yesterday
 to_time = datetime.now() - timedelta(days=1)

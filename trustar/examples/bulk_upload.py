@@ -16,15 +16,15 @@ import os
 import time
 import json
 import pdfminer.pdfinterp
-import logging
 
 from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from cStringIO import StringIO
-from trustar import TruStar, Report
 
-logger = logging.getLogger(__name__)
+from trustar import logging, Report, TruStar
+
+logger = logging.get_logger(__name__)
 
 
 def extract_pdf(file_name):

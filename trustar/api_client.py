@@ -9,7 +9,9 @@ import requests.auth
 import time
 from math import ceil
 from requests import HTTPError
-import logging
+
+# local imports
+from .logging import get_logger
 
 
 class ApiClient(object):
@@ -17,7 +19,7 @@ class ApiClient(object):
     This class is used to make HTTP requests to the TruStar API.
     """
 
-    logger = logging.getLogger(__name__)
+    logger = get_logger(__name__)
 
     def __init__(self, config=None):
         """

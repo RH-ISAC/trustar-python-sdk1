@@ -6,15 +6,15 @@ from future import standard_library
 # external imports
 import json
 import functools
-import logging
 
 # package imports
+from .logging import get_logger
 from .models import CursorPage, PhishingIndicator, PhishingSubmission
 
 # python 2 backwards compatibility
 standard_library.install_aliases()
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class PhishingTriageClient(object):

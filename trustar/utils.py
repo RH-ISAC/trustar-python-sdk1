@@ -3,12 +3,14 @@ from __future__ import print_function
 from six import string_types
 
 # external imports
-import logging
 import time
 from datetime import datetime
 import dateutil.parser
 import pytz
 from tzlocal import get_localzone
+
+# local imports
+from .logging import get_logger
 
 
 DAY = 24 * 60 * 60 * 1000
@@ -84,16 +86,6 @@ def datetime_to_millis(dt):
     return int(time.mktime(dt.timetuple())) * 1000
 
 
-def get_logger(name=None):
-    """
-    Get a logger.  (Deprecated)
-    :param name: The name of the logger.
-    :return: The logger.
-    """
-
-    return logging.getLogger(name)
-
-
 def get_time_based_page_generator(get_page, get_next_to_time, from_time=None, to_time=None):
     """
     A page generator that uses time-based pagination.
@@ -154,4 +146,4 @@ def parse_boolean(value):
     raise ValueError("Could not convert value to boolean: {}".format(value))
 
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)

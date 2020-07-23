@@ -8,7 +8,6 @@ from six import string_types
 import configparser
 import os
 import yaml
-import logging
 
 # package imports
 from .api_client import ApiClient
@@ -16,6 +15,7 @@ from .report_client import ReportClient
 from .indicator_client import IndicatorClient
 from .phishing_triage_client import PhishingTriageClient
 from .tag_client import TagClient
+from .logging import get_logger
 from .models import EnclavePermissions, RequestQuota
 from .utils import normalize_timestamp
 
@@ -27,7 +27,7 @@ standard_library.install_aliases()
 
 class TruStar(ReportClient, IndicatorClient, TagClient, PhishingTriageClient):
 
-    logger = logging.getLogger(__name__)
+    logger = get_logger(__name__)
 
     # raise exception if any of these config keys are missing
     REQUIRED_KEYS = ['api_key', 'api_secret']
