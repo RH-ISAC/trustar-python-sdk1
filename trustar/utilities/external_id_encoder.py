@@ -41,7 +41,14 @@ class ExternalIdEncoder:
         return str(uuid.uuid5(namespace_uuid, external_id))
 
     def reversible(self, enclave_id, external_id):   # type: (str, str) -> str
-        """ Makes a reversible external ID. """
+        """ Makes a reversible external ID.  Ensures that all
+        characters in the resulting external ID can be present in a URL.
+        :param enclave_id: str containing the enclave ID the report
+        will be submitted to.
+        :param external_id: str containing the external ID you'd like
+        to give the report. Often this is an IOC value.
+        :return: str containing base-64 encoding of the enclave ID +
+        external ID. """
         s = enclave_id + '|' + external_id                       # type: str
         b = s.encode('utf-8')                                    # type: bytes
         encoded = base64.b64encode(b)                            # type: bytes
