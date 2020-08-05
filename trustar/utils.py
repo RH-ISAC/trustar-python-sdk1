@@ -10,7 +10,7 @@ import pytz
 from tzlocal import get_localzone
 
 # local imports
-from .logging import get_logger
+from .log import get_logger
 
 
 DAY = 24 * 60 * 60 * 1000

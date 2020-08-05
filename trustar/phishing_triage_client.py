@@ -8,7 +8,7 @@ import json
 import functools
 
 # package imports
-from .logging import get_logger
+from .log import get_logger
 from .models import CursorPage, PhishingIndicator, PhishingSubmission
 
 # python 2 backwards compatibility

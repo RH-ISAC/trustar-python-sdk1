@@ -22,9 +22,9 @@ from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from cStringIO import StringIO
 
-from trustar import logging, Report, TruStar
+from trustar import log, Report, TruStar
 
-logger = logging.get_logger(__name__)
+logger = log.get_logger(__name__)
 
 
 def extract_pdf(file_name):

@@ -9,7 +9,7 @@ import functools
 import json
 
 # package imports
-from .logging import get_logger
+from .log import get_logger
 from .models import Indicator, NumberedPage, Tag, IndicatorSummary
 
 # python 2 backwards compatibility

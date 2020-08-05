@@ -10,7 +10,7 @@ from datetime import datetime
 import functools
 
 # package imports
-from .logging import get_logger
+from .log import get_logger
 from .models import NumberedPage, Report, RedactedReport, DistributionType, IdType
 from .utils import get_time_based_page_generator, DAY
 

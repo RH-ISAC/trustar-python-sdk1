@@ -15,7 +15,7 @@ from .report_client import ReportClient
 from .indicator_client import IndicatorClient
 from .phishing_triage_client import PhishingTriageClient
 from .tag_client import TagClient
-from .logging import get_logger
+from .log import get_logger
 from .models import EnclavePermissions, RequestQuota
 from .utils import normalize_timestamp
 

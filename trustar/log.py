@@ -3,9 +3,12 @@ __all__ = ["get_logger"]
 
 import datetime
 import logging
+import os
 import sys
 
 import json_log_formatter
+
+from .config import LOGGING_ENV_VAR
 
 
 class TrustarJSONFormatter(json_log_formatter.JSONFormatter):
@@ -38,6 +41,10 @@ def get_formatter():
     return formatter()
 
 
+def get_logging_level():
+    return int(os.environ.get(LOGGING_ENV_VAR, logging.INFO))
+
+
 output_handler = get_handler()
 output_handler.setFormatter(get_formatter())
 
@@ -45,6 +52,5 @@ output_handler.setFormatter(get_formatter())
 def get_logger(name=None):
     logger = logging.getLogger(name or __name__)
     logger.addHandler(output_handler)
-    # TODO: read this from a config file or an env var
-    logger.setLevel(logging.INFO)
+    logger.setLevel(get_logging_level())
     return logger

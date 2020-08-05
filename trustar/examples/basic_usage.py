@@ -10,10 +10,10 @@ import sys
 import time
 from random import randint
 
-from trustar import logging, Report, TruStar
+from trustar import log, Report, TruStar
 
 
-logger = logging.get_logger(__name__)
+logger = log.get_logger(__name__)
 
 do_latest_reports = True
 do_correlated = True

@@ -6,7 +6,7 @@ from six import string_types
 import json
 
 # package imports
-from .logging import get_logger
+from .log import get_logger
 from .models import Tag
 
 # python 2 backwards compatibility
