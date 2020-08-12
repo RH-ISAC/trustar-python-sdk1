@@ -30,7 +30,10 @@ class TruStar(ReportClient, IndicatorClient, TagClient, PhishingTriageClient):
     logger = get_logger(__name__)
 
     # raise exception if any of these config keys are missing
-    REQUIRED_KEYS = ['api_key', 'api_secret']
+    REQUIRED_KEYS = ('api_key', 'api_secret')
+
+    # log a  warning if any of these config keys are missing
+    DESIRED_KEYS = ('client_metatag',)
 
     # allow configs to use different key names for config values
     REMAPPED_KEYS = {
@@ -88,12 +91,14 @@ class TruStar(ReportClient, IndicatorClient, TagClient, PhishingTriageClient):
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``client_version``      | No        | the version of the Python SDK in use             | the version of the client being used                   |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
-        | ``client_metatag``      | No        | ``None``                                         | any additional information (ex. email address of user) |
+        | ``client_metatag``      | No(*)     | ``None``                                         | any additional information (ex. email address of user) |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``http_proxy``          | No        | ``None``                                         | http proxy being used - http(s)://user:pwd@{ip}:{port} |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``https_proxy``         | No        | ``None``                                         | https proxy being used - http(s)://user:pwd@{ip}:{port}|
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+
+        (*): It will become mandatory on future versions of trustar, please try and update your code accordingly
 
         :param str config_file: Path to configuration file (conf, json, or yaml).  If no value is passed, the environment
             variable TRUSTAR_PYTHON_CONFIG_FILE will be used.  If that is not defined, defaults to "trustar.conf".
@@ -154,6 +159,11 @@ class TruStar(ReportClient, IndicatorClient, TagClient, PhishingTriageClient):
         for key in self.REQUIRED_KEYS:
             if config.get(key) is None:
                 raise Exception("Missing config value for %s" % key)
+
+        # check if desired properties are present
+        for key in self.DESIRED_KEYS:
+            if config.get(key) is None:
+                self.logger.warning("Key {} will become mandatory".format(key))
 
         self.enclave_ids = config.get('enclave_ids')
 
