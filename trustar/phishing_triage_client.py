@@ -85,7 +85,7 @@ class PhishingTriageClient(object):
         return CursorPage.get_cursor_based_page_generator(get_page, cursor=cursor)
 
     def get_phishing_submissions_page(self, from_time=None, to_time=None, priority_event_score=None,
-                                      enclave_ids=None, status=None, cursor=None):
+                                      enclave_ids=None, status=None, cursor=None, page_size=None):
         """
         Get a page of phishing submissions that match the given criteria.
 
@@ -96,10 +96,14 @@ class PhishingTriageClient(object):
         :param list(string) enclave_ids: A list of enclave IDs to filter by. (defaults to all of a user's enclaves)
         :param list(string) status: List of statuses to filter submissions by. Options are 'UNRESOLVED', 'CONFIRMED',
                                     and 'IGNORED'. (default: ['UNRESOLVED']).
+        :param int page_size: Size of the page to be returned. Max value possible is 1000. Default is 25.
         :param string cursor: A Base64-encoded string that contains information on how to retrieve the next page.
                               If a cursor isn't passed, it will default to pageSize: 25, pageNumber: 0
         :return: |CursorPage| - An object representing a single page of |PhishingSubmission| objects.
         """
+        params = {
+            "pageSize" : page_size
+        }
 
         data = self.remove_nones({
             'from': from_time,
@@ -110,7 +114,7 @@ class PhishingTriageClient(object):
             'cursor': cursor
         })
 
-        resp = self._client.post("triage/submissions", data=json.dumps(data))
+        resp = self._client.post("triage/submissions", params=params, data=json.dumps(data))
 
         return CursorPage.from_dict(resp.json(), content_type=PhishingSubmission)
 
@@ -193,7 +197,8 @@ class PhishingTriageClient(object):
         return CursorPage.get_cursor_based_page_generator(get_page, cursor=cursor)
 
     def get_phishing_indicators_page(self, from_time=None, to_time=None, normalized_indicator_score=None,
-                                     priority_event_score=None, enclave_ids=None, status=None, cursor=None):
+                                     priority_event_score=None, enclave_ids=None, status=None, cursor=None,
+                                     page_size=None):
         """
         Get a page of phishing indicators that match the given criteria.
 
@@ -206,10 +211,14 @@ class PhishingTriageClient(object):
         :param list(string) enclave_ids: A list of enclave IDs to filter by.
         :param list(string) status: List of statuses to filter indicators by. Options are 'UNRESOLVED', 'CONFIRMED',
                                     and 'IGNORED'. (default: ['UNRESOLVED']).
+        :param int page_size: Size of the page to be returned. Max value possible is 1000. Default is 25.
         :param string cursor: A Base64-encoded string that contains information on how to retrieve the next page.
                               If a cursor isn't passed, it will default to pageSize: 25, pageNumber: 0
         :return: |CursorPage| - An object representing a single page of |PhishingIndicator| objects.
         """
+        params = {
+            "pageSize" : page_size
+        }
 
         data = self.remove_nones({
             'from': from_time,
@@ -221,6 +230,6 @@ class PhishingTriageClient(object):
             'cursor': cursor
         })
 
-        resp = self._client.post("triage/indicators", data=json.dumps(data))
+        resp = self._client.post("triage/indicators", params=params, data=json.dumps(data))
 
         return CursorPage.from_dict(resp.json(), content_type=PhishingIndicator)
