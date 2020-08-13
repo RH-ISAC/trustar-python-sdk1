@@ -37,22 +37,29 @@ More examples can be found within this repository under `trustar/examples`
 
 ## Development
 
-To setup this project for development, you must create a virtual environment and pip install the package in editable mode.
-This will also install any transitive requirements automatically.
+To setup this project for development, you need to have [pipenv](https://pipenv.pypa.io/en/latest/) installed and follow the next instructions:
 
-1. Create a virtualenv using python 3:
+1. Setup a virtual environment:
     ```bash
-    virtualenv --no-site-packages -p python3 venv3
+    pipenv install --dev
     ```
 
 2. Activate the virtualenv:
     ```bash
-    source ./venv3/bin/activate
+    pipenv shell
     ```
 3. Install this package in editable mode:
     ```bash
     pip install -e .
     ```
+
+Should you need to create a requirements.txt file to manage a Python 2.7 virtualenv do:
+
+```bash
+pipenv run pip freeze > requirements.txt
+```
+
+Note: you can use pipenv too to create a 2.7 venv, check the pipenv docs for that.
 
 ### Python 2/3 Compatibility
 

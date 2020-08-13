@@ -1,0 +1,80 @@
+version: 2.1
+
+commands:
+  build_cmd:
+    steps:
+      - checkout # checkout source code to working directory
+      - restore_cache_cmd
+      - run:
+          command: |
+            pipenv install --dev # use pipenv to install dependencies
+      - save_cache_cmd
+
+  restore_cache_cmd:
+    steps:
+      - run:
+          command: |
+            sudo chown -R circleci:circleci /usr/local/bin
+            sudo chown -R circleci:circleci /usr/local/lib/python3.8/site-packages
+      - restore_cache:
+          key: deps2-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+
+  save_cache_cmd:
+    steps:
+      - save_cache:
+          key: deps2-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          paths:
+            - ".venv"
+            - "/usr/local/bin"
+            - "/usr/local/lib/python3.8/site-packages"
+
+  run_integration_tests:
+    steps:
+      - run:
+          command: |
+            pipenv run pytest --junitxml=test-results/junit.xml --cov=trustar
+      - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+          path: test-results
+      - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+          path: test-results
+
+  build_conf_file:
+    steps:
+      - run:
+          command: |
+            pipenv run python trustar_conf_builder.py
+
+  create_artifacts_directories:
+    steps:
+      - run:
+          command: |
+            mkdir test-results
+
+executors:
+  docker_python_3_8:
+    docker: # it runs inside a docker image, the same as above.
+      - image: circleci/python:3.8
+
+jobs:
+  build:
+    executor: docker_python_3_8
+    steps:
+      - build_cmd
+
+  test:
+    executor: docker_python_3_8
+    steps:
+      - build_cmd
+      - create_artifacts_directories
+      - build_conf_file
+      - run_integration_tests
+
+# Under the workflows: map, we can coordinate our two jobs, defined above.
+workflows:
+  version: 2
+  build_and_test: # this is the name of our workflow
+    jobs: # and here we list the jobs we are going to run.
+      - build
+      - test:
+          requires:
+            - build
