@@ -27,20 +27,12 @@ try:
     
     logger.info("Creating config parser")
     config = configparser.ConfigParser()
-    config["trustar"] = {
-        "auth_endpoint": os.getenv("AUTH_ENDPOINT"),
-        "api_endpoint": os.getenv("API_ENDPOINT"),
-        "user_api_key": os.getenv("API_KEY"),
-        "user_api_secret": os.getenv("API_SECRET"),
-        "client_metatag": os.getenv("CLIENT_METATAG"),
-    }
-    config["staging"] = {
-        "auth_endpoint": os.getenv("AUTH_ENDPOINT"),
-        "api_endpoint": os.getenv("API_ENDPOINT"),
-        "user_api_key": os.getenv("API_KEY"),
-        "user_api_secret": os.getenv("API_SECRET"),
-        "client_metatag": os.getenv("CLIENT_METATAG"),
-    }
+    config["trustar"] = config["staging"] = {"auth_endpoint": os.getenv("AUTH_ENDPOINT"),
+                                             "api_endpoint": os.getenv("API_ENDPOINT"),
+                                             "user_api_key": os.getenv("API_KEY"),
+                                             "user_api_secret": os.getenv("API_SECRET"),
+                                             "client_metatag": os.getenv("CLIENT_METATAG"),
+                                             "enclave_ids": os.getenv("ENCLAVE_IDS")}
     with open("trustar.conf", "w") as conf_file:
         logger.info("Writing conf file")
         config.write(conf_file)

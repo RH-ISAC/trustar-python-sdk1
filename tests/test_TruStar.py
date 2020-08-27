@@ -17,8 +17,8 @@ old_time = current_time - DAY * 365 * 3
 MILLISECONDS_IN_A_DAY = 24 * 60 * 60 * 1000
 
 # Default Phishing Triage parameters to include all options
-normalized_triage_scores = [3, 2, 1]
-normalized_source_scores = [3, 2, 1]
+normalized_indicator_score = [3, 2, 1]
+priority_event_score = [3, 2, 1]
 statuses = ["UNRESOLVED", "CONFIRMED", "IGNORED"]
 
 
@@ -248,11 +248,11 @@ class TruStarTests(unittest.TestCase):
         print(enclaves[0])
 
     def test_whitelist(self):
-        indicators = self.ts.add_terms_to_whitelist(["not_malicious.com", "really_not_malicious.net"])
+        indicators = self.ts.add_terms_to_whitelist(["not-malicious.com", "really-not-malicious.net"])
         self.assertEqual(len(indicators), 2)
 
         whitelist = self.ts.get_whitelist_page()
-        self.assertGreater(len(whitelist), 0)
+        self.assertGreater(len(whitelist.items), 0)
 
         for indicator in indicators:
             self.ts.delete_indicator_from_whitelist(indicator=indicator)
@@ -440,7 +440,7 @@ class TruStarTests(unittest.TestCase):
             mocked_post.return_value.json.return_value = {"items": [{"submissionId": "1234"}],
                                                           'responseMetadata': {'nextCursor': ''}}
 
-            page = self.ts.get_phishing_submissions_page(normalized_triage_score=normalized_triage_scores,
+            page = self.ts.get_phishing_submissions_page(priority_event_score=priority_event_score,
                                                          status=statuses)
             self.assertIsInstance(page, CursorPage)
             self.assertIsInstance(page.items, list)
@@ -452,20 +452,17 @@ class TruStarTests(unittest.TestCase):
         with patch('trustar.api_client.ApiClient.post') as mocked_post:
             mocked_post.return_value.status_code = 200
             mocked_post.return_value.json.return_value = {'items': [
-                {'indicatorType': 'IP', 'value': '220.178.71.156', 'sourceKey': 'alienvault_otx',
-                 'normalizedSourceScore': 3}],
+                {'indicatorType': 'IP', 'value': '220.178.71.156', 'sourceKey': 'alienvault_otx'}],
                 'responseMetadata': {'nextCursor': ''}}
-
             page = self.ts.get_phishing_indicators_page(
-                normalized_triage_score=normalized_triage_scores,
-                normalized_source_score=normalized_source_scores,
+                normalized_indicator_score=normalized_indicator_score,
+                priority_event_score=priority_event_score,
                 status=statuses)
         self.assertIsInstance(page, CursorPage)
         self.assertIsInstance(page.items, list)
         self.assertIsInstance(page.response_metadata, dict)
         self.assertEqual(str({'items': [
-            {'indicatorType': 'IP', 'value': '220.178.71.156', 'sourceKey': 'alienvault_otx',
-             'normalizedSourceScore': 3}],
+            {'indicatorType': 'IP', 'value': '220.178.71.156', 'sourceKey': 'alienvault_otx'}],
             'responseMetadata': {'nextCursor': ''}}),
             str(page.to_dict()))
 
