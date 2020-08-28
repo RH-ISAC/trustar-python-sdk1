@@ -11,6 +11,8 @@ pytest = "*"
 pytest-cov = "*"
 mypy = "*"
 twine = "*"
+pytest-mock = "*"
+requests-mock = "*"
 
 [packages]
 trustar = {editable = true, path = "."}
