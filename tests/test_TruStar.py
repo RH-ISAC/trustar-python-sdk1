@@ -75,6 +75,10 @@ class TruStarTests(unittest.TestCase):
         result = self.ts.get_report_details(report_id=report.id)
         self.assertEqual(result.body, report.body)
 
+        # get report deeplink
+        deeplink = self.ts.get_report_deeplink(report_id=report.id)
+        self.assertIsNotNone(deeplink)
+
         # add tag
         result = self.ts.add_enclave_tag(report_id=report.id,
                                          enclave_id=self.ts.enclave_ids[0],

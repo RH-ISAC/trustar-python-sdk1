@@ -42,6 +42,8 @@ class ApiClient(object):
         +-------------------------+--------------------------------------------------------+
         | ``api_endpoint``        | the base URL used for making API calls                 |
         +-------------------------+--------------------------------------------------------+
+        | ``station_base_url``    | the base URL for Station                               |
+        +-------------------------+--------------------------------------------------------+
         | ``verify``              | whether to use SSL verification                        |
         +-------------------------+--------------------------------------------------------+
         | ``retry``               | whether to wait and retry requests that fail with 429  |
@@ -65,6 +67,7 @@ class ApiClient(object):
         # set properties
         self.auth = config.get('auth')
         self.base = config.get('base')
+        self.station = config.get('station')
         self.api_key = config.get('api_key')
         self.api_secret = config.get('api_secret')
         self.client_type = config.get('client_type')

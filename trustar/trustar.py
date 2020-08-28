@@ -39,6 +39,7 @@ class TruStar(ReportClient, IndicatorClient, TagClient, PhishingTriageClient):
     REMAPPED_KEYS = {
         'auth_endpoint': 'auth',
         'api_endpoint': 'base',
+        'station_base_url': 'station',
         'user_api_key': 'api_key',
         'user_api_secret': 'api_secret'
     }
@@ -47,6 +48,7 @@ class TruStar(ReportClient, IndicatorClient, TagClient, PhishingTriageClient):
     DEFAULTS = {
         'auth': 'https://api.trustar.co/oauth/token',
         'base': 'https://api.trustar.co/api/1.3',
+        'station': "https://station.trustar.co",
         'client_type': 'PYTHON_SDK',
         'client_version': __version__,
         'client_metatag': None,
@@ -80,6 +82,8 @@ class TruStar(ReportClient, IndicatorClient, TagClient, PhishingTriageClient):
         | ``auth_endpoint``       | No        | ``"https://api.trustar.co/oauth/token"``         | the URL used to obtain OAuth2 tokens                   |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``api_endpoint``        | No        | ``"https://api.trustar.co/api/1.3"``             | the base URL used for making API calls                 |
+        +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
+        | ``station_base_url``    | No        | ``"https://station.trustar.co"``                 | the base URL for Station                               |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+
         | ``verify``              | No        | ``True``                                         | whether to use SSL verification                        |
         +-------------------------+-----------+--------------------------------------------------+--------------------------------------------------------+

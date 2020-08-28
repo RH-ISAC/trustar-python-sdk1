@@ -3,6 +3,7 @@ This is a helper script that will produce a 'trustar.conf' file.
 It will load the following mandatory envvars into the file:
     * AUTH_ENDPOINT
     * API_ENDPOINT
+    * STATION_BASE_URL
     * API_KEY
     * API_SECRET
     * CLIENT_METATAG
@@ -13,15 +14,17 @@ import logging
 from trustar.indicator_client import logger
 
 logger = logging.getLogger("Conf Builder")
+environment_variables = [
+    "AUTH_ENDPOINT",
+    "API_ENDPOINT",
+    "STATION_BASE_URL",
+    "API_KEY",
+    "API_SECRET",
+    "CLIENT_METATAG",
+]
 try:
     logger.info("Checking env vars")
-    for k in [
-        "AUTH_ENDPOINT",
-        "API_ENDPOINT",
-        "API_KEY",
-        "API_SECRET",
-        "CLIENT_METATAG",
-    ]:
+    for k in environment_variables:
         if not os.getenv(k):
             raise KeyError(f"{k} env var is missing")
     

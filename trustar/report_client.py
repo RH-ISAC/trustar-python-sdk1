@@ -565,3 +565,32 @@ class ReportClient(object):
         resp = self._client.post("redaction/report", data=json.dumps(body))
 
         return RedactedReport.from_dict(resp.json())
+    
+    def get_report_deeplink(self, report):
+        """
+        Retrieves the Station's report deeplink.
+
+        :param report: A |Report| or a str object.
+        :return: A report URL object.
+
+        Example:
+
+        >>> report = "fcda196b-eb30-4b59-83b8-a25ab6d70d17"
+        >>> deeplink = ts.get_report_deeplink(report)
+        >>> isinstance(report, str) or isinstance(report, Report)
+        True
+        >>> isinstance(deeplink, str)
+        True
+        >>> print(deeplink)
+        """
+
+        # default to interal ID if report ID field is present
+        # else treat report as an ID string
+        try:
+            report_id = report.id
+        except AttributeError:
+            report_id = report
+
+        deeplink = "{}/constellation/reports/{}".format(self._client.station, report_id)
+
+        return deeplink
