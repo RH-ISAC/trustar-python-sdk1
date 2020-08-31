@@ -1,11 +1,13 @@
 import pytest
 import requests_mock
 
+
 @pytest.fixture
 def mocked_request():
     with requests_mock.Mocker() as m:
         m.post(url="/oauth/token", text='{"access_token": "XXXXXXXXXXXXXXXXXXX"}')
         yield m
+
 
 @pytest.fixture
 def get_user_enclaves_fixture():
