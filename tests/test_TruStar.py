@@ -76,7 +76,7 @@ class TruStarTests(unittest.TestCase):
         self.assertEqual(result.body, report.body)
 
         # get report deeplink
-        deeplink = self.ts.get_report_deeplink(report_id=report.id)
+        deeplink = self.ts.get_report_deeplink(report=report.id)
         self.assertIsNotNone(deeplink)
 
         # add tag
@@ -126,73 +126,6 @@ class TruStarTests(unittest.TestCase):
             correlation_counts = [indicator.correlation_count for indicator in result]
             for i in range(len(correlation_counts) - 1):
                 self.assertTrue(correlation_counts[i] >= correlation_counts[i + 1])
-
-    def test_get_related_indicators_and_correlated_reports(self):
-        """
-        Submits a group of reports that contain common indicators, then checks that
-        getting related indicators and correlated reports returns the expected results.
-        """
-
-        #########
-        # SETUP #
-        #########
-
-        indicators = [
-            "www.wefrrtdgwefwef1234.org",
-            "wefoijseroijr@yahoo.org"
-        ]
-
-        related = ["www.abcxyz1235.com"] + [generate_ip() for _ in range(27)]
-
-        indicator_groups = [
-            related[:5],
-            related[5:9],
-            related[9:19],
-            related[19:25],
-            related[25:]
-        ]
-
-        reports = []
-
-        count = 0
-        for group in indicator_groups:
-            count += 1
-            report = Report(
-                title="Test_Get_Related_Indicators_Report_%s" % count,
-                body=" some words ".join([indicators[count % 2]] + group),
-                enclave_ids=self.ts.enclave_ids
-            )
-            report = self.ts.submit_report(report=report)
-            reports.append(report)
-
-        count = 0
-        for report, indicator_group in zip(reports, indicator_groups):
-            count += 1
-            report_indicators = self.ts.get_indicators_for_report(report_id=report.id)
-            self.assertSetEqual(set(str(x.value) for x in report_indicators),
-                                set([indicators[count % 2]] + indicator_group))
-
-        ###############
-        # GET RELATED #
-        ###############
-
-        server_related = list(self.ts.get_related_indicators(indicators=indicators))
-        related_reports = self.ts.get_correlated_report_ids(indicators=indicators)
-
-        ###########
-        # CLEANUP #
-        ###########
-
-        for report in reports:
-            self.ts.delete_report(report_id=report.id)
-
-        ##########
-        # ASSERT #
-        ##########
-
-        server_indicator_values = set([str(ind.value.lower()) for ind in server_related])
-        for indicator in related:
-            self.assertTrue(indicator.lower() in server_indicator_values)
 
     def test_get_related_indicators(self):
         result = self.ts.get_related_indicators_page(indicators=["evil", "1.2.3.4", "wannacry"])
