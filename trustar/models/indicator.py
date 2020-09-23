@@ -121,6 +121,7 @@ class Indicator(ModelBase):
             'firstSeen': self.first_seen,
             'lastSeen': self.last_seen,
             'source': self.source,
+            'sightings': self.sightings,
             'notes': self.notes,
             'tags': tags,
             'enclaveIds': self.enclave_ids

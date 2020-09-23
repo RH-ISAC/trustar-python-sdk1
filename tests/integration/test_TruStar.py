@@ -16,11 +16,6 @@ yesterday_time = current_time - DAY
 old_time = current_time - DAY * 365 * 3
 MILLISECONDS_IN_A_DAY = 24 * 60 * 60 * 1000
 
-# Default Phishing Triage parameters to include all options
-normalized_indicator_score = [3, 2, 1]
-priority_event_score = [3, 2, 1]
-statuses = ["UNRESOLVED", "CONFIRMED", "IGNORED"]
-
 
 def generate_ip(start_range=100):
     """
@@ -371,37 +366,6 @@ class TruStarTests(unittest.TestCase):
         # cleanup the copied report
         self.ts.delete_report(moved_report_id)
 
-    def test_get_phishing_submissions_page(self):
-        with patch('trustar.api_client.ApiClient.post') as mocked_post:
-            mocked_post.return_value.status_code = 200
-            mocked_post.return_value.json.return_value = {"items": [{"submissionId": "1234"}],
-                                                          'responseMetadata': {'nextCursor': ''}}
 
-            page = self.ts.get_phishing_submissions_page(priority_event_score=priority_event_score,
-                                                         status=statuses)
-            self.assertIsInstance(page, CursorPage)
-            self.assertIsInstance(page.items, list)
-            self.assertIsInstance(page.response_metadata, dict)
-            self.assertEqual(str({"items": [{"submissionId": "1234"}], 'responseMetadata': {'nextCursor': ''}}),
-                             str(page.to_dict()))
-
-    def test_get_phishing_indicators_page(self):
-        with patch('trustar.api_client.ApiClient.post') as mocked_post:
-            mocked_post.return_value.status_code = 200
-            mocked_post.return_value.json.return_value = {'items': [
-                {'indicatorType': 'IP', 'value': '220.178.71.156', 'sourceKey': 'alienvault_otx'}],
-                'responseMetadata': {'nextCursor': ''}}
-            page = self.ts.get_phishing_indicators_page(
-                normalized_indicator_score=normalized_indicator_score,
-                priority_event_score=priority_event_score,
-                status=statuses)
-        self.assertIsInstance(page, CursorPage)
-        self.assertIsInstance(page.items, list)
-        self.assertIsInstance(page.response_metadata, dict)
-        self.assertEqual(str({'items': [
-            {'indicatorType': 'IP', 'value': '220.178.71.156', 'sourceKey': 'alienvault_otx'}],
-            'responseMetadata': {'nextCursor': ''}}),
-            str(page.to_dict()))
-
-        if __name__ == '__main__':
-            unittest.main()
+if __name__ == '__main__':
+    unittest.main()

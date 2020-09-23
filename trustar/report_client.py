@@ -286,7 +286,7 @@ class ReportClient(object):
             'destEnclaveId': dest_enclave_id
         }
 
-        response = self._client.post('/reports/move/{id}'.format(id=report_id), params=params)
+        response = self._client.post('reports/move/{id}'.format(id=report_id), params=params)
         return response.json().get('id')
 
     def get_correlated_report_ids(self, indicators):
@@ -590,7 +590,6 @@ class ReportClient(object):
             report_id = report.id
         except AttributeError:
             report_id = report
-
         deeplink = "{}/constellation/reports/{}".format(self._client.station, report_id)
 
         return deeplink

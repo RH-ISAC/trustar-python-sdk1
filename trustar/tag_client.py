@@ -45,7 +45,6 @@ class TagClient(object):
             'addedTags': [{'name': tag_name} for tag_name in added_tags],
             'removedTags': [{'name': tag_name} for tag_name in removed_tags]
         }
-
         resp = self._client.post("reports/{}/alter-tags".format(report_id), params=params, data=json.dumps(body))
         return resp.json().get('id')
 

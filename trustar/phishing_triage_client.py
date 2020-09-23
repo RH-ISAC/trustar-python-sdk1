@@ -233,3 +233,6 @@ class PhishingTriageClient(object):
         resp = self._client.post("triage/indicators", params=params, data=json.dumps(data))
 
         return CursorPage.from_dict(resp.json(), content_type=PhishingIndicator)
+
+    def from_dict(self):
+        return {"submissionId": int(self)}

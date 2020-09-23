@@ -1,0 +1,7 @@
+[run]
+omit =
+    */.benchmarks/*
+    */.circleci/*
+    tests/*
+    trustar_conf_builder.py
+    setup.py

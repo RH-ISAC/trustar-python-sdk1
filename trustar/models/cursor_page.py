@@ -58,9 +58,8 @@ class CursorPage(Page):
         :param remove_nones: Whether ``None`` values should be filtered out of the dictionary.  Defaults to ``False``.
         :return: A dictionary representation of the page.
         """
-
         return {
-            'items': self.items,
+            'items': [n.to_dict(remove_nones) for n in self.items],
             'responseMetadata': self.response_metadata
         }
 

@@ -58,7 +58,7 @@ class Tag(ModelBase):
         else:
             d = {
                 'name': self.name,
-                'id': self.id,
+                'guid': self.id,
                 'enclaveId': self.enclave_id
             }
 

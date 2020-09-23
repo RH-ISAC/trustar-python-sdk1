@@ -13,6 +13,7 @@ mypy = "*"
 twine = "*"
 pytest-mock = "*"
 requests-mock = "*"
+pytest-xdist = "*"
 
 [packages]
 trustar = {editable = true, path = "."}
