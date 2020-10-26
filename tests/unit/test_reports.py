@@ -1,7 +1,7 @@
 import pytest
 
 from trustar import Report, IdType
-from tests.conftest import BASE_URL
+from tests.conftest import BASE_URL, mocked_request
 
 FAKE_REPORT_ID = 45
 URL_ENDPOINT = BASE_URL + "/reports"
@@ -129,3 +129,11 @@ def test_get_reports(mocked_request, trustar, numbered_page, current_time_millis
     result = trustar.get_reports(tag=tag, from_time=from_time, to_time=current_time_millis)
     # TODO check the content
     assert len(list(result)) > 0
+
+
+def test_get_report_status(trustar, mocked_request):
+    lookup = "d088bb2b-7df5-469f-b831-0ec3733d33e1"
+    expected = {'errorMessage': '', 'id': 'd088bb2b-7df5-469f-b831-0ec3733d33e1', 'status': 'SUBMISSION_SUCCESS'}
+    mocked_request = mocked_request.get(url=f"{URL_ENDPOINT}/{lookup}/status", json=expected)
+    result = trustar.get_report_status(lookup)
+    assert result['status'] == "SUBMISSION_SUCCESS"

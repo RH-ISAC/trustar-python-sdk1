@@ -1,6 +1,7 @@
 # python 2 backwards compatibility
 from __future__ import print_function
 from builtins import object, str
+from typing import Type
 from future import standard_library
 from six import string_types
 
@@ -8,6 +9,7 @@ from six import string_types
 import json
 from datetime import datetime
 import functools
+from requests.exceptions import BaseHTTPError
 
 # package imports
 from .log import get_logger
@@ -593,3 +595,45 @@ class ReportClient(object):
         deeplink = "{}/constellation/reports/{}".format(self._client.station, report_id)
 
         return deeplink
+
+    def get_report_status(self, report):
+        """
+        Finds the processing status of a report.
+
+        :param report: A |Report| or a str object.
+        :return: A dict.
+
+        Example result:
+        
+        {
+            "id": "3f8824de-7858-4e07-b6d5-f02d020ee675",
+            "status": "SUBMISSION_PROCESSING",
+            "errorMessage": ""
+        }
+
+        The possible status values for a report are:
+        * SUBMISSION_PROCESSING,
+        * SUBMISSION_SUCCESS,
+        * SUBMISSION_FAILURE,
+        * UNKNOWN
+        
+        A report can have an UNKNOWN processing status if the report
+        has not begun processing or if it is an older report
+        that has not been recently updated.
+
+        >>> report = "fcda196b-eb30-4b59-83b8-a25ab6d70d17"
+        >>> result = ts.get_report_status(report)
+        >>> result['status']
+        "SUBMISSION_SUCCESS"
+        """
+        if isinstance(report, Report):
+            lookup = report.id
+        elif isinstance(report, string_types):
+            lookup = report
+        else:
+            raise TypeError("report must be of type trustar.models.Report or str")
+
+        response = self._client.get("reports/{id}/status".format(id=lookup))
+        response.raise_for_status()
+        result = response.json()
+        return result
