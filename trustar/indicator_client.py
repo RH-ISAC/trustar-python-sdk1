@@ -590,3 +590,76 @@ class IndicatorClient(object):
         """
 
         return NumberedPage.get_page_generator(self.get_whitelist_page, start_page, page_size)
+
+    def initiate_indicator_metadata_export(self, search_term=None,
+                                           enclave_ids=None,
+                                           from_time=None,
+                                           to_time=None,
+                                           indicator_types=None,
+                                           tags=None,
+                                           excluded_tags=None,
+                                           page_size=None,
+                                           page_number=None):
+        """
+        Initiate a bulk export of indicator metadata
+
+        :param str search_term: The term to search for.  If empty, no search term will be applied.  Otherwise, must
+            be at least 3 characters.
+        :param list(str) enclave_ids: list of enclave ids used to restrict to indicators found in reports in specific
+            enclaves (optional - by default reports from all of the user's enclaves are used)
+        :param int from_time: start of time window in milliseconds since epoch (optional)
+        :param int to_time: end of time window in milliseconds since epoch (optional)
+        :param list(str) indicator_types: a list of indicator types to filter by (optional)
+        :param list(str) tags: Name (or list of names) of tag(s) to filter indicators by.  Only indicators containing
+            ALL of these tags will be returned. (optional)
+        :param list(str) excluded_tags: Indicators containing ANY of these tags will be excluded from the results.
+        :return: The guid of the export job
+        """
+
+        body = {
+            'searchTerm': search_term
+        }
+
+        params = {
+            'enclaveIds': enclave_ids,
+            'from': from_time,
+            'to': to_time,
+            'entityTypes': indicator_types,
+            'tags': tags,
+            'excludedTags': excluded_tags,
+            'pageSize': page_size,
+            'pageNumber': page_number
+        }
+
+        resp = self._client.post("indicators/metadata/bulk-export", params=params, data=json.dumps(body))
+
+        return resp.json().get('guid')
+
+    def get_indicator_metadata_export_status(self, guid):
+        """
+        Get the status of a currently running indicator metadata export job.  The result will be one of RUNNING,
+        ERROR, or COMPLETE
+
+        :param str guid: The guid of the export job
+        :return: The status of the export job
+        """
+
+        resp = self._client.get("indicators/metadata/bulk-export/" + guid + "/status")
+
+        return resp.json().get('status')
+
+    def download_indicator_metadata_export(self, guid, filename):
+        """
+        Download the contents of a COMPLETE export job to the file specified by filename
+
+        :param str guid: The guid of the export job
+        :param str filename: The name of the file to save the contents
+        """
+
+        with self._client.get("indicators/metadata/bulk-export/" + guid + "/data.csv", stream=True) as r:
+            r.raise_for_status()
+            with open(filename, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+
+        return None
