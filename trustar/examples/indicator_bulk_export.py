@@ -22,13 +22,15 @@ status = ts.get_indicator_metadata_export_status(guid)
 logger.info("Status = %s" % status)
 
 # Loop until the status is either ERROR or COMPLETE
-while status != "ERROR" and status != "COMPLETE":
+while status != "ERROR" and status != "CANCELED" and status != "COMPLETE":
     sleep(10)
     status = ts.get_indicator_metadata_export_status(guid)
     logger.info("Status = %s" % status)
 
 if status == "ERROR":
     logger.error("Job failed")
+elif status == "CANCELED":
+    logger.error("Job was canceled")
 else:
     logger.info("Saving export to %s.csv" % guid)
     ts.download_indicator_metadata_export(guid, "%s.csv" % guid)
