@@ -597,9 +597,7 @@ class IndicatorClient(object):
                                            to_time=None,
                                            indicator_types=None,
                                            tags=None,
-                                           excluded_tags=None,
-                                           page_size=None,
-                                           page_number=None):
+                                           excluded_tags=None):
         """
         Initiate a bulk export of indicator metadata
 
