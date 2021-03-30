@@ -624,9 +624,7 @@ class IndicatorClient(object):
             'to': to_time,
             'entityTypes': indicator_types,
             'tags': tags,
-            'excludedTags': excluded_tags,
-            'pageSize': page_size,
-            'pageNumber': page_number
+            'excludedTags': excluded_tags
         }
 
         resp = self._client.post("indicators/metadata/bulk-export", params=params, data=json.dumps(body))
