@@ -5,7 +5,7 @@ that contain google.com and save them to a local file.
 
 from time import sleep
 
-from trustar import datetime_to_millis, log, TruStar
+from trustar import log, TruStar
 
 # initialize SDK
 ts = TruStar()
@@ -21,7 +21,7 @@ status = ts.get_indicator_metadata_export_status(guid)
 logger.info("Status = %s" % status)
 
 # Loop until the status is either ERROR or COMPLETE
-while status != "ERROR" and status != "CANCELED" and status != "COMPLETE":
+while status not in ("ERROR", "CANCELED", "COMPLETE"):
     sleep(10)
     status = ts.get_indicator_metadata_export_status(guid)
     logger.info("Status = %s" % status)
@@ -34,4 +34,3 @@ else:
     logger.info("Saving export to %s.csv" % guid)
     ts.download_indicator_metadata_export(guid, "%s.csv" % guid)
     logger.info("Export complete!")
-
