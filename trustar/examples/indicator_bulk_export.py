@@ -1,7 +1,6 @@
 """
 This script will initiate a bulk export of all indicator metadata for indicators
-that contain google.com and save them to a local file.  In order to work
-correctly, the api_endpoint in your config must be for 2.0 (<host>/api/2.0)
+that contain google.com and save them to a local file.
 """
 
 from time import sleep
